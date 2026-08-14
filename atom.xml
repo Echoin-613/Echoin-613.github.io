@@ -10,7 +10,39 @@
   <rights>All rights reserved 2026, Echoin</rights>
   <subtitle>Web安全 · 渗透测试 · CTF · 靶场</subtitle>
   <title>Echoin 的博客</title>
-  <updated>2026-08-14T04:05:53.641Z</updated>
+  <updated>2026-08-14T04:13:01.039Z</updated>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="Offshore" scheme="https://echoin.xyz/tags/Offshore/"/>
+    <category term="Active Directory" scheme="https://echoin.xyz/tags/Active-Directory/"/>
+    <id>https://echoin.xyz/2026/08/14/htb-offshore/</id>
+    <link href="https://echoin.xyz/2026/08/14/htb-offshore/"/>
+    <published>2026-08-14T10:00:00.000Z</published>
+    <summary>HTB Offshore 靶场 Writeup</summary>
+    <title>HTB Offshore 靶场 Writeup</title>
+    <updated>2026-08-14T04:13:01.039Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="Dante" scheme="https://echoin.xyz/tags/Dante/"/>
+    <category term="红队" scheme="https://echoin.xyz/tags/%E7%BA%A2%E9%98%9F/"/>
+    <id>https://echoin.xyz/2026/08/14/htb-dante/</id>
+    <link href="https://echoin.xyz/2026/08/14/htb-dante/"/>
+    <published>2026-08-14T09:00:00.000Z</published>
+    <summary>HTB Dante 靶场 Writeup</summary>
+    <title>HTB Dante 靶场 Writeup</title>
+    <updated>2026-08-14T04:13:01.039Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Echoin</name>
@@ -24,7 +56,7 @@
     <published>2026-08-14T08:00:00.000Z</published>
     <summary>Kerberos Bronze Bit 委派绕过漏洞原理与利用</summary>
     <title>攻击方式 - Kerberos Bronze Bit</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -39,7 +71,7 @@
     <published>2026-08-14T07:30:00.000Z</published>
     <summary>Kerberoasting 获取服务票据并离线爆破密码的方法</summary>
     <title>攻击方式 - Kerberoasting</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -54,7 +86,7 @@
     <published>2026-08-14T07:00:00.000Z</published>
     <summary>针对关闭 Kerberos 预认证域用户的离线密码攻击</summary>
     <title>攻击方式 - AS-REP Roasting</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -67,7 +99,7 @@
     <published>2026-08-14T06:30:00.000Z</published>
     <summary>HTTP请求走私漏洞原理、类型与利用方式</summary>
     <title>HTTP 请求走私</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -81,7 +113,7 @@
     <published>2026-08-14T06:00:00.000Z</published>
     <summary>XSS跨站脚本攻击原理、审计路径与利用打法</summary>
     <title>XSS 跨站脚本攻击</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -95,7 +127,7 @@
     <published>2026-08-14T05:30:00.000Z</published>
     <summary>预编译防御原理与绕过方法详解</summary>
     <title>SQL 预编译及绕过</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -108,7 +140,7 @@
     <published>2026-08-14T05:00:00.000Z</published>
     <summary>SQL 注入原理、检测技术与防御方法</summary>
     <title>SQL 注入的原理及测试</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -122,7 +154,7 @@
     <published>2026-08-14T05:00:00.000Z</published>
     <summary>Web 安全知识笔记的推荐结构——原理、复现、防御</summary>
     <title>Web 安全笔记写作模板</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -135,21 +167,7 @@
     <published>2026-08-14T04:30:00.000Z</published>
     <summary>SQL 注入各类型原理与注入模板速查</summary>
     <title>SQL 注入类型</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
-    <category term="模板" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/"/>
-    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
-    <id>https://echoin.xyz/2026/08/14/lab-notes-template/</id>
-    <link href="https://echoin.xyz/2026/08/14/lab-notes-template/"/>
-    <published>2026-08-14T04:00:00.000Z</published>
-    <summary>靶场通关笔记的推荐写法与示例</summary>
-    <title>靶场笔记写作模板</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -163,7 +181,21 @@
     <published>2026-08-14T04:00:00.000Z</published>
     <summary>MySQL 写入 WebShell 的三种常用方法</summary>
     <title>SQL 注入写 shell</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="模板" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <id>https://echoin.xyz/2026/08/14/lab-notes-template/</id>
+    <link href="https://echoin.xyz/2026/08/14/lab-notes-template/"/>
+    <published>2026-08-14T04:00:00.000Z</published>
+    <summary>靶场通关笔记的推荐写法与示例</summary>
+    <title>靶场笔记写作模板</title>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -178,7 +210,7 @@
     <published>2026-08-14T03:00:00.000Z</published>
     <summary>一篇标准的 CTF Writeup 应该怎么写——附模板与示例</summary>
     <title>CTF Writeup 写作模板</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
   <entry>
     <author>
@@ -192,6 +224,6 @@
     <published>2026-08-14T02:00:00.000Z</published>
     <summary>关于本博客的定位、内容分类与使用说明</summary>
     <title>欢迎来到我的安全博客</title>
-    <updated>2026-08-14T04:05:53.641Z</updated>
+    <updated>2026-08-14T04:13:01.039Z</updated>
   </entry>
 </feed>

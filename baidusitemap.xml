@@ -5,7 +5,15 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
+    <loc>https://echoin.xyz/2026/08/14/ctf-writeup-template/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-offshore/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -13,15 +21,11 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/ctf-writeup-template/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
     <loc>https://echoin.xyz/2026/08/14/kerberos-bronze-bit/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/lab-notes-template/</loc>
+    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -45,11 +49,15 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
+    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
     <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
+    <loc>https://echoin.xyz/2026/08/14/lab-notes-template/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
 </urlset> 

