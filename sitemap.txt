@@ -3,8 +3,8 @@ https://echoin.xyz/2026/08/14/lab-notes-template/
 https://echoin.xyz/2026/08/14/web-security-notes-template/
 https://echoin.xyz/2026/08/14/welcome-to-my-blog/
 https://echoin.xyz/about/index.html
-https://echoin.xyz/tags/index.html
 https://echoin.xyz/categories/index.html
+https://echoin.xyz/tags/index.html
 https://echoin.xyz/
 https://echoin.xyz/tags/CTF/
 https://echoin.xyz/tags/Writeup/
