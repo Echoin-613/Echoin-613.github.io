@@ -1,87 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>靶场笔记写作模板</title>
-    <url>/2026/08/14/lab-notes-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示靶场笔记的推荐写法。
-
-靶场信息
-
-
-项目
-内容
-
-
-
-靶场名称
-DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB
-
-
-目标地址
-http://xxx
-
-
-难度
-低 &#x2F; 中 &#x2F; 高
-
-
-授权范围
-本地练习 &#x2F; 官方授权
-
-
-环境搭建docker run -d -p 80:80 vulnerables/web-dvwa
-
-漏洞点分析描述漏洞成因与触发条件。
-利用过程步骤一：xxxsqlmap -u &quot;http://target/?id=1&quot; --dbs
-
-步骤二：xxx插入截图（图片放在与文章同名的资源文件夹中）：
-&#123;% asset_img 1.png 截图描述 %&#125;
-
-防御与修复
-过滤输入
-使用参数化查询
-最小权限原则
-
-]]></content>
-      <categories>
-        <category>靶场</category>
-      </categories>
-      <tags>
-        <tag>靶场</tag>
-        <tag>模板</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Web 安全笔记写作模板</title>
-    <url>/2026/08/14/web-security-notes-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示 Web 安全笔记的推荐写法。
-
-漏洞概述一句话说明这个漏洞是什么。
-漏洞原理详细讲解漏洞成因，配图或代码。
-&lt;?php$id = $_GET[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;?&gt;
-
-漏洞复现环境准备利用步骤payload 示例
-
-防御方案
-方案一
-方案二
-方案三
-
-参考资料
-OWASP
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>模板</tag>
-        <tag>Web安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>CTF Writeup 写作模板</title>
     <url>/2026/08/14/ctf-writeup-template/</url>
     <content><![CDATA[
@@ -140,9 +59,90 @@ python3 exp.py
         <category>CTF</category>
       </categories>
       <tags>
-        <tag>模板</tag>
         <tag>CTF</tag>
         <tag>Writeup</tag>
+        <tag>模板</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>靶场笔记写作模板</title>
+    <url>/2026/08/14/lab-notes-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示靶场笔记的推荐写法。
+
+靶场信息
+
+
+项目
+内容
+
+
+
+靶场名称
+DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB
+
+
+目标地址
+http://xxx
+
+
+难度
+低 &#x2F; 中 &#x2F; 高
+
+
+授权范围
+本地练习 &#x2F; 官方授权
+
+
+环境搭建docker run -d -p 80:80 vulnerables/web-dvwa
+
+漏洞点分析描述漏洞成因与触发条件。
+利用过程步骤一：xxxsqlmap -u &quot;http://target/?id=1&quot; --dbs
+
+步骤二：xxx插入截图（图片放在与文章同名的资源文件夹中）：
+&#123;% asset_img 1.png 截图描述 %&#125;
+
+防御与修复
+过滤输入
+使用参数化查询
+最小权限原则
+
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>模板</tag>
+        <tag>靶场</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Web 安全笔记写作模板</title>
+    <url>/2026/08/14/web-security-notes-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示 Web 安全笔记的推荐写法。
+
+漏洞概述一句话说明这个漏洞是什么。
+漏洞原理详细讲解漏洞成因，配图或代码。
+&lt;?php$id = $_GET[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;?&gt;
+
+漏洞复现环境准备利用步骤payload 示例
+
+防御方案
+方案一
+方案二
+方案三
+
+参考资料
+OWASP
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>模板</tag>
+        <tag>Web安全</tag>
       </tags>
   </entry>
   <entry>

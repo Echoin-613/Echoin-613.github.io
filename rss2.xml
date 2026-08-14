@@ -6,7 +6,7 @@
     <description>Web安全 · 渗透测试 · CTF · 靶场</description>
     <language>zh-CN</language>
     <copyright>All rights reserved 2026, Echoin</copyright>
-    <lastBuildDate>Fri, 14 Aug 2026 02:58:12 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 14 Aug 2026 03:28:22 GMT</lastBuildDate>
     <generator>Hexo</generator>
     <atom:link href="https://echoin.xyz/rss2.xml" rel="self" type="application/rss+xml"/>
     <item>
@@ -25,8 +25,8 @@
       <description>靶场通关笔记的推荐写法与示例</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
       <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
       <pubDate>Fri, 14 Aug 2026 04:00:00 GMT</pubDate>
     </item>
     <item>
@@ -35,9 +35,9 @@
       <description>一篇标准的 CTF Writeup 应该怎么写——附模板与示例</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/CTF/">CTF</category>
-      <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
       <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
       <category domain="https://echoin.xyz/tags/Writeup/">Writeup</category>
+      <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
       <pubDate>Fri, 14 Aug 2026 03:00:00 GMT</pubDate>
     </item>
     <item>
