@@ -22,6 +22,7 @@ menu:
   归档: /archives/ || fas fa-archive
   分类: /categories/ || fas fa-folder-open
   标签: /tags/ || fas fa-tags
+  Payload库: /payloads/ || fas fa-database
   关于: /about/ || fas fa-user
 
 # --------------------------------------
@@ -94,7 +95,7 @@ footer_img: false
 # Website Background
 # Can set it to color, image URL or an array containing colors and/or image URLs
 # If an array is provided, a random background will be selected from the array on each load
-background: /img/bg.jpg
+background: linear-gradient(135deg, #f6f0fe 0%, #e7dcfa 45%, #f1e9fd 100%)
 
 cover:
   # Disable the cover or not
