@@ -11,7 +11,7 @@ date: 2026-08-14 10:00:00
 
 - **Web 安全**：SQL 注入、XSS、SSRF、HTTP 请求走私等漏洞的原理、利用与绕过
 - **渗透测试**：Kerberos 攻击（AS-REP Roasting、Kerberoasting、Bronze Bit）、NTLM Relay 等域渗透 / 内网渗透手法
-- **CTF 比赛**：各类赛事的 Writeup 与解题复盘
+- **CTF wp**：各类赛事的 Writeup 与解题复盘
 - **靶场练习**：HTB Labs / Pro Labs 的完整通关笔记（Dante、Fires、Garfield 等）
 - **Payload 速查库**：翻译整理自 [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings) 的中文知识库
 
