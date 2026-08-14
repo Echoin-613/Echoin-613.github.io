@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://echoin.xyz/2026/08/14/as-rep-roasting/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/kerberoasting/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
     <loc>https://echoin.xyz/2026/08/14/ctf-writeup-template/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/kerberos-bronze-bit/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -9,11 +25,31 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-types/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-write-shell/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/sql-prepared-statement-bypass/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
     <loc>https://echoin.xyz/2026/08/14/web-security-notes-template/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
 </urlset> 

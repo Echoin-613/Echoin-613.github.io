@@ -6,9 +6,80 @@
     <description>Web安全 · 渗透测试 · CTF · 靶场</description>
     <language>zh-CN</language>
     <copyright>All rights reserved 2026, Echoin</copyright>
-    <lastBuildDate>Fri, 14 Aug 2026 03:36:50 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 14 Aug 2026 04:05:53 GMT</lastBuildDate>
     <generator>Hexo</generator>
     <atom:link href="https://echoin.xyz/rss2.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>攻击方式 - Kerberos Bronze Bit</title>
+      <link>https://echoin.xyz/2026/08/14/kerberos-bronze-bit/</link>
+      <description>Kerberos Bronze Bit 委派绕过漏洞原理与利用</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
+      <category domain="https://echoin.xyz/tags/Kerberos/">Kerberos</category>
+      <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
+      <category domain="https://echoin.xyz/tags/Bronze-Bit/">Bronze Bit</category>
+      <pubDate>Fri, 14 Aug 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>攻击方式 - Kerberoasting</title>
+      <link>https://echoin.xyz/2026/08/14/kerberoasting/</link>
+      <description>Kerberoasting 获取服务票据并离线爆破密码的方法</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
+      <category domain="https://echoin.xyz/tags/Kerberos/">Kerberos</category>
+      <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
+      <category domain="https://echoin.xyz/tags/Kerberoasting/">Kerberoasting</category>
+      <pubDate>Fri, 14 Aug 2026 07:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>攻击方式 - AS-REP Roasting</title>
+      <link>https://echoin.xyz/2026/08/14/as-rep-roasting/</link>
+      <description>针对关闭 Kerberos 预认证域用户的离线密码攻击</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
+      <category domain="https://echoin.xyz/tags/AS-REP-Roasting/">AS-REP Roasting</category>
+      <category domain="https://echoin.xyz/tags/Kerberos/">Kerberos</category>
+      <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
+      <pubDate>Fri, 14 Aug 2026 07:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTTP 请求走私</title>
+      <link>https://echoin.xyz/2026/08/14/http-request-smuggling/</link>
+      <description>HTTP请求走私漏洞原理、类型与利用方式</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/">HTTP请求走私</category>
+      <pubDate>Fri, 14 Aug 2026 06:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>XSS 跨站脚本攻击</title>
+      <link>https://echoin.xyz/2026/08/14/xss/</link>
+      <description>XSS跨站脚本攻击原理、审计路径与利用打法</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/XSS/">XSS</category>
+      <category domain="https://echoin.xyz/tags/%E8%B7%A8%E7%AB%99%E8%84%9A%E6%9C%AC/">跨站脚本</category>
+      <pubDate>Fri, 14 Aug 2026 06:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>SQL 预编译及绕过</title>
+      <link>https://echoin.xyz/2026/08/14/sql-prepared-statement-bypass/</link>
+      <description>预编译防御原理与绕过方法详解</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
+      <category domain="https://echoin.xyz/tags/%E9%A2%84%E7%BC%96%E8%AF%91/">预编译</category>
+      <pubDate>Fri, 14 Aug 2026 05:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>SQL 注入的原理及测试</title>
+      <link>https://echoin.xyz/2026/08/14/sql-injection-principles/</link>
+      <description>SQL 注入原理、检测技术与防御方法</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
+      <pubDate>Fri, 14 Aug 2026 05:00:00 GMT</pubDate>
+    </item>
     <item>
       <title>Web 安全笔记写作模板</title>
       <link>https://echoin.xyz/2026/08/14/web-security-notes-template/</link>
@@ -20,6 +91,15 @@
       <pubDate>Fri, 14 Aug 2026 05:00:00 GMT</pubDate>
     </item>
     <item>
+      <title>SQL 注入类型</title>
+      <link>https://echoin.xyz/2026/08/14/sql-injection-types/</link>
+      <description>SQL 注入各类型原理与注入模板速查</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
+      <pubDate>Fri, 14 Aug 2026 04:30:00 GMT</pubDate>
+    </item>
+    <item>
       <title>靶场笔记写作模板</title>
       <link>https://echoin.xyz/2026/08/14/lab-notes-template/</link>
       <description>靶场通关笔记的推荐写法与示例</description>
@@ -27,6 +107,16 @@
       <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
       <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
       <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <pubDate>Fri, 14 Aug 2026 04:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>SQL 注入写 shell</title>
+      <link>https://echoin.xyz/2026/08/14/sql-injection-write-shell/</link>
+      <description>MySQL 写入 WebShell 的三种常用方法</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
+      <category domain="https://echoin.xyz/tags/getshell/">getshell</category>
       <pubDate>Fri, 14 Aug 2026 04:00:00 GMT</pubDate>
     </item>
     <item>
