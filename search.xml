@@ -117,35 +117,6 @@ http://xxx
       </tags>
   </entry>
   <entry>
-    <title>Web 安全笔记写作模板</title>
-    <url>/2026/08/14/web-security-notes-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示 Web 安全笔记的推荐写法。
-
-漏洞概述一句话说明这个漏洞是什么。
-漏洞原理详细讲解漏洞成因，配图或代码。
-&lt;?php$id = $_GET[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;?&gt;
-
-漏洞复现环境准备利用步骤payload 示例
-
-防御方案
-方案一
-方案二
-方案三
-
-参考资料
-OWASP
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>模板</tag>
-        <tag>Web安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>欢迎来到我的安全博客</title>
     <url>/2026/08/14/welcome-to-my-blog/</url>
     <content><![CDATA[博客定位你好，欢迎来到我的安全博客 👋
@@ -192,6 +163,35 @@ GitHub：Echoin-613
       <tags>
         <tag>博客</tag>
         <tag>说明</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Web 安全笔记写作模板</title>
+    <url>/2026/08/14/web-security-notes-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示 Web 安全笔记的推荐写法。
+
+漏洞概述一句话说明这个漏洞是什么。
+漏洞原理详细讲解漏洞成因，配图或代码。
+&lt;?php$id = $_GET[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;?&gt;
+
+漏洞复现环境准备利用步骤payload 示例
+
+防御方案
+方案一
+方案二
+方案三
+
+参考资料
+OWASP
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>模板</tag>
+        <tag>Web安全</tag>
       </tags>
   </entry>
 </search>
