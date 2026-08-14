@@ -6,9 +6,31 @@
     <description>Web安全 · 渗透测试 · CTF · 靶场</description>
     <language>zh-CN</language>
     <copyright>All rights reserved 2026, Echoin</copyright>
-    <lastBuildDate>Fri, 14 Aug 2026 04:13:01 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 14 Aug 2026 04:23:35 GMT</lastBuildDate>
     <generator>Hexo</generator>
     <atom:link href="https://echoin.xyz/rss2.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>攻击方式 - NTLM Relay（手法很多）</title>
+      <link>https://echoin.xyz/2026/08/14/ntlm-relay/</link>
+      <description>攻击方式 - NTLM Relay（手法很多）</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
+      <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
+      <category domain="https://echoin.xyz/tags/NTLM-Relay/">NTLM Relay</category>
+      <category domain="https://echoin.xyz/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/">内网渗透</category>
+      <pubDate>Fri, 14 Aug 2026 11:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>SSRF（服务端请求伪造）</title>
+      <link>https://echoin.xyz/2026/08/14/ssrf/</link>
+      <description>SSRF（服务端请求伪造）</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
+      <category domain="https://echoin.xyz/tags/SSRF/">SSRF</category>
+      <category domain="https://echoin.xyz/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/">服务端请求伪造</category>
+      <category domain="https://echoin.xyz/tags/%E5%86%85%E7%BD%91/">内网</category>
+      <pubDate>Fri, 14 Aug 2026 11:00:00 GMT</pubDate>
+    </item>
     <item>
       <title>HTB Offshore 靶场 Writeup</title>
       <link>https://echoin.xyz/2026/08/14/htb-offshore/</link>
@@ -105,16 +127,6 @@
       <pubDate>Fri, 14 Aug 2026 05:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>Web 安全笔记写作模板</title>
-      <link>https://echoin.xyz/2026/08/14/web-security-notes-template/</link>
-      <description>Web 安全知识笔记的推荐结构——原理、复现、防御</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
-      <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
-      <category domain="https://echoin.xyz/tags/Web%E5%AE%89%E5%85%A8/">Web安全</category>
-      <pubDate>Fri, 14 Aug 2026 05:00:00 GMT</pubDate>
-    </item>
-    <item>
       <title>SQL 注入类型</title>
       <link>https://echoin.xyz/2026/08/14/sql-injection-types/</link>
       <description>SQL 注入各类型原理与注入模板速查</description>
@@ -132,27 +144,6 @@
       <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
       <category domain="https://echoin.xyz/tags/getshell/">getshell</category>
       <pubDate>Fri, 14 Aug 2026 04:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>靶场笔记写作模板</title>
-      <link>https://echoin.xyz/2026/08/14/lab-notes-template/</link>
-      <description>靶场通关笔记的推荐写法与示例</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <pubDate>Fri, 14 Aug 2026 04:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>CTF Writeup 写作模板</title>
-      <link>https://echoin.xyz/2026/08/14/ctf-writeup-template/</link>
-      <description>一篇标准的 CTF Writeup 应该怎么写——附模板与示例</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/CTF/">CTF</category>
-      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
-      <category domain="https://echoin.xyz/tags/Writeup/">Writeup</category>
-      <category domain="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/">模板</category>
-      <pubDate>Fri, 14 Aug 2026 03:00:00 GMT</pubDate>
     </item>
     <item>
       <title>欢迎来到我的安全博客</title>

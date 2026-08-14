@@ -20,6 +20,42 @@
   </url>
   
   <url>
+    <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
+    
+    <lastmod>2026-08-14</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
+    
+    <lastmod>2026-08-14</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/categories/index.html</loc>
+    
+    <lastmod>2026-08-14</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/about/index.html</loc>
+    
+    <lastmod>2026-08-14</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://echoin.xyz/2026/08/14/as-rep-roasting/</loc>
     
     <lastmod>2026-08-14</lastmod>
@@ -29,7 +65,7 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/2026/08/14/ctf-writeup-template/</loc>
+    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
     
     <lastmod>2026-08-14</lastmod>
     
@@ -38,7 +74,7 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
+    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
     
     <lastmod>2026-08-14</lastmod>
     
@@ -74,7 +110,7 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
     
     <lastmod>2026-08-14</lastmod>
     
@@ -83,7 +119,7 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
+    <loc>https://echoin.xyz/2026/08/14/ntlm-relay/</loc>
     
     <lastmod>2026-08-14</lastmod>
     
@@ -119,52 +155,7 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/2026/08/14/web-security-notes-template/</loc>
-    
-    <lastmod>2026-08-14</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
-    
-    <lastmod>2026-08-14</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
-    
-    <lastmod>2026-08-14</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/lab-notes-template/</loc>
-    
-    <lastmod>2026-08-14</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/about/index.html</loc>
-    
-    <lastmod>2026-08-14</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/categories/index.html</loc>
+    <loc>https://echoin.xyz/2026/08/14/ssrf/</loc>
     
     <lastmod>2026-08-14</lastmod>
     
@@ -203,27 +194,6 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/tags/CTF/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/tags/Writeup/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://echoin.xyz/tags/HTB/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
@@ -239,6 +209,13 @@
   
   <url>
     <loc>https://echoin.xyz/tags/%E7%BA%A2%E9%98%9F/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -273,14 +250,21 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/</loc>
+    <loc>https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/</loc>
+    <loc>https://echoin.xyz/tags/NTLM-Relay/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -301,7 +285,35 @@
   </url>
   
   <url>
-    <loc>https://echoin.xyz/tags/Web%E5%AE%89%E5%85%A8/</loc>
+    <loc>https://echoin.xyz/tags/%E5%8D%9A%E5%AE%A2/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/tags/%E8%AF%B4%E6%98%8E/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/tags/SSRF/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://echoin.xyz/tags/%E5%86%85%E7%BD%91/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -321,38 +333,10 @@
     <priority>0.2</priority>
   </url>
   
-  <url>
-    <loc>https://echoin.xyz/tags/%E5%8D%9A%E5%AE%A2/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/tags/%E8%AF%B4%E6%98%8E/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
 
   
   <url>
     <loc>https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://echoin.xyz/categories/CTF/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

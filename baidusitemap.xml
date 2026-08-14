@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
     <loc>https://echoin.xyz/2026/08/14/as-rep-roasting/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/ctf-writeup-template/</loc>
+    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
+    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -25,11 +33,11 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
+    <loc>https://echoin.xyz/2026/08/14/ntlm-relay/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -45,19 +53,7 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/web-security-notes-template/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/xss/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/welcome-to-my-blog/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/lab-notes-template/</loc>
+    <loc>https://echoin.xyz/2026/08/14/ssrf/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
 </urlset> 

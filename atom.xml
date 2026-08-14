@@ -10,7 +10,37 @@
   <rights>All rights reserved 2026, Echoin</rights>
   <subtitle>Web安全 · 渗透测试 · CTF · 靶场</subtitle>
   <title>Echoin 的博客</title>
-  <updated>2026-08-14T04:13:01.039Z</updated>
+  <updated>2026-08-14T04:23:35.301Z</updated>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="NTLM Relay" scheme="https://echoin.xyz/tags/NTLM-Relay/"/>
+    <category term="内网渗透" scheme="https://echoin.xyz/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/"/>
+    <id>https://echoin.xyz/2026/08/14/ntlm-relay/</id>
+    <link href="https://echoin.xyz/2026/08/14/ntlm-relay/"/>
+    <published>2026-08-14T11:30:00.000Z</published>
+    <summary>攻击方式 - NTLM Relay（手法很多）</summary>
+    <title>攻击方式 - NTLM Relay（手法很多）</title>
+    <updated>2026-08-14T04:23:35.301Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
+    <category term="服务端请求伪造" scheme="https://echoin.xyz/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/"/>
+    <category term="内网" scheme="https://echoin.xyz/tags/%E5%86%85%E7%BD%91/"/>
+    <id>https://echoin.xyz/2026/08/14/ssrf/</id>
+    <link href="https://echoin.xyz/2026/08/14/ssrf/"/>
+    <published>2026-08-14T11:00:00.000Z</published>
+    <summary>SSRF（服务端请求伪造）</summary>
+    <title>SSRF（服务端请求伪造）</title>
+    <updated>2026-08-14T04:23:35.301Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Echoin</name>
@@ -25,7 +55,7 @@
     <published>2026-08-14T10:00:00.000Z</published>
     <summary>HTB Offshore 靶场 Writeup</summary>
     <title>HTB Offshore 靶场 Writeup</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -41,7 +71,7 @@
     <published>2026-08-14T09:00:00.000Z</published>
     <summary>HTB Dante 靶场 Writeup</summary>
     <title>HTB Dante 靶场 Writeup</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -56,7 +86,7 @@
     <published>2026-08-14T08:00:00.000Z</published>
     <summary>Kerberos Bronze Bit 委派绕过漏洞原理与利用</summary>
     <title>攻击方式 - Kerberos Bronze Bit</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -71,7 +101,7 @@
     <published>2026-08-14T07:30:00.000Z</published>
     <summary>Kerberoasting 获取服务票据并离线爆破密码的方法</summary>
     <title>攻击方式 - Kerberoasting</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -86,7 +116,7 @@
     <published>2026-08-14T07:00:00.000Z</published>
     <summary>针对关闭 Kerberos 预认证域用户的离线密码攻击</summary>
     <title>攻击方式 - AS-REP Roasting</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -99,7 +129,7 @@
     <published>2026-08-14T06:30:00.000Z</published>
     <summary>HTTP请求走私漏洞原理、类型与利用方式</summary>
     <title>HTTP 请求走私</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -113,7 +143,7 @@
     <published>2026-08-14T06:00:00.000Z</published>
     <summary>XSS跨站脚本攻击原理、审计路径与利用打法</summary>
     <title>XSS 跨站脚本攻击</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.302Z</updated>
   </entry>
   <entry>
     <author>
@@ -127,7 +157,7 @@
     <published>2026-08-14T05:30:00.000Z</published>
     <summary>预编译防御原理与绕过方法详解</summary>
     <title>SQL 预编译及绕过</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -140,21 +170,7 @@
     <published>2026-08-14T05:00:00.000Z</published>
     <summary>SQL 注入原理、检测技术与防御方法</summary>
     <title>SQL 注入的原理及测试</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="模板" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/"/>
-    <category term="Web安全" scheme="https://echoin.xyz/tags/Web%E5%AE%89%E5%85%A8/"/>
-    <id>https://echoin.xyz/2026/08/14/web-security-notes-template/</id>
-    <link href="https://echoin.xyz/2026/08/14/web-security-notes-template/"/>
-    <published>2026-08-14T05:00:00.000Z</published>
-    <summary>Web 安全知识笔记的推荐结构——原理、复现、防御</summary>
-    <title>Web 安全笔记写作模板</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -167,7 +183,7 @@
     <published>2026-08-14T04:30:00.000Z</published>
     <summary>SQL 注入各类型原理与注入模板速查</summary>
     <title>SQL 注入类型</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -181,36 +197,7 @@
     <published>2026-08-14T04:00:00.000Z</published>
     <summary>MySQL 写入 WebShell 的三种常用方法</summary>
     <title>SQL 注入写 shell</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
-    <category term="模板" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/"/>
-    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
-    <id>https://echoin.xyz/2026/08/14/lab-notes-template/</id>
-    <link href="https://echoin.xyz/2026/08/14/lab-notes-template/"/>
-    <published>2026-08-14T04:00:00.000Z</published>
-    <summary>靶场通关笔记的推荐写法与示例</summary>
-    <title>靶场笔记写作模板</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="CTF" scheme="https://echoin.xyz/categories/CTF/"/>
-    <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
-    <category term="Writeup" scheme="https://echoin.xyz/tags/Writeup/"/>
-    <category term="模板" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF/"/>
-    <id>https://echoin.xyz/2026/08/14/ctf-writeup-template/</id>
-    <link href="https://echoin.xyz/2026/08/14/ctf-writeup-template/"/>
-    <published>2026-08-14T03:00:00.000Z</published>
-    <summary>一篇标准的 CTF Writeup 应该怎么写——附模板与示例</summary>
-    <title>CTF Writeup 写作模板</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.301Z</updated>
   </entry>
   <entry>
     <author>
@@ -224,6 +211,6 @@
     <published>2026-08-14T02:00:00.000Z</published>
     <summary>关于本博客的定位、内容分类与使用说明</summary>
     <title>欢迎来到我的安全博客</title>
-    <updated>2026-08-14T04:13:01.039Z</updated>
+    <updated>2026-08-14T04:23:35.302Z</updated>
   </entry>
 </feed>

