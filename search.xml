@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>靶场笔记写作模板</title>
+    <url>/2026/08/14/lab-notes-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示靶场笔记的推荐写法。
+
+靶场信息
+
+
+项目
+内容
+
+
+
+靶场名称
+DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB
+
+
+目标地址
+http://xxx
+
+
+难度
+低 &#x2F; 中 &#x2F; 高
+
+
+授权范围
+本地练习 &#x2F; 官方授权
+
+
+环境搭建docker run -d -p 80:80 vulnerables/web-dvwa
+
+漏洞点分析描述漏洞成因与触发条件。
+利用过程步骤一：xxxsqlmap -u &quot;http://target/?id=1&quot; --dbs
+
+步骤二：xxx插入截图（图片放在与文章同名的资源文件夹中）：
+&#123;% asset_img 1.png 截图描述 %&#125;
+
+防御与修复
+过滤输入
+使用参数化查询
+最小权限原则
+
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>靶场</tag>
+        <tag>模板</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Web 安全笔记写作模板</title>
+    <url>/2026/08/14/web-security-notes-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示 Web 安全笔记的推荐写法。
+
+漏洞概述一句话说明这个漏洞是什么。
+漏洞原理详细讲解漏洞成因，配图或代码。
+&lt;?php$id = $_GET[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;?&gt;
+
+漏洞复现环境准备利用步骤payload 示例
+
+防御方案
+方案一
+方案二
+方案三
+
+参考资料
+OWASP
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>模板</tag>
+        <tag>Web安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CTF Writeup 写作模板</title>
+    <url>/2026/08/14/ctf-writeup-template/</url>
+    <content><![CDATA[
+这是一篇示例文章，展示 Writeup 的推荐写法。写完自己的 Writeup 后可以删除本文。
+
+一、题目信息
+
+
+项目
+内容
+
+
+
+赛事
+某某 CTF 2026
+
+
+题目
+题目名称
+
+
+类型
+Web &#x2F; Pwn &#x2F; Crypto &#x2F; Misc &#x2F; Reverse
+
+
+分值
+500
+
+
+难度
+⭐⭐⭐
+
+
+二、题目描述把题目描述和附件下载链接贴在这里。
+三、解题过程3.1 信息收集打开题目，观察页面，抓包分析：
+curl -s http://target.com/ | head -20
+
+3.2 漏洞分析发现漏洞点，说明原理：
+import requestsr = requests.get(&#x27;http://target.com/flag.php&#x27;)print(r.text)
+
+3.3 漏洞利用给出完整的利用脚本（POC &#x2F; EXP）：
+python3 exp.py
+
+
+注意：关键 payload 记得用代码块包裹，方便读者复制。
+
+四、获取 Flagflag&#123;this_is_an_example_flag&#125;
+
+五、总结
+考察的知识点
+踩过的坑
+相关参考链接
+
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>模板</tag>
+        <tag>CTF</tag>
+        <tag>Writeup</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>欢迎来到我的安全博客</title>
+    <url>/2026/08/14/welcome-to-my-blog/</url>
+    <content><![CDATA[博客定位你好，欢迎来到我的安全博客 👋
+这里是我的 网络安全学习笔记，主要用于记录我在 Web 安全、渗透测试、CTF 比赛和靶场练习中的所学所思。
+内容分类
+
+
+分类
+内容
+
+
+
+Web安全
+各类 Web 漏洞的原理、利用与防御
+
+
+渗透测试
+实战渗透流程、工具使用、思路总结
+
+
+CTF
+比赛 Writeup、解题复盘
+
+
+靶场
+DVWA &#x2F; sqli-labs &#x2F; upload-labs &#x2F; Vulnhub &#x2F; HTB 等通关笔记
+
+
+写作规范
+所有文章均遵循「原理 → 复现 → 防御」的结构
+靶场与比赛文章请务必标注目标来源与授权范围
+文章仅供学习交流，请勿用于非法用途
+
+联系我
+GitHub：Echoin-613
+
+
+道阻且长，行则将至。一起加油 💪
+
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>博客</tag>
+        <tag>说明</tag>
+      </tags>
+  </entry>
+</search>
