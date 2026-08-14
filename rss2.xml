@@ -6,9 +6,41 @@
     <description>Web安全 · 渗透测试 · CTF · 靶场</description>
     <language>zh-CN</language>
     <copyright>All rights reserved 2026, Echoin</copyright>
-    <lastBuildDate>Fri, 14 Aug 2026 07:22:47 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 14 Aug 2026 07:27:39 GMT</lastBuildDate>
     <generator>Hexo</generator>
     <atom:link href="https://echoin.xyz/rss2.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
+      <link>https://echoin.xyz/2026/08/14/ctf-mlops-ssrf-hardlink/</link>
+      <description>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
+      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
+      <category domain="https://echoin.xyz/tags/SSRF/">SSRF</category>
+      <category domain="https://echoin.xyz/tags/hardlink/">hardlink</category>
+      <pubDate>Fri, 14 Aug 2026 15:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>go to php - HTTP 请求走私</title>
+      <link>https://echoin.xyz/2026/08/14/ctf-go-to-php-http-smuggling/</link>
+      <description>go to php - HTTP 请求走私</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
+      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
+      <category domain="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/">HTTP请求走私</category>
+      <pubDate>Fri, 14 Aug 2026 15:15:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
+      <link>https://echoin.xyz/2026/08/14/ctf-stored-xss-admin-bot/</link>
+      <description>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
+      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
+      <category domain="https://echoin.xyz/tags/XSS/">XSS</category>
+      <category domain="https://echoin.xyz/tags/Admin-Bot/">Admin Bot</category>
+      <pubDate>Fri, 14 Aug 2026 15:00:00 GMT</pubDate>
+    </item>
     <item>
       <title>HTB NanoCorp 靶场 Writeup</title>
       <link>https://echoin.xyz/2026/08/14/htb-nanocorp/</link>
@@ -193,34 +225,6 @@
       <category domain="https://echoin.xyz/tags/XSS/">XSS</category>
       <category domain="https://echoin.xyz/tags/%E8%B7%A8%E7%AB%99%E8%84%9A%E6%9C%AC/">跨站脚本</category>
       <pubDate>Fri, 14 Aug 2026 06:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>SQL 预编译及绕过</title>
-      <link>https://echoin.xyz/2026/08/14/sql-prepared-statement-bypass/</link>
-      <description>预编译防御原理与绕过方法详解</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
-      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
-      <category domain="https://echoin.xyz/tags/%E9%A2%84%E7%BC%96%E8%AF%91/">预编译</category>
-      <pubDate>Fri, 14 Aug 2026 05:30:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>SQL 注入的原理及测试</title>
-      <link>https://echoin.xyz/2026/08/14/sql-injection-principles/</link>
-      <description>SQL 注入原理、检测技术与防御方法</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
-      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
-      <pubDate>Fri, 14 Aug 2026 05:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>SQL 注入类型</title>
-      <link>https://echoin.xyz/2026/08/14/sql-injection-types/</link>
-      <description>SQL 注入各类型原理与注入模板速查</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
-      <category domain="https://echoin.xyz/tags/SQL%E6%B3%A8%E5%85%A5/">SQL注入</category>
-      <pubDate>Fri, 14 Aug 2026 04:30:00 GMT</pubDate>
     </item>
   </channel>
 </rss>

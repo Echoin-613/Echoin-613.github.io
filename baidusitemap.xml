@@ -1,23 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://echoin.xyz/2026/08/14/ntlm-relay/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
+    <loc>https://echoin.xyz/2026/08/14/sql-prepared-statement-bypass/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
     <loc>https://echoin.xyz/2026/08/14/sql-injection-write-shell/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/sql-injection-types/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/sql-prepared-statement-bypass/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -29,43 +17,11 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/as-rep-roasting/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-conversor/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-devarea/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-kobold/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-facts/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
     <loc>https://echoin.xyz/2026/08/14/htb-fires/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
     <loc>https://echoin.xyz/2026/08/14/htb-garfield/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/htb-wingdata/</loc>
-    <lastmod>2026-08-14</lastmod>
-  </url>
-  <url>
-    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
@@ -77,11 +33,67 @@
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/14/kerberoasting/</loc>
+    <loc>https://echoin.xyz/2026/08/14/htb-kobold/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-wingdata/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/http-request-smuggling/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
   <url>
     <loc>https://echoin.xyz/2026/08/14/kerberos-bronze-bit/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/ntlm-relay/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/kerberoasting/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-principles/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/sql-injection-types/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/as-rep-roasting/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/ctf-mlops-ssrf-hardlink/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/ctf-go-to-php-http-smuggling/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/ctf-stored-xss-admin-bot/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-conversor/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-dante/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-devarea/</loc>
+    <lastmod>2026-08-14</lastmod>
+  </url>
+  <url>
+    <loc>https://echoin.xyz/2026/08/14/htb-facts/</loc>
     <lastmod>2026-08-14</lastmod>
   </url>
 </urlset> 
