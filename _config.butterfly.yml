@@ -94,7 +94,7 @@ footer_img: false
 # Website Background
 # Can set it to color, image URL or an array containing colors and/or image URLs
 # If an array is provided, a random background will be selected from the array on each load
-background: '#f4f1fb'
+background: '#f7f5fd'
 
 cover:
   # Disable the cover or not
@@ -766,20 +766,20 @@ site_verification:
 
 theme_color:
   enable: true
-  main: "#8b7cf6"
-  paginator: "#a78bfa"
-  button_hover: "#7c3aed"
-  text_selection: "#b8a4f0"
-  link_color: "#7c5cbf"
-  meta_color: "#8f8fb1"
-  hr_color: "#d8ccf5"
-  code_foreground: "#6d5bb8"
-  code_background: "rgba(139, 124, 246, 0.08)"
-  toc_color: "#8b7cf6"
-  blockquote_padding_color: "#8b7cf6"
-  blockquote_background_color: "rgba(139, 124, 246, 0.12)"
-  scrollbar_color: "#a78bfa"
-  meta_theme_color_light: "#f4f1fb"
+  main: "#a78bfa"
+  paginator: "#c4b5fd"
+  button_hover: "#8b7cf6"
+  text_selection: "#c4b5fd"
+  link_color: "#9b7fd4"
+  meta_color: "#a8a3bd"
+  hr_color: "#e8e1f8"
+  code_foreground: "#9b6fd8"
+  code_background: "rgba(167, 139, 250, 0.08)"
+  toc_color: "#a78bfa"
+  blockquote_padding_color: "#a78bfa"
+  blockquote_background_color: "rgba(167, 139, 250, 0.10)"
+  scrollbar_color: "#c4b5fd"
+  meta_theme_color_light: "#f7f5fd"
   meta_theme_color_dark: "#0d0d0d"
 
 # The user interface setting of category and tag page
@@ -876,11 +876,11 @@ canvas_fluttering_ribbon:
 # canvas_nest
 # https://github.com/hustcc/canvas-nest.js
 canvas_nest:
-  enable: false
+  enable: true
   # Color of lines, default: '0,0,0'; RGB values: (R,G,B).(note: use ',' to separate.)
-  color: '0,0,255'
+  color: '167,139,250'
   # The opacity of line (0~1)
-  opacity: 0.7
+  opacity: 0.6
   # The z-index property of the background
   zIndex: -1
   # The number of lines
@@ -889,7 +889,7 @@ canvas_nest:
 
 # Mouse click effects: fireworks
 fireworks:
-  enable: false
+  enable: true
   zIndex: 9999
   mobile: false
 
@@ -1063,7 +1063,7 @@ inject:
   head:
     # - <link rel="stylesheet" href="/xxx.css">
   bottom:
-    # - <script src="xxxx"></script>
+    - <script src="/js/cursor.js"></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work
