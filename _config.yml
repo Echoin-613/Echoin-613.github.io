@@ -13,7 +13,7 @@ timezone: 'Asia/Shanghai'
 
 # URL
 ## 部署到 GitHub Pages 后使用此地址；接入自定义域名后请改成你的域名，例如 https://your-domain.com
-url: https://echoin-613.github.io
+url: https://echoin.xyz
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
