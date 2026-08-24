@@ -1,6 +1,6 @@
 ---
 title: 91星人 - 存储型XSS + AdminBot 复盘
-date: 2026-08-15 10:05:00
+date: 2026-08-24 10:05:00
 categories:
   - CTF wp
 tags:

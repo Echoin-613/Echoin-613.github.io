@@ -1,6 +1,6 @@
 ---
 title: 攻击方式 - AS-REP Roasting
-date: 2026-08-14 15:00:00
+date: 2026-08-24 15:00:00
 categories:
   - 渗透测试
 tags:

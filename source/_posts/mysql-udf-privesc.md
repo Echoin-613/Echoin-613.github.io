@@ -1,6 +1,6 @@
 ---
 title: MySQL 数据库提权（webshell + UDF）
-date: 2026-08-15 14:00:00
+date: 2026-08-24 14:00:00
 categories:
   - 渗透测试
 tags:

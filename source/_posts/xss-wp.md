@@ -1,6 +1,6 @@
 ---
 title: XSS Writeup
-date: 2026-08-15 08:55:00
+date: 2026-08-24 08:55:00
 categories:
   - CTF wp
 tags:
