@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, Echoin</rights>
   <subtitle>Web安全 · 渗透测试 · CTF · 靶场</subtitle>
   <title>Echoin 的博客</title>
-  <updated>2026-08-24T11:09:31.149Z</updated>
+  <updated>2026-08-24T11:15:08.081Z</updated>
   <entry>
     <author>
       <name>Echoin</name>
@@ -23,7 +23,7 @@
     <published>2026-08-15T06:30:00.000Z</published>
     <summary>代码审计 PHP</summary>
     <title>代码审计 PHP</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -37,7 +37,7 @@
     <published>2026-08-15T06:20:00.000Z</published>
     <summary>Linux 提权</summary>
     <title>Linux 提权</title>
-    <updated>2026-08-24T11:09:31.148Z</updated>
+    <updated>2026-08-24T11:15:08.080Z</updated>
   </entry>
   <entry>
     <author>
@@ -52,7 +52,7 @@
     <published>2026-08-15T06:10:00.000Z</published>
     <summary>Windows + Linux 提权</summary>
     <title>Windows + Linux 提权</title>
-    <updated>2026-08-24T11:09:31.151Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -67,7 +67,7 @@
     <published>2026-08-15T06:00:00.000Z</published>
     <summary>MySQL 数据库提权（webshell + UDF）</summary>
     <title>MySQL 数据库提权（webshell + UDF）</title>
-    <updated>2026-08-24T11:09:31.148Z</updated>
+    <updated>2026-08-24T11:15:08.080Z</updated>
   </entry>
   <entry>
     <author>
@@ -80,7 +80,7 @@
     <published>2026-08-15T05:30:00.000Z</published>
     <summary>SSRF 服务器端请求伪造</summary>
     <title>SSRF 服务器端请求伪造</title>
-    <updated>2026-08-24T11:09:31.150Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -95,7 +95,7 @@
     <published>2026-08-15T05:20:00.000Z</published>
     <summary>SoapClient 进行 SSRF + CRLF</summary>
     <title>SoapClient 进行 SSRF + CRLF</title>
-    <updated>2026-08-24T11:09:31.150Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -110,7 +110,7 @@
     <published>2026-08-15T05:10:00.000Z</published>
     <summary>POP 链分析 - 魔术方法</summary>
     <title>POP 链分析 - 魔术方法</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -123,7 +123,7 @@
     <published>2026-08-15T05:00:00.000Z</published>
     <summary>条件竞争</summary>
     <title>条件竞争</title>
-    <updated>2026-08-24T11:09:31.150Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -137,7 +137,7 @@
     <published>2026-08-15T04:40:00.000Z</published>
     <summary>gopher 协议</summary>
     <title>gopher 协议</title>
-    <updated>2026-08-24T11:09:31.146Z</updated>
+    <updated>2026-08-24T11:15:08.080Z</updated>
   </entry>
   <entry>
     <author>
@@ -150,7 +150,7 @@
     <published>2026-08-15T04:30:00.000Z</published>
     <summary>DNS 重定向</summary>
     <title>DNS 重定向</title>
-    <updated>2026-08-24T11:09:31.146Z</updated>
+    <updated>2026-08-24T11:15:08.080Z</updated>
   </entry>
   <entry>
     <author>
@@ -165,7 +165,7 @@
     <published>2026-08-15T04:20:00.000Z</published>
     <summary>NoSQL + MongoDB + SQLite</summary>
     <title>NoSQL + MongoDB + SQLite</title>
-    <updated>2026-08-24T11:09:31.148Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -178,7 +178,7 @@
     <published>2026-08-15T04:10:00.000Z</published>
     <summary>Redis 相关漏洞</summary>
     <title>Redis 相关漏洞</title>
-    <updated>2026-08-24T11:09:31.150Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -192,7 +192,7 @@
     <published>2026-08-15T04:00:00.000Z</published>
     <summary>SSTI 模板注入</summary>
     <title>SSTI 模板注入</title>
-    <updated>2026-08-24T11:09:31.151Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -206,21 +206,21 @@
     <published>2026-08-15T03:50:00.000Z</published>
     <summary>原型链污染</summary>
     <title>原型链污染</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
       <name>Echoin</name>
     </author>
     <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="Python" scheme="https://echoin.xyz/tags/Python/"/>
     <category term="原型链污染" scheme="https://echoin.xyz/tags/%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/"/>
+    <category term="Python" scheme="https://echoin.xyz/tags/Python/"/>
     <id>https://echoin.xyz/2026/08/15/python-prototype-pollution/</id>
     <link href="https://echoin.xyz/2026/08/15/python-prototype-pollution/"/>
     <published>2026-08-15T03:40:00.000Z</published>
     <summary>Python 原型链污染</summary>
     <title>Python 原型链污染</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -235,7 +235,7 @@
     <published>2026-08-15T03:30:00.000Z</published>
     <summary>Python yaml 反序列化</summary>
     <title>Python yaml 反序列化</title>
-    <updated>2026-08-24T11:09:31.150Z</updated>
+    <updated>2026-08-24T11:15:08.082Z</updated>
   </entry>
   <entry>
     <author>
@@ -250,7 +250,7 @@
     <published>2026-08-15T03:20:00.000Z</published>
     <summary>Python pickle 反序列化</summary>
     <title>Python pickle 反序列化</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -265,7 +265,7 @@
     <published>2026-08-15T03:10:00.000Z</published>
     <summary>phar 反序列化</summary>
     <title>phar 反序列化</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -279,7 +279,7 @@
     <published>2026-08-15T03:00:00.000Z</published>
     <summary>PHP 反序列化学习</summary>
     <title>PHP 反序列化学习</title>
-    <updated>2026-08-24T11:09:31.149Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
   <entry>
     <author>
@@ -294,6 +294,6 @@
     <published>2026-08-15T02:10:00.000Z</published>
     <summary>Node.js 相关漏洞 + EJS 模板注入</summary>
     <title>Node.js 相关漏洞 + EJS 模板注入</title>
-    <updated>2026-08-24T11:09:31.148Z</updated>
+    <updated>2026-08-24T11:15:08.081Z</updated>
   </entry>
 </feed>
