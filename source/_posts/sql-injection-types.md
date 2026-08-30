@@ -1,6 +1,6 @@
 ---
 title: SQL 注入类型
-date: 2026-08-24 12:40:00
+date: 2026-08-30 12:40:00
 categories:
   - Web安全
 tags:

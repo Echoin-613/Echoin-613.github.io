@@ -1,6 +1,6 @@
 ---
 title: XXE ctfshow Writeup
-date: 2026-08-24 09:25:00
+date: 2026-08-30 09:25:00
 categories:
   - CTF wp
 tags:

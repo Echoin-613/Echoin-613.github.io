@@ -1,6 +1,6 @@
 ---
 title: SQL 注入 Writeup
-date: 2026-08-24 08:45:00
+date: 2026-08-30 08:45:00
 categories:
   - CTF wp
 tags:

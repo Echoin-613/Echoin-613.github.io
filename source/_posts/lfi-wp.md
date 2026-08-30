@@ -1,6 +1,6 @@
 ---
 title: 文件包含 Writeup
-date: 2026-08-24 09:00:00
+date: 2026-08-30 09:00:00
 categories:
   - CTF wp
 tags:

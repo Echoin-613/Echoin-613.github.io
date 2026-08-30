@@ -1,6 +1,6 @@
 ---
 title: POP 链分析 - 魔术方法
-date: 2026-08-24 13:15:00
+date: 2026-08-30 13:15:00
 categories:
   - Web安全
 tags:
