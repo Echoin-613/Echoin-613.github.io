@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, Echoin</rights>
   <subtitle>Web安全 · 渗透测试 · CTF · 靶场</subtitle>
   <title>Echoin 的博客</title>
-  <updated>2026-08-30T09:40:57.520Z</updated>
+  <updated>2026-08-30T13:46:50.922Z</updated>
   <entry>
     <author>
       <name>Echoin</name>
@@ -24,7 +24,7 @@
     <published>2026-08-24T15:30:00.000Z</published>
     <summary>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</summary>
     <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
-    <updated>2026-08-30T09:40:57.520Z</updated>
+    <updated>2026-08-30T13:46:50.922Z</updated>
   </entry>
   <entry>
     <author>
@@ -38,7 +38,7 @@
     <published>2026-08-24T15:15:00.000Z</published>
     <summary>go to php - HTTP 请求走私</summary>
     <title>go to php - HTTP 请求走私</title>
-    <updated>2026-08-30T09:40:57.520Z</updated>
+    <updated>2026-08-30T13:46:50.922Z</updated>
   </entry>
   <entry>
     <author>
@@ -53,7 +53,7 @@
     <published>2026-08-24T15:00:00.000Z</published>
     <summary>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</summary>
     <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
-    <updated>2026-08-30T09:40:57.520Z</updated>
+    <updated>2026-08-30T13:46:50.922Z</updated>
   </entry>
   <entry>
     <author>
@@ -68,7 +68,7 @@
     <published>2026-08-24T14:00:00.000Z</published>
     <summary>HTB NanoCorp 靶场 Writeup</summary>
     <title>HTB NanoCorp 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.924Z</updated>
   </entry>
   <entry>
     <author>
@@ -83,7 +83,7 @@
     <published>2026-08-24T13:45:00.000Z</published>
     <summary>HTB Garfield 靶场 Writeup</summary>
     <title>HTB Garfield 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -98,7 +98,7 @@
     <published>2026-08-24T13:30:00.000Z</published>
     <summary>HTB WingData 靶场 Writeup</summary>
     <title>HTB WingData 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.522Z</updated>
+    <updated>2026-08-30T13:46:50.924Z</updated>
   </entry>
   <entry>
     <author>
@@ -113,7 +113,7 @@
     <published>2026-08-24T13:15:00.000Z</published>
     <summary>HTB Three 靶场 Writeup</summary>
     <title>HTB Three 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.522Z</updated>
+    <updated>2026-08-30T13:46:50.924Z</updated>
   </entry>
   <entry>
     <author>
@@ -128,7 +128,22 @@
     <published>2026-08-24T13:00:00.000Z</published>
     <summary>HTB Kobold 靶场 Writeup</summary>
     <title>HTB Kobold 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Echoin</name>
+    </author>
+    <category term="渗透测试" scheme="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"/>
+    <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
+    <category term="DCsync" scheme="https://echoin.xyz/tags/DCsync/"/>
+    <category term="Active Directory" scheme="https://echoin.xyz/tags/Active-Directory/"/>
+    <id>https://echoin.xyz/2026/08/24/dcsync-attack/</id>
+    <link href="https://echoin.xyz/2026/08/24/dcsync-attack/"/>
+    <published>2026-08-24T13:00:00.000Z</published>
+    <summary>DCsync 攻击原理与利用手法</summary>
+    <title>攻击方式 - 滥用 DCsync</title>
+    <updated>2026-08-30T13:46:50.922Z</updated>
   </entry>
   <entry>
     <author>
@@ -143,7 +158,7 @@
     <published>2026-08-24T12:45:00.000Z</published>
     <summary>HTB Fires 靶场 Writeup</summary>
     <title>HTB Fires 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -158,7 +173,7 @@
     <published>2026-08-24T12:30:00.000Z</published>
     <summary>HTB Facts 靶场 Writeup</summary>
     <title>HTB Facts 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -173,7 +188,7 @@
     <published>2026-08-24T12:15:00.000Z</published>
     <summary>HTB DevArea 靶场 Writeup</summary>
     <title>HTB DevArea 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -188,7 +203,7 @@
     <published>2026-08-24T12:10:00.000Z</published>
     <summary>HTB DevHub 靶场 Writeup</summary>
     <title>HTB DevHub 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -203,7 +218,7 @@
     <published>2026-08-24T12:05:00.000Z</published>
     <summary>HTB Conversor 靶场 Writeup</summary>
     <title>HTB Conversor 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.520Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -218,7 +233,7 @@
     <published>2026-08-24T11:30:00.000Z</published>
     <summary>攻击方式 - NTLM Relay（手法很多）</summary>
     <title>攻击方式 - NTLM Relay（手法很多）</title>
-    <updated>2026-08-30T09:40:57.523Z</updated>
+    <updated>2026-08-30T13:46:50.925Z</updated>
   </entry>
   <entry>
     <author>
@@ -233,7 +248,7 @@
     <published>2026-08-24T11:00:00.000Z</published>
     <summary>SSRF（服务端请求伪造）</summary>
     <title>SSRF（服务端请求伪造）</title>
-    <updated>2026-08-30T09:40:57.524Z</updated>
+    <updated>2026-08-30T13:46:50.926Z</updated>
   </entry>
   <entry>
     <author>
@@ -249,7 +264,7 @@
     <published>2026-08-24T09:00:00.000Z</published>
     <summary>HTB Dante 靶场 Writeup</summary>
     <title>HTB Dante 靶场 Writeup</title>
-    <updated>2026-08-30T09:40:57.521Z</updated>
+    <updated>2026-08-30T13:46:50.923Z</updated>
   </entry>
   <entry>
     <author>
@@ -264,7 +279,7 @@
     <published>2026-08-24T08:00:00.000Z</published>
     <summary>Kerberos Bronze Bit 委派绕过漏洞原理与利用</summary>
     <title>攻击方式 - Kerberos Bronze Bit</title>
-    <updated>2026-08-30T09:40:57.522Z</updated>
+    <updated>2026-08-30T13:46:50.924Z</updated>
   </entry>
   <entry>
     <author>
@@ -279,7 +294,7 @@
     <published>2026-08-24T07:30:00.000Z</published>
     <summary>Kerberoasting 获取服务票据并离线爆破密码的方法</summary>
     <title>攻击方式 - Kerberoasting</title>
-    <updated>2026-08-30T09:40:57.522Z</updated>
+    <updated>2026-08-30T13:46:50.924Z</updated>
   </entry>
   <entry>
     <author>
@@ -294,20 +309,6 @@
     <published>2026-08-24T07:00:00.000Z</published>
     <summary>针对关闭 Kerberos 预认证域用户的离线密码攻击</summary>
     <title>攻击方式 - AS-REP Roasting</title>
-    <updated>2026-08-30T09:40:57.520Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Echoin</name>
-    </author>
-    <category term="Web安全" scheme="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/"/>
-    <category term="PHP" scheme="https://echoin.xyz/tags/PHP/"/>
-    <category term="代码审计" scheme="https://echoin.xyz/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    <id>https://echoin.xyz/2026/08/24/php-code-audit/</id>
-    <link href="https://echoin.xyz/2026/08/24/php-code-audit/"/>
-    <published>2026-08-24T06:40:00.000Z</published>
-    <summary>代码审计 PHP</summary>
-    <title>代码审计 PHP</title>
-    <updated>2026-08-30T09:40:57.523Z</updated>
+    <updated>2026-08-30T13:46:50.921Z</updated>
   </entry>
 </feed>
