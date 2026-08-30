@@ -1,6 +1,6 @@
 ---
 title: go to php - HTTP 请求走私
-date: 2026-08-30 23:15:00
+date: 2026-08-24 23:15:00
 categories:
   - CTF wp
 tags:

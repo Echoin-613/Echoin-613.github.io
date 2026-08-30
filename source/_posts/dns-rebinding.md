@@ -1,6 +1,6 @@
 ---
 title: DNS 重定向
-date: 2026-08-30 12:35:00
+date: 2026-08-24 12:35:00
 categories:
   - Web安全
 tags:

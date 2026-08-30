@@ -1,6 +1,6 @@
 ---
 title: Linux 提权
-date: 2026-08-30 14:20:00
+date: 2026-08-24 14:20:00
 categories:
   - 渗透测试
 tags:

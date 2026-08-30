@@ -1,6 +1,6 @@
 ---
 title: RCE Writeup
-date: 2026-08-30 08:50:00
+date: 2026-08-24 08:50:00
 categories:
   - CTF wp
 tags:

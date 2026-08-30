@@ -1,6 +1,6 @@
 ---
 title: 存储型 XSS 注入 + Admin Bot 提权 + XSS 外带
-date: 2026-08-30 23:00:00
+date: 2026-08-24 23:00:00
 categories:
   - CTF wp
 tags:

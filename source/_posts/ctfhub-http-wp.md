@@ -1,6 +1,6 @@
 ---
 title: CTFhub HTTP Writeup
-date: 2026-08-30 09:05:00
+date: 2026-08-24 09:05:00
 categories:
   - CTF wp
 tags:

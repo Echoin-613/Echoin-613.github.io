@@ -1,6 +1,6 @@
 ---
 title: Python 原型链污染
-date: 2026-08-30 11:40:00
+date: 2026-08-24 11:40:00
 categories:
   - Web安全
 tags:

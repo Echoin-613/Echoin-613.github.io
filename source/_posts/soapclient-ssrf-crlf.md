@@ -1,6 +1,6 @@
 ---
 title: SoapClient 进行 SSRF + CRLF
-date: 2026-08-30 13:20:00
+date: 2026-08-24 13:20:00
 categories:
   - Web安全
 tags:
