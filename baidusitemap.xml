@@ -1,239 +1,239 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ssti/</loc>
+    <loc>https://echoin.xyz/2026/08/30/xxe-ctfshow-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/win-linux-privesc/</loc>
+    <loc>https://echoin.xyz/2026/08/30/sql-injection-principles/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/xss/</loc>
+    <loc>https://echoin.xyz/2026/08/30/sql-injection-types/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/xxe-ctfshow-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/soapclient-ssrf-crlf/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/xss-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/sql-injection-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/race-condition/</loc>
+    <loc>https://echoin.xyz/2026/08/30/sql-injection-write-shell/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/python-yaml-deserialization/</loc>
+    <loc>https://echoin.xyz/2026/08/30/sql-prepared-statement-bypass/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/rce-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ssrf-note/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/redis-vulns/</loc>
+    <loc>https://echoin.xyz/2026/08/30/win-linux-privesc/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/soapclient-ssrf-crlf/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ssrf/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/sql-injection-principles/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ssti/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/sql-injection-types/</loc>
+    <loc>https://echoin.xyz/2026/08/30/xss-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/sql-injection-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/xss/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/sql-prepared-statement-bypass/</loc>
+    <loc>https://echoin.xyz/2026/08/30/php-code-audit/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/sql-injection-write-shell/</loc>
+    <loc>https://echoin.xyz/2026/08/30/pop-magic-methods/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ssrf-note/</loc>
+    <loc>https://echoin.xyz/2026/08/30/php-deserialization/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ssrf/</loc>
+    <loc>https://echoin.xyz/2026/08/30/prototype-pollution/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/nss-2025-7-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/python-pickle-deserialization/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/phar-deserialization/</loc>
+    <loc>https://echoin.xyz/2026/08/30/python-prototype-pollution/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ntlm-relay/</loc>
+    <loc>https://echoin.xyz/2026/08/30/python-yaml-deserialization/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/pop-magic-methods/</loc>
+    <loc>https://echoin.xyz/2026/08/30/race-condition/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/prototype-pollution/</loc>
+    <loc>https://echoin.xyz/2026/08/30/rce-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/php-code-audit/</loc>
+    <loc>https://echoin.xyz/2026/08/30/redis-vulns/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/php-deserialization/</loc>
+    <loc>https://echoin.xyz/2026/08/30/lfi-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/python-pickle-deserialization/</loc>
+    <loc>https://echoin.xyz/2026/08/30/linux-privesc/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/python-prototype-pollution/</loc>
+    <loc>https://echoin.xyz/2026/08/30/mysql-udf-privesc/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-nanocorp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/nosql-mongodb-sqlite/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-three/</loc>
+    <loc>https://echoin.xyz/2026/08/30/nodejs-ejs-ssti/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/http-request-smuggling/</loc>
+    <loc>https://echoin.xyz/2026/08/30/nss-2025-7-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/kerberoasting/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ntlm-relay/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/kerberos-bronze-bit/</loc>
+    <loc>https://echoin.xyz/2026/08/30/phar-deserialization/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/lfi-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/kerberos-bronze-bit/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/linux-privesc/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-devarea/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/mysql-udf-privesc/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-dante/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/nosql-mongodb-sqlite/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-facts/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/nodejs-ejs-ssti/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-devhub/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-wingdata/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-fires/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/gopher-protocol/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-garfield/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-conversor/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-kobold/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-dante/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-nanocorp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-devhub/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-wingdata/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-devarea/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-three/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-facts/</loc>
+    <loc>https://echoin.xyz/2026/08/30/http-request-smuggling/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-fires/</loc>
+    <loc>https://echoin.xyz/2026/08/30/kerberoasting/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-garfield/</loc>
+    <loc>https://echoin.xyz/2026/08/30/91xingren-xss-bot/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/htb-kobold/</loc>
+    <loc>https://echoin.xyz/2026/08/30/as-rep-roasting/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/buu-2025-11/</loc>
+    <loc>https://echoin.xyz/2026/08/30/buu-2025-10/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/buu-2025-10/</loc>
+    <loc>https://echoin.xyz/2026/08/30/buu-2025-11/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/buu-2025-12/</loc>
+    <loc>https://echoin.xyz/2026/08/30/buu-2025-12/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/buu-2025-9/</loc>
+    <loc>https://echoin.xyz/2026/08/30/buu-2025-9/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/buu-writeup/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ctf-go-to-php-http-smuggling/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ctf-mlops-ssrf-hardlink/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ctf-mlops-ssrf-hardlink/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ctf-go-to-php-http-smuggling/</loc>
+    <loc>https://echoin.xyz/2026/08/30/buu-writeup/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ctfhub-http-wp/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ctf-stored-xss-admin-bot/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/dns-rebinding/</loc>
+    <loc>https://echoin.xyz/2026/08/30/ctfhub-http-wp/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/ctf-stored-xss-admin-bot/</loc>
+    <loc>https://echoin.xyz/2026/08/30/dns-rebinding/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/dcsync-attack/</loc>
+    <loc>https://echoin.xyz/2026/08/30/gopher-protocol/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/91xingren-xss-bot/</loc>
+    <loc>https://echoin.xyz/2026/08/30/htb-conversor/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
   <url>
-    <loc>https://echoin.xyz/2026/08/24/as-rep-roasting/</loc>
+    <loc>https://echoin.xyz/2026/08/30/dcsync-attack/</loc>
     <lastmod>2026-08-30</lastmod>
   </url>
 </urlset> 
