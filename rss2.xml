@@ -6,85 +6,9 @@
     <description>Web安全 · 渗透测试 · CTF · 靶场</description>
     <language>zh-CN</language>
     <copyright>All rights reserved 2026, Echoin</copyright>
-    <lastBuildDate>Sun, 30 Aug 2026 13:49:02 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 30 Aug 2026 13:50:47 GMT</lastBuildDate>
     <generator>Hexo</generator>
     <atom:link href="https://echoin.xyz/rss2.xml" rel="self" type="application/rss+xml"/>
-    <item>
-      <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
-      <link>https://echoin.xyz/2026/08/30/ctf-mlops-ssrf-hardlink/</link>
-      <description>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
-      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
-      <category domain="https://echoin.xyz/tags/SSRF/">SSRF</category>
-      <category domain="https://echoin.xyz/tags/hardlink/">hardlink</category>
-      <pubDate>Sun, 30 Aug 2026 15:30:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>go to php - HTTP 请求走私</title>
-      <link>https://echoin.xyz/2026/08/30/ctf-go-to-php-http-smuggling/</link>
-      <description>go to php - HTTP 请求走私</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
-      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
-      <category domain="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/">HTTP请求走私</category>
-      <pubDate>Sun, 30 Aug 2026 15:15:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
-      <link>https://echoin.xyz/2026/08/30/ctf-stored-xss-admin-bot/</link>
-      <description>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
-      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
-      <category domain="https://echoin.xyz/tags/XSS/">XSS</category>
-      <category domain="https://echoin.xyz/tags/Admin-Bot/">Admin Bot</category>
-      <pubDate>Sun, 30 Aug 2026 15:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB NanoCorp 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-nanocorp/</link>
-      <description>HTB NanoCorp 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/NanoCorp/">NanoCorp</category>
-      <pubDate>Sun, 30 Aug 2026 14:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB Garfield 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-garfield/</link>
-      <description>HTB Garfield 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/Garfield/">Garfield</category>
-      <pubDate>Sun, 30 Aug 2026 13:45:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB WingData 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-wingdata/</link>
-      <description>HTB WingData 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/WingData/">WingData</category>
-      <pubDate>Sun, 30 Aug 2026 13:30:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB Three 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-three/</link>
-      <description>HTB Three 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/Three/">Three</category>
-      <pubDate>Sun, 30 Aug 2026 13:15:00 GMT</pubDate>
-    </item>
     <item>
       <title>攻击方式 - 滥用 DCsync</title>
       <link>https://echoin.xyz/2026/08/30/dcsync-attack/</link>
@@ -95,50 +19,6 @@
       <category domain="https://echoin.xyz/tags/DCsync/">DCsync</category>
       <category domain="https://echoin.xyz/tags/Active-Directory/">Active Directory</category>
       <pubDate>Sun, 30 Aug 2026 13:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB Kobold 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-kobold/</link>
-      <description>HTB Kobold 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/Kobold/">Kobold</category>
-      <pubDate>Sun, 30 Aug 2026 13:00:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB Fires 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-fires/</link>
-      <description>HTB Fires 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/Fires/">Fires</category>
-      <pubDate>Sun, 30 Aug 2026 12:45:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB Facts 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-facts/</link>
-      <description>HTB Facts 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/Facts/">Facts</category>
-      <pubDate>Sun, 30 Aug 2026 12:30:00 GMT</pubDate>
-    </item>
-    <item>
-      <title>HTB DevArea 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-devarea/</link>
-      <description>HTB DevArea 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/DevArea/">DevArea</category>
-      <pubDate>Sun, 30 Aug 2026 12:15:00 GMT</pubDate>
     </item>
     <item>
       <title>HTB DevHub 靶场 Writeup</title>
@@ -152,41 +32,161 @@
       <pubDate>Sun, 30 Aug 2026 12:10:00 GMT</pubDate>
     </item>
     <item>
+      <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
+      <link>https://echoin.xyz/2026/08/24/ctf-mlops-ssrf-hardlink/</link>
+      <description>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
+      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
+      <category domain="https://echoin.xyz/tags/SSRF/">SSRF</category>
+      <category domain="https://echoin.xyz/tags/hardlink/">hardlink</category>
+      <pubDate>Mon, 24 Aug 2026 15:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>go to php - HTTP 请求走私</title>
+      <link>https://echoin.xyz/2026/08/24/ctf-go-to-php-http-smuggling/</link>
+      <description>go to php - HTTP 请求走私</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
+      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
+      <category domain="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/">HTTP请求走私</category>
+      <pubDate>Mon, 24 Aug 2026 15:15:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
+      <link>https://echoin.xyz/2026/08/24/ctf-stored-xss-admin-bot/</link>
+      <description>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/CTF-wp/">CTF wp</category>
+      <category domain="https://echoin.xyz/tags/CTF/">CTF</category>
+      <category domain="https://echoin.xyz/tags/XSS/">XSS</category>
+      <category domain="https://echoin.xyz/tags/Admin-Bot/">Admin Bot</category>
+      <pubDate>Mon, 24 Aug 2026 15:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB NanoCorp 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-nanocorp/</link>
+      <description>HTB NanoCorp 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/NanoCorp/">NanoCorp</category>
+      <pubDate>Mon, 24 Aug 2026 14:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB Garfield 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-garfield/</link>
+      <description>HTB Garfield 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/Garfield/">Garfield</category>
+      <pubDate>Mon, 24 Aug 2026 13:45:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB WingData 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-wingdata/</link>
+      <description>HTB WingData 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/WingData/">WingData</category>
+      <pubDate>Mon, 24 Aug 2026 13:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB Three 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-three/</link>
+      <description>HTB Three 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/Three/">Three</category>
+      <pubDate>Mon, 24 Aug 2026 13:15:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB Kobold 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-kobold/</link>
+      <description>HTB Kobold 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/Kobold/">Kobold</category>
+      <pubDate>Mon, 24 Aug 2026 13:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB Fires 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-fires/</link>
+      <description>HTB Fires 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/Fires/">Fires</category>
+      <pubDate>Mon, 24 Aug 2026 12:45:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB Facts 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-facts/</link>
+      <description>HTB Facts 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/Facts/">Facts</category>
+      <pubDate>Mon, 24 Aug 2026 12:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB DevArea 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-devarea/</link>
+      <description>HTB DevArea 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/DevArea/">DevArea</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <pubDate>Mon, 24 Aug 2026 12:15:00 GMT</pubDate>
+    </item>
+    <item>
       <title>HTB Conversor 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-conversor/</link>
+      <link>https://echoin.xyz/2026/08/24/htb-conversor/</link>
       <description>HTB Conversor 靶场 Writeup</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
       <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/Conversor/">Conversor</category>
       <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <pubDate>Sun, 30 Aug 2026 12:05:00 GMT</pubDate>
+      <category domain="https://echoin.xyz/tags/Conversor/">Conversor</category>
+      <pubDate>Mon, 24 Aug 2026 12:05:00 GMT</pubDate>
     </item>
     <item>
       <title>攻击方式 - NTLM Relay（手法很多）</title>
-      <link>https://echoin.xyz/2026/08/30/ntlm-relay/</link>
+      <link>https://echoin.xyz/2026/08/24/ntlm-relay/</link>
       <description>攻击方式 - NTLM Relay（手法很多）</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
       <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
       <category domain="https://echoin.xyz/tags/NTLM-Relay/">NTLM Relay</category>
       <category domain="https://echoin.xyz/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/">内网渗透</category>
-      <pubDate>Sun, 30 Aug 2026 11:30:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 11:30:00 GMT</pubDate>
     </item>
     <item>
       <title>SSRF（服务端请求伪造）</title>
-      <link>https://echoin.xyz/2026/08/30/ssrf/</link>
+      <link>https://echoin.xyz/2026/08/24/ssrf/</link>
       <description>SSRF（服务端请求伪造）</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
       <category domain="https://echoin.xyz/tags/SSRF/">SSRF</category>
       <category domain="https://echoin.xyz/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/">服务端请求伪造</category>
       <category domain="https://echoin.xyz/tags/%E5%86%85%E7%BD%91/">内网</category>
-      <pubDate>Sun, 30 Aug 2026 11:00:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 11:00:00 GMT</pubDate>
     </item>
     <item>
       <title>HTB Dante 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/30/htb-dante/</link>
+      <link>https://echoin.xyz/2026/08/24/htb-dante/</link>
       <description>HTB Dante 靶场 Writeup</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
@@ -194,40 +194,40 @@
       <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
       <category domain="https://echoin.xyz/tags/Dante/">Dante</category>
       <category domain="https://echoin.xyz/tags/%E7%BA%A2%E9%98%9F/">红队</category>
-      <pubDate>Sun, 30 Aug 2026 09:00:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 09:00:00 GMT</pubDate>
     </item>
     <item>
       <title>攻击方式 - Kerberos Bronze Bit</title>
-      <link>https://echoin.xyz/2026/08/30/kerberos-bronze-bit/</link>
+      <link>https://echoin.xyz/2026/08/24/kerberos-bronze-bit/</link>
       <description>Kerberos Bronze Bit 委派绕过漏洞原理与利用</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
       <category domain="https://echoin.xyz/tags/Kerberos/">Kerberos</category>
       <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
       <category domain="https://echoin.xyz/tags/Bronze-Bit/">Bronze Bit</category>
-      <pubDate>Sun, 30 Aug 2026 08:00:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 08:00:00 GMT</pubDate>
     </item>
     <item>
       <title>攻击方式 - Kerberoasting</title>
-      <link>https://echoin.xyz/2026/08/30/kerberoasting/</link>
+      <link>https://echoin.xyz/2026/08/24/kerberoasting/</link>
       <description>Kerberoasting 获取服务票据并离线爆破密码的方法</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
       <category domain="https://echoin.xyz/tags/Kerberos/">Kerberos</category>
       <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
       <category domain="https://echoin.xyz/tags/Kerberoasting/">Kerberoasting</category>
-      <pubDate>Sun, 30 Aug 2026 07:30:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 07:30:00 GMT</pubDate>
     </item>
     <item>
       <title>攻击方式 - AS-REP Roasting</title>
-      <link>https://echoin.xyz/2026/08/30/as-rep-roasting/</link>
+      <link>https://echoin.xyz/2026/08/24/as-rep-roasting/</link>
       <description>针对关闭 Kerberos 预认证域用户的离线密码攻击</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</category>
       <category domain="https://echoin.xyz/tags/AS-REP-Roasting/">AS-REP Roasting</category>
       <category domain="https://echoin.xyz/tags/Kerberos/">Kerberos</category>
       <category domain="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/">域渗透</category>
-      <pubDate>Sun, 30 Aug 2026 07:00:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 07:00:00 GMT</pubDate>
     </item>
   </channel>
 </rss>
