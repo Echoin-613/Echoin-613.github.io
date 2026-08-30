@@ -1,6 +1,6 @@
 ---
 title: HTB Garfield 靶场 Writeup
-date: 2026-08-24 21:45:00
+date: 2026-08-28 21:45:00
 categories:
   - 靶场
 tags:

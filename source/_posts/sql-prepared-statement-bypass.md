@@ -1,6 +1,6 @@
 ---
 title: SQL 预编译及绕过
-date: 2026-08-24 13:35:00
+date: 2026-08-28 13:35:00
 categories:
   - Web安全
 tags:

@@ -1,6 +1,6 @@
 ---
 title: 攻击方式 - Kerberos Bronze Bit
-date: 2026-08-24 16:00:00
+date: 2026-08-28 16:00:00
 categories:
   - 渗透测试
 tags:

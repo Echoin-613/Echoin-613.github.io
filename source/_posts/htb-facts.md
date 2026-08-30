@@ -1,6 +1,6 @@
 ---
 title: HTB Facts 靶场 Writeup
-date: 2026-08-24 20:30:00
+date: 2026-08-28 20:30:00
 categories:
   - 靶场
 tags:

@@ -1,6 +1,6 @@
 ---
 title: SQL 注入的原理及测试
-date: 2026-08-24 13:10:00
+date: 2026-08-28 13:10:00
 categories:
   - Web安全
 tags:

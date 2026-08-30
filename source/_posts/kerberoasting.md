@@ -1,6 +1,6 @@
 ---
 title: 攻击方式 - Kerberoasting
-date: 2026-08-24 15:30:00
+date: 2026-08-28 15:30:00
 categories:
   - 渗透测试
 tags:
