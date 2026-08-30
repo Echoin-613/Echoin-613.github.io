@@ -6,7 +6,7 @@
     <description>Web安全 · 渗透测试 · CTF · 靶场</description>
     <language>zh-CN</language>
     <copyright>All rights reserved 2026, Echoin</copyright>
-    <lastBuildDate>Sun, 30 Aug 2026 09:28:19 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 30 Aug 2026 09:40:57 GMT</lastBuildDate>
     <generator>Hexo</generator>
     <atom:link href="https://echoin.xyz/rss2.xml" rel="self" type="application/rss+xml"/>
     <item>
@@ -130,17 +130,6 @@
       <pubDate>Mon, 24 Aug 2026 12:15:00 GMT</pubDate>
     </item>
     <item>
-      <title>HTB Conversor 靶场 Writeup</title>
-      <link>https://echoin.xyz/2026/08/24/htb-conversor/</link>
-      <description>HTB Conversor 靶场 Writeup</description>
-      <author>Echoin</author>
-      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
-      <category domain="https://echoin.xyz/tags/Conversor/">Conversor</category>
-      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
-      <pubDate>Mon, 24 Aug 2026 12:00:00 GMT</pubDate>
-    </item>
-    <item>
       <title>HTB DevHub 靶场 Writeup</title>
       <link>https://echoin.xyz/2026/08/24/htb-devhub/</link>
       <description>HTB DevHub 靶场 Writeup</description>
@@ -149,7 +138,18 @@
       <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
       <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
       <category domain="https://echoin.xyz/tags/DevHub/">DevHub</category>
-      <pubDate>Mon, 24 Aug 2026 12:00:00 GMT</pubDate>
+      <pubDate>Mon, 24 Aug 2026 12:10:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>HTB Conversor 靶场 Writeup</title>
+      <link>https://echoin.xyz/2026/08/24/htb-conversor/</link>
+      <description>HTB Conversor 靶场 Writeup</description>
+      <author>Echoin</author>
+      <category domain="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <category domain="https://echoin.xyz/tags/HTB/">HTB</category>
+      <category domain="https://echoin.xyz/tags/Conversor/">Conversor</category>
+      <category domain="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/">靶场</category>
+      <pubDate>Mon, 24 Aug 2026 12:05:00 GMT</pubDate>
     </item>
     <item>
       <title>攻击方式 - NTLM Relay（手法很多）</title>
@@ -219,13 +219,14 @@
       <pubDate>Mon, 24 Aug 2026 07:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>HTTP 请求走私</title>
-      <link>https://echoin.xyz/2026/08/24/http-request-smuggling/</link>
-      <description>HTTP请求走私漏洞原理、类型与利用方式</description>
+      <title>代码审计 PHP</title>
+      <link>https://echoin.xyz/2026/08/24/php-code-audit/</link>
+      <description>代码审计 PHP</description>
       <author>Echoin</author>
       <category domain="https://echoin.xyz/categories/Web%E5%AE%89%E5%85%A8/">Web安全</category>
-      <category domain="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/">HTTP请求走私</category>
-      <pubDate>Mon, 24 Aug 2026 06:30:00 GMT</pubDate>
+      <category domain="https://echoin.xyz/tags/PHP/">PHP</category>
+      <category domain="https://echoin.xyz/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</category>
+      <pubDate>Mon, 24 Aug 2026 06:40:00 GMT</pubDate>
     </item>
   </channel>
 </rss>
