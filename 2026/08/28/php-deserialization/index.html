@@ -1,0 +1,523 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>PHP 反序列化学习 | Echoin 的博客</title><meta name="author" content="Echoin"><meta name="copyright" content="Echoin"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f5fd"><meta name="description" content="PHP 反序列化学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP 反序列化学习">
+<meta property="og:url" content="https://echoin.xyz/2026/08/28/php-deserialization/index.html">
+<meta property="og:site_name" content="Echoin 的博客">
+<meta property="og:description" content="PHP 反序列化学习">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://echoin.xyz/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-28T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-30T13:55:03.536Z">
+<meta property="article:author" content="Echoin">
+<meta property="article:tag" content="PHP">
+<meta property="article:tag" content="反序列化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://echoin.xyz/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PHP 反序列化学习",
+  "url": "https://echoin.xyz/2026/08/28/php-deserialization/",
+  "image": "https://echoin.xyz/img/avatar.jpg",
+  "datePublished": "2026-08-28T03:00:00.000Z",
+  "dateModified": "2026-08-30T13:55:03.536Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Echoin",
+      "url": "https://github.com/Echoin-613"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://echoin.xyz/2026/08/28/php-deserialization/index.html"><link rel="preconnect"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#f7f5fd')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PHP 反序列化学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><script src="/js/no-count.js"></script><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="Echoin 的博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Echoin 的博客" type="application/rss+xml">
+</head><body><div class="bg-animation" id="web_bg" style="background: linear-gradient(135deg,;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">69</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Echoin 的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">PHP 反序列化学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/payloads/"><i class="fa-fw fas fa-database"></i><span> Payload库</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">PHP 反序列化学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-28T03:00:00.000Z" title="发表于 2026-08-28 11:00:00">2026-08-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-30T13:55:03.536Z" title="更新于 2026-08-30 21:55:03">2026-08-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Web%E5%AE%89%E5%85%A8/">Web安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="1-什么是序列化和反序列化"><a href="#1-什么是序列化和反序列化" class="headerlink" title="1.什么是序列化和反序列化"></a>1.什么是序列化和反序列化</h2><p>序列化是将对象转换为字符串以便存储传输的一种方式。而反序列化恰好就是序列化的逆过程,反序列化会将字符串转换为对象供程序使用。在PHP中序列化和反序列化对应的函数分别为serialize()和unserialize()。</p>
+<h2 id="2-什么是反序列化漏洞"><a href="#2-什么是反序列化漏洞" class="headerlink" title="2.什么是反序列化漏洞"></a>2.什么是反序列化漏洞</h2><p>当程序在进行反序列化时，会自动调用一些函数，例如__wakeup(),__destruct()等函数，但是如果传入函数的参数可以被用户控制的话，用户可以输入一些恶意代码到函数中，从而导致反序列化漏洞。</p>
+<h2 id="3-序列化函数（serialize）"><a href="#3-序列化函数（serialize）" class="headerlink" title="3.序列化函数（serialize）"></a>3.序列化函数（serialize）</h2><p>当我们在php中创建了一个对象后，可以通过serialize()把这个对象转变成一个字符串，用于保存对象的值方便之后的传递与使用</p>
+<p>例如</p>
+<p><img src="https://s2.loli.net/2025/05/11/hvPzNTeWZrR4ixS.png" alt="image-20250408185312347"></p>
+<p>查看结果</p>
+<p><img src="https://s2.loli.net/2025/04/08/hyNr3UtCMQg7fsY.png" alt="img"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410194750869.png" alt="image-20250410194750774"></p>
+<h2 id="4反序列化-unserialize"><a href="#4反序列化-unserialize" class="headerlink" title="4反序列化(unserialize)"></a>4反序列化(unserialize)</h2><p> unserialize()可以从序列化后的结果中恢复对象（object）为了使用这个对象，在下列代码中用unserialize重建对象.</p>
+<p>测试代码：</p>
+<img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413184156400.png" alt="image-20250413184156289" style="zoom:33%;" />
+
+<p>查看结果</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250408185932691.png" alt="img"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410194700159.png" alt="image-20250410194700011"></p>
+<h2 id="5-什么是PHP魔术方法"><a href="#5-什么是PHP魔术方法" class="headerlink" title="5.什么是PHP魔术方法"></a>5.什么是PHP魔术方法</h2><p>魔术方法是PHP面向对象中特有的特性。它们在特定的情况下被触发，都是以双下划线开头，利用魔术方法可以轻松实现PHP面向对象中重载（Overloading即动态创建类属性和方法）。 问题就出现在重载过程中，执行了相关代码</p>
+<h2 id="6-一些常见的魔术方法"><a href="#6-一些常见的魔术方法" class="headerlink" title="6.一些常见的魔术方法"></a>6.一些常见的魔术方法</h2><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250408190155443.png" alt="image-20250408190155326"></p>
+<p>wakeup() &#x2F;&#x2F;执行unserialize()时，先会调用这个函数<br>sleep() &#x2F;&#x2F;执行serialize()时，先会调用这个函数<br>destruct() &#x2F;&#x2F;对象被销毁时触发<br>call() &#x2F;&#x2F;在对象上下文中调用不可访问的方法时触发<br>callStatic() &#x2F;&#x2F;在静态上下文中调用不可访问的方法时触发<br>get() &#x2F;&#x2F;用于从不可访问的属性读取数据或者不存在这个键都会调用此方法<br>set() &#x2F;&#x2F;用于将数据写入不可访问的属性<br>isset() &#x2F;&#x2F;在不可访问的属性上调用isset()或empty()触发<br>unset() &#x2F;&#x2F;在不可访问的属性上使用unset()时触发<br>toString() &#x2F;&#x2F;把类当作字符串使用时触发<br>__invoke() &#x2F;&#x2F;当尝试将对象调用为函数时触发</p>
+<h2 id="7-魔术方法的利用"><a href="#7-魔术方法的利用" class="headerlink" title="7.魔术方法的利用"></a>7.魔术方法的利用</h2><p>测试代码：</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250408190515727.png" alt="image-20250408190515538"></p>
+<p>测试结果为</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250408190550343.png" alt="img"></p>
+<h2 id="8-绕过部分正则"><a href="#8-绕过部分正则" class="headerlink" title="8.绕过部分正则"></a>8.绕过部分正则</h2><p><strong>preg_match(‘&#x2F;^O:\d+&#x2F;‘)匹配序列化字符串是否是对象字符串开头</strong>,这在曾经的CTF中也出过类似的考点</p>
+<p>利用加号绕过（注意在url里传参时+要编码为%2B）<br>serialize(array(a ) ) ; </p>
+<p>a为要反序列化的对象(序列化结果开头是a，不影响作为数组元素的$a的析构)</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410210122611.png"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410210625547.png" alt="image-20250410210625335"></p>
+<h1 id="php反序列化演示"><a href="#php反序列化演示" class="headerlink" title="php反序列化演示"></a>php反序列化演示</h1><h3 id="1类"><a href="#1类" class="headerlink" title="1类"></a>1类</h3><h4 id="类的演示"><a href="#类的演示" class="headerlink" title="类的演示"></a>类的演示</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410221255244.png" alt="image-20250410221255069"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410221322072.png" alt="image-20250410221321983"></p>
+<h4 id="类的实例化"><a href="#类的实例化" class="headerlink" title="类的实例化"></a>类的实例化</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410222152940.png" alt="image-20250410222152809"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410222211133.png" alt="image-20250410222210954"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410222702154.png" alt="image-20250410222702101"></p>
+<h4 id="类的修饰符介绍"><a href="#类的修饰符介绍" class="headerlink" title="类的修饰符介绍"></a>类的修饰符介绍</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410222404101.png" alt="image-20250410222403737"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410222538293.png" alt="image-20250410222537997"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410222844789.png" alt="image-20250410222844592"></p>
+<p>protected和private外部都不可用所以无法输出</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410223108294.png" alt="image-20250410223108043"></p>
+<p>由于sex属性为private所以在子类内部不可用</p>
+<h3 id="2序列化基础知识"><a href="#2序列化基础知识" class="headerlink" title="2序列化基础知识"></a>2序列化基础知识</h3><h4 id="1-序列化的作用"><a href="#1-序列化的作用" class="headerlink" title="1.序列化的作用"></a>1.序列化的作用</h4><p>将对象或者数组转化为储存&#x2F;传输的字符串</p>
+<h4 id="2-序列化的演示"><a href="#2-序列化的演示" class="headerlink" title="2.序列化的演示"></a>2.序列化的演示</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410223939469.png"></p>
+<p>以上是针对不同数据类型，进行了序列化演示</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410224250000.png" alt="image-20250410224249695"></p>
+<p>当定义为一个<strong>数组</strong>时，序列化的内容相对复杂</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410224527632.png" alt="image-20250410224527573"></p>
+<p>下面进行对象的序列化</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410224827919.png" alt="image-20250410224827638"></p>
+<p>对象只包含成员属性，不包含成员方法</p>
+<p>当修饰符变为私有属性时，在变量名前会加%00和类名</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410225409608.png" alt="image-20250410225409501"></p>
+<p>为了表示私有属性，在类名前后会加上00字段</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410225932431.png" alt="image-20250410225932264"></p>
+<p>当解释符变为受保护的为，前面就会加上一个*号</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410230127013.png" alt="image-20250410230126920"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410230203044.png" alt="image-20250410230202842"></p>
+<p>长度为6是因为在*号前后也会加上00</p>
+<p>成员属性调用对象</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410230516255.png" alt="image-20250410230516139"></p>
+<p>我们发现时把后面的一个对象赋值给一个成员属性（ben），这样在序列化test2时也会把test包含进去，</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410230809734.png" alt="image-20250410230809327"></p>
+<h3 id="3反序列化知识"><a href="#3反序列化知识" class="headerlink" title="3反序列化知识"></a>3反序列化知识</h3><h4 id="1-反序列化的作用"><a href="#1-反序列化的作用" class="headerlink" title="1.反序列化的作用"></a>1.反序列化的作用</h4><p>将序列化的参数还原成实例化的对象</p>
+<h4 id="2-反序列化的演示"><a href="#2-反序列化的演示" class="headerlink" title="2.反序列化的演示"></a>2.反序列化的演示</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410231604583.png" alt="image-20250410231604458"></p>
+<p>首先，先把test这一类实例成一个对象（d）并对该对象进行序列化</p>
+<p>在进行序列化之前先看看$d里面是什么</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410232136498.png" alt="image-20250410232136271"></p>
+<p>可以看到注释符不一样，它的输出也不一样</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410232624093.png" alt="image-20250410232623162"></p>
+<p><strong>反序列化之后的内容为一个对象</strong></p>
+<p>还有一个重要的点就是，<strong>反序列化后生成的对象的值，由反序列化里的值$d决定，与原有类预定义的值无关（test）</strong></p>
+<p><strong>反序列化不改变类的成员方法，需要调用后才能触发</strong>，当我调用displayvar时，test这个类必须存在，且调用后里面的值只由$d决定跟test无关</p>
+<h3 id="4反序列化漏洞利用例题"><a href="#4反序列化漏洞利用例题" class="headerlink" title="4反序列化漏洞利用例题"></a>4反序列化漏洞利用例题</h3><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410233900274.png" alt="image-20250410233900167"></p>
+<p>输入一个benben的字符串，赋值给get，将get值进行反序列化，通过调用方法来执行代码，如果我们要执行命令，就必须要改动$a里的值</p>
+<p>先简单构造payload，假设我们要改动a里的值为 ：$a&#x3D;‘system(“id”)’；</p>
+<p>则：‘o:4:”test”:1:{s:1:”a”;s:13:”system(“id”);”;}’</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250410235919930.png" alt="image-20250410235919422"></p>
+<h3 id="5魔术方法构造和析构"><a href="#5魔术方法构造和析构" class="headerlink" title="5魔术方法构造和析构"></a>5魔术方法构造和析构</h3><h4 id="1魔术方法简介"><a href="#1魔术方法简介" class="headerlink" title="1魔术方法简介"></a>1魔术方法简介</h4><h5 id="什么是魔术方法"><a href="#什么是魔术方法" class="headerlink" title="什么是魔术方法"></a>什么是魔术方法</h5><p>一个预定好的，在特定情况下自动触发的行为方法</p>
+<h5 id="魔术方法的作用"><a href="#魔术方法的作用" class="headerlink" title="魔术方法的作用"></a>魔术方法的作用</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411000630220.png" alt="image-20250411000629713"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411000743531.png" alt="image-20250411000742973"></p>
+<h5 id="construct-函数"><a href="#construct-函数" class="headerlink" title="_construct()函数"></a>_construct()函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411001230887.png" alt="image-20250411001230778"></p>
+<p>实例化一个对象的时候，会触发一个construct</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411001433540.png" alt="image-20250411001433055"></p>
+<h5 id="destruct函数"><a href="#destruct函数" class="headerlink" title="_destruct函数"></a>_destruct函数</h5><p>析构函数，在对象所有引用被删除或者当对象被显示销毁式执行的魔术方法</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411001842935.png" alt="image-20250411001842778"></p>
+<p>在代码执行反序列化时覆盖原有的test，触发了一次，最后文件结束销毁了再触发一次</p>
+<p>相当于序列化把代码按格式编码了，反序列化相当于又解码，解码后自动识别php代码，再次触发</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411002800883.png" alt="image-20250411002759977"></p>
+<h5 id="sleep和wakeup介绍"><a href="#sleep和wakeup介绍" class="headerlink" title="sleep和wakeup介绍"></a>sleep和wakeup介绍</h5><p>sleep</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411003154516.png" alt="image-20250411003153436"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411003408950.png" alt="image-20250411003408771"></p>
+<p>发现结果并没有输出password，说明sleep函数被触发了，整体流程为，先定义了new user，导致触发了construct函数，接着要序列化user，这时sleep函数被自动触发，不输出password</p>
+<p>weakup函数</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411004351627.png" alt="image-20250411004351381"></p>
+<p>该代码说明，在对该属性进行反序列化之前会触发weakup函数，password和username都会被执行，接着反序列unserialize执行再输出nickname，但我们发现password并没有赋值，所以这时候回显的时user里那两个私有注释的值</p>
+<h5 id="toString和invoke函数"><a href="#toString和invoke函数" class="headerlink" title="toString和invoke函数"></a>toString和invoke函数</h5><h6 id="tostring函数："><a href="#tostring函数：" class="headerlink" title="tostring函数："></a>tostring函数：</h6><p>表达方式错误时调用该魔术方法</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411170639583.png" alt="image-20250411170632382"></p>
+<p>可以看到输出test，可是test是个对象，并不是字符串，这样导致格式错误，触发toString函数</p>
+<h6 id="invoke函数"><a href="#invoke函数" class="headerlink" title="invoke函数"></a>invoke函数</h6><p>是把对象当成了一个函数从而触发</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411170941172.png" alt="image-20250411170941018"></p>
+<p>这里的test()，说明把对象当成了函数进行调用</p>
+<h4 id="错误调用相关魔术方法"><a href="#错误调用相关魔术方法" class="headerlink" title="错误调用相关魔术方法"></a>错误调用相关魔术方法</h4><h5 id="call-函数"><a href="#call-函数" class="headerlink" title="_call()函数"></a>_call()函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411171548278.png" alt="image-20250411171548019"></p>
+<h5 id="callstatic函数"><a href="#callstatic函数" class="headerlink" title="_callstatic函数"></a>_callstatic函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411171918138.png" alt="image-20250411171917784"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411172046809.png"></p>
+<p>可以看出在静态调用或调用成员常量时，触发，跟上一个函数差不多，就是要加：：</p>
+<h5 id="get-函数"><a href="#get-函数" class="headerlink" title="_get()函数"></a>_get()函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411172321829.png" alt="image-20250411172321592"></p>
+<h5 id="set-函数"><a href="#set-函数" class="headerlink" title="_set()函数"></a>_set()函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411172614915.png" alt="image-20250411172614752"></p>
+<p>该代码说明当给一个不存在的成员属性赋值时，就会触发_set函数</p>
+<p>给var2赋值但发现不存在该属性，那么就会触发函数，将arg1赋为var2，将arg2赋值为1，输出它们俩</p>
+<h5 id="isset函数"><a href="#isset函数" class="headerlink" title="_isset函数"></a>_isset函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411173152072.png" alt="image-20250411173151836"></p>
+<p>当对不可访问属性使用isset或empty函数时，会触发_isset函数。</p>
+<p>改代码说明：var这个属性，是私有的，只能在子内部调用，isset是在外部访问，这是不可能的，由此函数触发</p>
+<h5 id="unset函数"><a href="#unset函数" class="headerlink" title="_unset函数"></a>_unset函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411173819440.png" alt="image-20250411173819183"></p>
+<p>举例说明</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411173952694.png" alt="image-20250411173952587"></p>
+<p>var这个成员属性是私有的，按理来说不可访问，但使用unset函数，导致魔术方法触发</p>
+<p>将var赋值给了arg1</p>
+<h5 id="clone函数"><a href="#clone函数" class="headerlink" title="_clone函数"></a>_clone函数</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411174250702.png" alt="image-20250411174250457"></p>
+<p>当拷贝完成一个对象后，会触发_clone魔术方法</p>
+<h5 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411174405133.png" alt="image-20250411174404838"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411174425024.png" alt="image-20250411174424656"></p>
+<h3 id="6-pop链前置知识"><a href="#6-pop链前置知识" class="headerlink" title="6.pop链前置知识"></a>6.pop链前置知识</h3><h5 id="了解调用链"><a href="#了解调用链" class="headerlink" title="了解调用链"></a>了解调用链</h5><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411174829097.png" alt="image-20250411174828973" style="zoom:50%;" />
+
+<p>先看这道简单的例题</p>
+<ol>
+<li>先找到利用点，也就是我们的eval</li>
+<li>eval()调用的是test2这个成员方法，但是action这函数并不会凭空执行</li>
+<li>我们发现destruct这个魔术方法下有我们的action，而这个魔术方法，是通过调用test来实现的</li>
+</ol>
+<p>利用反推法实现</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411175920148.png" alt="image-20250411175919802"></p>
+<p>当实行反序列化函数时，会触发destruct方法，给test赋值成evil就可执行底下这个action这个函数。前面也学到过当执行序列化和反序列化时_construct这个魔术方法不会触发，所以不必理会。</p>
+<p>则我们的payload可以是，test2&#x3D;system(“ls”);,test&#x3D;new evil();</p>
+<p>第一种方法，在原来的类里面进行构造</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411185957443.png" alt="image-20250411185957320"></p>
+<p>第二种</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411202248001.png" alt="image-20250411202247870"></p>
+<h5 id="魔术方法触发规则"><a href="#魔术方法触发规则" class="headerlink" title="魔术方法触发规则"></a>魔术方法触发规则</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411202517719.png" alt="image-20250411202517449"></p>
+<p>魔术方法触发的前提是：魔术方法所在类(或对象)被调用</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411203459319.png" alt="image-20250411203458992"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411203644809.png" alt="image-20250411203644695"></p>
+<h5 id="pop链构造解释"><a href="#pop链构造解释" class="headerlink" title="pop链构造解释"></a>pop链构造解释</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411204526834.png" alt="image-20250411204526739"></p>
+<img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250411204442219.png" alt="image-20250411204442157" style="zoom:33%;" />
+
+<p>首先分析这个题目，flag在flag.php中</p>
+<ol>
+<li>目标：触发echo，调用$flag</li>
+<li>触发_invoke调用append函数，使$var&#x3D;flag.php</li>
+<li>_invoke触发的条件是把对象当作函数执行</li>
+<li>给p赋值一个对象Modifier，从而当成函数调用</li>
+<li>触发get(触发条件：调用不存在的成员属性)</li>
+<li>给str赋值一个对象test，test里面吗没有source，触发_get函数</li>
+<li>触发tostring魔术方法(把对象当作字符串)</li>
+<li>给source这个赋值为对象show，从而触发tostring</li>
+<li>触发wakeup，反序列化</li>
+</ol>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412182307149.png" alt="image-20250412182306424"></p>
+<p>具体构造如下</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412184718902.png" alt="image-20250412184718518"></p>
+<p>O:4:”Show”:2:{s:6:”source”;r:1;s:3:”str”;O:4:”Test”:1:{s:1:”p”;O:8:”Modifier”:1:{s:13:”Modifiervar”;s:8:”flag.php”;}}} </p>
+<p>要注意的var是一个私有属性，记得加上%00</p>
+<p>构造payload</p>
+<p>?pop&#x3D;O:4:”Show”:2:{s:6:”source”;r:1;s:3:”str”;O:4:”Test”:1:{s:1:”p”;O:8:”Modifier”:1:{s:13:”%00Modifier%00var”;s:8:”flag.php”;}}} </p>
+<p>结果如下</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412185254864.png" alt="image-20250412185254700"></p>
+<h3 id="7字符串逃逸基础"><a href="#7字符串逃逸基础" class="headerlink" title="7字符串逃逸基础"></a>7字符串逃逸基础</h3><h5 id="字符串逃逸基础-减少"><a href="#字符串逃逸基础-减少" class="headerlink" title="字符串逃逸基础_减少"></a>字符串逃逸基础_减少</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412185939417.png" alt="image-20250412185939282"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412193533968.png" alt="image-20250412193533682"></p>
+<p>简单看一段代码</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412194114395.png" alt="image-20250412194114011"></p>
+<p>执行str_replace函数后，system()就会被吃掉，造成字符串逃逸减少，字符串缺失，识别的11位就到了v，显然反序列化data是不能执行的</p>
+<p>可以通过构造，将功能代码全部吃掉，只执行后面的123，此时的字符串就会当作功能代码执行</p>
+<h5 id="字符串逃逸基础-增多"><a href="#字符串逃逸基础-增多" class="headerlink" title="字符串逃逸基础_增多"></a>字符串逃逸基础_增多</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412195604762.png" alt="image-20250412195604556"></p>
+<p>简单来说就是，将字符串变成功能代码执行</p>
+<h5 id="字符串逃逸增多例题"><a href="#字符串逃逸增多例题" class="headerlink" title="字符串逃逸增多例题"></a>字符串逃逸增多例题</h5><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412200833205.png" alt="image-20250412200833064" style="zoom:50%;" />
+
+<p>分析代码</p>
+<ol>
+<li>判断是否为escaping，如果是则输出flag.php</li>
+<li>通过get注入param，并将其实例化test成为一个对象，并进其序列化，触发_construct这个魔术方法赋值给user</li>
+<li>对$param值进行安全检查，filter把”flag” “php”替换为了”hack”,在进行反序列化，将多余的字符串变成有效代码执行</li>
+</ol>
+<p>解题思路</p>
+<ol>
+<li><p>字符串是增多了，由php变成hack</p>
+</li>
+<li><p>构造代码，先将pass值变为escaping</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412204754538.png" alt="image-20250412204754336"></p>
+</li>
+<li><p>$user的值是可控的</p>
+</li>
+</ol>
+<img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412210744591.jpg" alt="img" style="zoom: 33%;" />
+
+<ol start="3">
+<li><p>构造payload</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412212347021.png" alt="image-20250412212346912"></p>
+</li>
+</ol>
+<p>?param&#x3D;phpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphpphp”;s:4:”pass”;s:8:”escaping”;}</p>
+<p>右键查看源代码</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412212500016.png" alt="image-20250412212459878"></p>
+<h5 id="字符串逃逸减少例题"><a href="#字符串逃逸减少例题" class="headerlink" title="字符串逃逸减少例题"></a>字符串逃逸减少例题</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412212649376.png" alt="image-20250412212649255"></p>
+<p>分析代码</p>
+<ol>
+<li>判断vip是否为true，如果是则输出flag.php</li>
+<li>我们只能通过user和pass来解决这个问题，然后user和pass会被实例化成一个对象并进行序列化，接着跳到过滤并进行反序列化</li>
+<li>这里是把php替换成了hk</li>
+</ol>
+<p>解题步骤</p>
+<ol>
+<li>先对user和pass进行简单赋值并序列化</li>
+</ol>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412213920449.png" alt="image-20250412213920186"></p>
+<p>接着我们开始分析</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412223641034.png" alt="image-20250412223640799"></p>
+<h3 id="8wakeup魔术方法绕过"><a href="#8wakeup魔术方法绕过" class="headerlink" title="8wakeup魔术方法绕过"></a>8wakeup魔术方法绕过</h3><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412223944351.png" alt="image-20250412223944229" style="zoom:33%;" />
+
+<p>如果$cmd为空则显示源代码，不为空，进行正则表达，o后面不能出现数字</p>
+<p>目标是反序列化后调用destruct,并将file定义成flag.php输出</p>
+<p>必须要绕过wakeup方法不然file又会变成index.php</p>
+<p>解题：</p>
+<p>把成员属性数量值写成2，即可绕过</p>
+<p>o后面不能跟数字，所以后面可以跟个+号</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412225418403.png" alt="image-20250412225418318"></p>
+<p>先构造我们的payload</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412230503344.png" alt="image-20250412230503196"></p>
+<h3 id="9引用的利用方式"><a href="#9引用的利用方式" class="headerlink" title="9引用的利用方式"></a>9引用的利用方式</h3><p>类似于c语言的指针</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412231115883.png" alt="image-20250412231115492"></p>
+<p>我们进行实例化对象并赋值给a</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412231637611.png" alt="image-20250412231637481"></p>
+<p>可以看到enter为空，secret的值等于enter的值</p>
+<p>构造payload</p>
+<p>?pass&#x3D;O:8:”just4fun”:2:{s:5:”enter”;N;s:6:”secret”;R:2;}</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412232012800.png" alt="image-20250412232012640"></p>
+<p>注意：&amp;加上一个$就是引用</p>
+<h3 id="10session反序列化漏洞介绍"><a href="#10session反序列化漏洞介绍" class="headerlink" title="10session反序列化漏洞介绍"></a>10session反序列化漏洞介绍</h3><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412234430676.png" alt="image-20250412234422317"></p>
+<p>php格式</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412235519489.png" alt="image-20250412235518948"></p>
+<p>php_serialize格式</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412235809988.png" alt="image-20250412235809798"></p>
+<p>php_binary格式</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250412235928882.png" alt="image-20250412235928649"></p>
+<p>如何造成反序列化漏洞</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413001213208.png" alt="image-20250413001212685"></p>
+<h3 id="11session反序列化例题"><a href="#11session反序列化例题" class="headerlink" title="11session反序列化例题"></a>11session反序列化例题</h3><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413001523045.png" alt="image-20250413001522918" style="zoom: 50%;" />
+
+<p>提示有hint.php说明这个页面应该能访问，name&#x3D;her时，输出flag</p>
+<p>但是发现该页面并没有注入点，但有session_start，意味着可以从session里读，进行反序列化</p>
+<p>再看一下另外一个页面hint.php</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413001952680.png" alt="image-20250413001952434"></p>
+<p>发现这个页面里面有注入点a</p>
+<p>这里我们会用到之前提的引用</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413002421194.png" alt="image-20250413002421070"></p>
+<p>观察第二个页面，是php_serialize格式，所以输入的时候要在前面加入管道符</p>
+<p>?a&#x3D;|O:4:”Flag”:2:{s:4:”name”;N;s:3:”her”;R:2;}</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413002710997.png" alt="image-20250413002710714"></p>
+<p>刷新第一个页面发现flag</p>
+<p>ctfstu{5c202c62-7567-4fa0-a370-134fe9d16ce7}</p>
+<h3 id="12phar反序列化漏洞的介绍"><a href="#12phar反序列化漏洞的介绍" class="headerlink" title="12phar反序列化漏洞的介绍"></a>12phar反序列化漏洞的介绍</h3><p>phar可以简单理解为压缩包</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413003414773.png" alt="image-20250413003414349"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413003839485.png" alt="image-20250413003838830"></p>
+<p>phar反序列化漏洞原理</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413003951858.png" alt="image-20250413003951146"></p>
+<p>接下来，看一道例题</p>
+<img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413004157451.png" alt="image-20250413004157339" style="zoom:50%;" />
+
+<p>有个file_exists函数是判断filename是否存在</p>
+<p>我们检查一下看是否存在</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413004534735.png" alt="image-20250413004534562"></p>
+<p>发现存在，说明可以调用phar伪协议</p>
+<p>可以使用以下模板</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?phphighlight_file(__FILE__);</span><br><span class="line">class Testobj&#123;  </span><br><span class="line">var $output=&#x27;&#x27;;&#125;@unlink(&#x27;test.phar&#x27;);  //删除之前的test.par文件(如果有)</span><br><span class="line">$phar=new Phar(&#x27;test.phar&#x27;); //创建一个phar对象，文件名必须以phar为后缀</span><br><span class="line">$phar-&gt;startBuffering(); //开始写文件</span><br><span class="line">$phar-&gt;setStub(&#x27;&lt;?php __HALT_COMPILER(); ?&gt;&#x27;); //写入stub$o=new Testobj();</span><br><span class="line">$o-&gt;output=&#x27;eval($_GET[&quot;a&quot;]);&#x27;;</span><br><span class="line">$phar-&gt;setMetadata($o);//写入meta-data$phar-&gt;addFromString(&quot;test.txt&quot;,&quot;test&quot;);</span><br><span class="line">//添加要压缩的文件</span><br><span class="line">$phar-&gt;stopBuffering();?&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413005541687.png" alt="image-20250413005540960"></p>
+<p>phar条件</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413005806899.png" alt="image-20250413005806568"></p>
+<p>具体可参考</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/csjjjd/article/details/135888292?fromshare=blogdetail&sharetype=blogdetail&sharerId=135888292&sharerefer=PC&sharesource=chenxi_co&sharefrom=from_link">https://blog.csdn.net/csjjjd/article/details/135888292?fromshare=blogdetail&amp;sharetype=blogdetail&amp;sharerId=135888292&amp;sharerefer=PC&amp;sharesource=chenxi_co&amp;sharefrom=from_link</a></p>
+<h3 id="13phar反序列化例题讲解"><a href="#13phar反序列化例题讲解" class="headerlink" title="13phar反序列化例题讲解"></a>13phar反序列化例题讲解</h3><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413005944211.png" alt="image-20250413005943949" style="zoom:50%;" />
+
+<p>分析题目，只有进行反序列化触发_destruct方法，输出flag，但是显然并没有反序列化的函数</p>
+<p>通过post注入file来判断文件是否存在，发现是可以的</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413010509935.png" alt="image-20250413010509358"></p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250413010723491.png" alt="image-20250413010722208"></p>
+<h3 id="14原生类"><a href="#14原生类" class="headerlink" title="14原生类"></a>14原生类</h3><h3 id="什么是php原生类"><a href="#什么是php原生类" class="headerlink" title="什么是php原生类"></a>什么是php原生类</h3><blockquote>
+<p>原生类就是php内置类，不用定义php自带的类，即不需要在当前脚本写出，但也可以实例化的类</p>
+</blockquote>
+<h3 id="文件与目录读取"><a href="#文件与目录读取" class="headerlink" title="文件与目录读取"></a>文件与目录读取</h3><h5 id="1-DirectoryIterator"><a href="#1-DirectoryIterator" class="headerlink" title="1. DirectoryIterator"></a>1. DirectoryIterator</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414203203115.png" alt="image-20250414203202937"></p>
+<p>首先解释一下foreach，它跟echo的区别是它能回显很多文件，echo只能回显当前的第一个内容</p>
+<p>传入参数：cmd&#x3D;glob:&#x2F;&#x2F;&#x2F;*.php ;相当于模式匹配</p>
+<p>这里传入的不只是协议，还有路径；</p>
+<p>会创建一个指定目录的迭代器。当执行到echo函数时，会触发DirectoryIterator类中的 <code>__toString()</code> 方法，输出指定目录里面经过排序之后的第一个文件名</p>
+<h5 id="2-FilesystemIterator"><a href="#2-FilesystemIterator" class="headerlink" title="2.FilesystemIterator"></a>2.FilesystemIterator</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414204621527.png" alt="image-20250414204621426"></p>
+<p>用法和DirectoryIterator一样，在手册中可以看到Filesystemterator extends DirectoryIterator implements Seekablerterator;也就是说FilesystemIterator与DirectoryIterator是子类与父类的关系；测试php代码中调用的是FilesystemIterator继承自Directoryiterator的_tostring()方法;FilesystemIterator: current()是Filesys temIterator 自身用于回显目录信息的方法</p>
+<h5 id="3-glob-协议与魔术匹配"><a href="#3-glob-协议与魔术匹配" class="headerlink" title="3.glob:&#x2F;&#x2F;协议与魔术匹配"></a>3.glob:&#x2F;&#x2F;协议与魔术匹配</h5><p>glob:&#x2F;&#x2F;查看匹配的文件目录格式</p>
+<h5 id="4GlobIterator"><a href="#4GlobIterator" class="headerlink" title="4GlobIterator"></a>4GlobIterator</h5><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414205450595.png" alt="image-20250414205450511"></p>
+<p>与之前两个类的作用和使用方法类似；不同点在于其行为类似于glob()，可以通过横式匹配来寻找文件路径(前两个需要利用glob:&#x2F;&#x2F;协议才可以模式匹配）；</p>
+<h5 id="5可遍历目录类绕过open-basedir"><a href="#5可遍历目录类绕过open-basedir" class="headerlink" title="5可遍历目录类绕过open_basedir"></a>5可遍历目录类绕过open_basedir</h5><p>Qpen basedir限制目显：将PHP所能打开的文件限制在指定的目录树，包括文件本身;</p>
+<p>使用DirectoryIterator类或FilesystemIterator类，与glob:&#x2F;&#x2F;协议结合将无视open basedi对目录的限制，可以用来列举出指定目录下的文件:使用GlobIterator类，通过模式匹配来寻找文件路径<br><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414210251989.png" alt="image-20250414210251873"></p>
+<h5 id="6-SplFileobject"><a href="#6-SplFileobject" class="headerlink" title="6.SplFileobject"></a>6.SplFileobject</h5><p>传入参数cmd&#x3D;index.php ;回显了当前页面的内容；和上面的目录回显一样，要移动指针；传入的字符串可以自录穿越，在这里里用到的是：SplFileobject::_tostring；还可以用splFileobject:：current ;</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414210744409.png" alt="image-20250414210744355"></p>
+<p>当用文件目录遍历到了敏感文件时，可以用<code>SplFileObject</code>类，同样通过echo触发<code>SplFileObject</code>中的<code>__toString()</code>方法。(该类不支持通配符，所以必须先获取到完整文件名称才行)，而且这个方法只能读一行</p>
+<h5 id="7-ZipArchive-open"><a href="#7-ZipArchive-open" class="headerlink" title="7.ZipArchive::open()"></a>7.ZipArchive::open()</h5><p>比较常考的文件删除</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414211045835.png" alt="image-20250414211045789"></p>
+<p>这样就删除了test.zip文件;ZIPARCHIVE::OVERWRITE ：总是以一个新的压缩包开始，此模式下如果已经存在则会被覆盖。这是个常数项，<br>值ZIPARCHIVE::OVERURITE&#x3D;8</p>
+<h5 id="8-Reflection"><a href="#8-Reflection" class="headerlink" title="8.Reflection"></a>8.Reflection</h5><p>读取文件信息，在文件操作(读取)里</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414211729004.png" alt="image-20250414211728893"></p>
+<p>需要注意:注释文本须符合&#x2F;**开头的规范，否则无法识别</p>
+<h3 id="ssrf"><a href="#ssrf" class="headerlink" title="ssrf"></a>ssrf</h3><h5 id="SoapClient-call"><a href="#SoapClient-call" class="headerlink" title="SoapClient::_call()"></a>SoapClient::_call()</h5><p>SOAP(简单对象访问协议)是连接或Web服务或客户端和Web服务之间的接口；其采用HTTP作为底层通讯协议，XML作为数据传送的格式，仅限http&#x2F;https协议:SOAP消息基本上是从发送端到接收端的单向传输，但它们常常结合起来执行类似于请求&#x2F;应答的模式：如<br>果想要使用SoapClient类需要在php.ini配置文件里面开启extension&#x3D;php_soap.dll选项</p>
+<p>模拟发送请求</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414212631946.png" alt="image-20250414212631800"></p>
+<h3 id="XXE"><a href="#XXE" class="headerlink" title="XXE"></a>XXE</h3><h4 id="SimplexMLElement"><a href="#SimplexMLElement" class="headerlink" title="SimplexMLElement"></a>SimplexMLElement</h4><p>适用于PHP5,PHP7,PHP8<br>利用实例化该类的对象来传入xml代码进行xxe攻击，进而读取文件内容和命令执行</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414212824246.png" alt="image-20250414212824030"></p>
+<p>官方文档中对于SimpleXMLElement类的构造方法simpleXMLElement::_construct的定义如下:<br>参数</p>
+<p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414213349359.png" alt="image-20250414213349047"></p>
+<h3 id="xss"><a href="#xss" class="headerlink" title="xss"></a>xss</h3><h4 id="Error"><a href="#Error" class="headerlink" title="Error"></a>Error</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414213701138.png" alt="image-20250414213701021"></p>
+<h4 id="Exception"><a href="#Exception" class="headerlink" title="Exception"></a>Exception</h4><p><img src="https://gitee.com/crx12345/my-image-host/raw/master/images/20250414213908888.png" alt="image-20250414213908758"></p>
+<h3 id="命令执行"><a href="#命令执行" class="headerlink" title="命令执行"></a>命令执行</h3><p>如果有eval的话就可以rce</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$a</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;a&#x27;</span>];</span><br><span class="line"><span class="variable">$b</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;b&#x27;</span>];</span><br><span class="line"><span class="keyword">eval</span>(<span class="string">&quot;echo new <span class="subst">$a</span>(<span class="subst">$b</span>());&quot;</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/Echoin-613">Echoin</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://echoin.xyz/2026/08/28/php-deserialization/">https://echoin.xyz/2026/08/28/php-deserialization/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://echoin.xyz" target="_blank">Echoin 的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/PHP/">PHP</a><a class="post-meta__tags" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">反序列化</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/28/phar-deserialization/" title="phar 反序列化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">phar 反序列化</div></div><div class="info-2"><div class="info-item-1">PHP Phar反序列化总结_ctf phpphar反序列化-CSDN博客 利用 phar 拓展 php 反序列化漏洞攻击面 浅析Phar反序列化 - FreeBuf网络安全行业门户 php(phar)反序列化漏洞及各种绕过姿势_throw new 绕过php-CSDN博客 Phar反序列化Phar文件结构phar文件是php里类似于JAR的一种打包文件本质上是一种压缩文件，在PHP 5.3 或更高版本中默认开启，一个phar文件一个分为四部分。 1[Stub] + [Manifest] + [File Contents] + [Signature]  1.a stub    可以理解为一个标志，格式为xxx&lt;?php xxx; __HALT_COMPILER();?&gt;，前面内容不限，但必须以__HALT_COMPILER();来结尾，否则phar扩展将无法识别这个文件为phar文件**(注意绕过)**2.a manifest describing the contents  Manifest 是 Phar 文件格式中的一个核心部分，它相当于 Phar 文件的”目录”...</div></div></div></a><a class="pagination-related" href="/2026/08/28/nodejs-ejs-ssti/" title="Node.js 相关漏洞 + EJS 模板注入"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Node.js 相关漏洞 + EJS 模板注入</div></div><div class="info-2"><div class="info-item-1">Node.js 的 5 个常见服务器漏洞 - 知乎 Node.js 常见漏洞学习与总结-先知社区 nodejs相关漏洞Node.js 是一个开源、跨平台的 JavaScript 运行时环境，允许开发者在服务器端运行 JavaScript 代码。它基于 Google 的 V8 JavaScript 引擎（Chrome 浏览器使用的引擎），以高效、事件驱动和非阻塞 I&#x2F;O 的特性闻名。以下是对 Node.js 的详细介绍，涵盖其定义、核心特性、架构、工作原理、应用场景以及优缺点。 在Node.js应用中，漏洞可能导致远程代码执行、拒绝服务甚至数据泄露。攻击者可通过构造恶意输入触发异步加密操作错误，从而远程崩溃Node.js进程，造成拒绝服务。 示例： 123// 危险示例：未验证的用户输入进入加密操作crypto.subtle.deriveBits(algorithm, userProvidedKey, length).then(bits =&gt; &#123; /* ... */ &#125;);  若userProvidedKey可控且触发底层ThrowExcepti...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/28/phar-deserialization/" title="phar 反序列化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-28</div><div class="info-item-2">phar 反序列化</div></div><div class="info-2"><div class="info-item-1">PHP Phar反序列化总结_ctf phpphar反序列化-CSDN博客 利用 phar 拓展 php 反序列化漏洞攻击面 浅析Phar反序列化 - FreeBuf网络安全行业门户 php(phar)反序列化漏洞及各种绕过姿势_throw new 绕过php-CSDN博客 Phar反序列化Phar文件结构phar文件是php里类似于JAR的一种打包文件本质上是一种压缩文件，在PHP 5.3 或更高版本中默认开启，一个phar文件一个分为四部分。 1[Stub] + [Manifest] + [File Contents] + [Signature]  1.a stub    可以理解为一个标志，格式为xxx&lt;?php xxx; __HALT_COMPILER();?&gt;，前面内容不限，但必须以__HALT_COMPILER();来结尾，否则phar扩展将无法识别这个文件为phar文件**(注意绕过)**2.a manifest describing the contents  Manifest 是 Phar 文件格式中的一个核心部分，它相当于 Phar 文件的”目录”...</div></div></div></a><a class="pagination-related" href="/2026/08/28/pop-magic-methods/" title="POP 链分析 - 魔术方法"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-28</div><div class="info-item-2">POP 链分析 - 魔术方法</div></div><div class="info-2"><div class="info-item-1">例题(NewStar_2025_小羊走迷宫）：源码+分析： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748&lt;?phpinclude &quot;flag.php&quot;;error_reporting(0);class startPoint&#123;    public $direction;    function __wakeup()&#123;        echo &quot;gogogo出发咯 &quot;;        $way = $this-&gt;direction;        return $way();//将对象调用为函数，__wakeup（使用unserialize时触发）    &#125;&#125;class Treasure&#123;    protected $door;    protected $chest;//不可访问的属性    function __get($arg)&#123;     ...</div></div></div></a><a class="pagination-related" href="/2026/08/28/python-yaml-deserialization/" title="Python yaml 反序列化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-28</div><div class="info-item-2">Python yaml 反序列化</div></div><div class="info-2"><div class="info-item-1">Python YAML 反序列化 &#x3D; 用 PyYAML 等库把一串 YAML 文本还原成 Python 对象。 如果这个 YAML 来自用户 &#x2F; 外部输入，并且用的是“危险的 loader”，就很容易变成 RCE（任意代码执行）等严重漏洞 1. 什么是YAML 反序列化序列化 &#x2F; 反序列化：  序列化：把对象 → 文本 &#x2F; 字节串（方便存储 &#x2F; 传输），比如 JSON、YAML、pickle。 反序列化：把文本 &#x2F; 字节 → 对象。  YAML 在 Python 里最常用的就是 PyYAML： 12345678910import yamls = &quot;&quot;&quot;name: Echoinage: 18&quot;&quot;&quot;data = yaml.safe_load(s)print(data)# data = &#123;&#x27;name&#x27;: &#x27;Echoin&#x27;, &#x27;age&#x27;: 18&#125;  这一步 safe_load 就是「YAML...</div></div></div></a><a class="pagination-related" href="/2026/08/28/python-pickle-deserialization/" title="Python pickle 反序列化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-28</div><div class="info-item-2">Python pickle 反序列化</div></div><div class="info-2"><div class="info-item-1">Pickle 是 Python 提供的序列化与反序列化模块，用于将 Python 对象转换为字节流或从字节流还原对象。然而，Pickle 的反序列化存在安全隐患，尤其是在处理不可信数据时，可能导致 远程代码执行（RCE） 等严重问题。 pickle 反序列化 &#x3D;&#x3D; 在执行一段“可以随便跑 Python 代码的脚本” 只要让后台对“你可控的数据”做 pickle.loads()，你就基本可以 RCE（远程执行命令）。 一、什么是（反）序列化 序列化（serialize）： 把内存里的对象（list、dict、类实例等）→ 变成一串字节 &#x2F; 字符串，方便： 写进文件 通过网络传输 存到缓存 &#x2F; 数据库   反序列化（deserialize）： 把这串字节 &#x2F; 字符串 → 还原成原来的对象。  类比一下：  序列化 &#x3D; 把一个乐高模型拆成零件，打包装箱。 反序列化 &#x3D; 根据说明书把乐高重新拼回来。  在 Python 里： 12345678import pickledata = &#123;&quot;user&qu...</div></div></div></a><a class="pagination-related" href="/2026/08/28/php-code-audit/" title="代码审计 PHP"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-28</div><div class="info-item-2">代码审计 PHP</div></div><div class="info-2"><div class="info-item-1">常见函数：isset($page):检查是否存在$page参数 is_string($page)：检查传入的$page参数是否为字符串类型 in_array($page, $whitelist)：检查是否在$whitelist中找到传入的 $page mb_substr：截取 12345678910111213141516171819202122232425基本用法：mb_substr ( string $str , int $start [, int $length = NULL [, string $encoding = mb_internal_encoding() ]] ) : string$str：要截取的原字符串$start：起始位置（0 为首字符，负数表示从末尾开始）$length(可选)：截取长度，省略则直到末尾$encoding(可选)：字符编码，默认使用内部编码    常见场景示例:1.截取固定长度的中文字符串&lt;?php$title = &quot;奇葩天地：http://www.qipa250.com&quot;;echo mb_substr($titl...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Echoin</div><div class="author-info-description">Web安全 · 渗透测试 · CTF · 靶场</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">69</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Echoin-613"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Echoin-613" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #8b7cf6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的安全博客，一起学习 Web 安全与渗透测试！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8C%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">1.什么是序列化和反序列化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.</span> <span class="toc-text">2.什么是反序列化漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%BA%8F%E5%88%97%E5%8C%96%E5%87%BD%E6%95%B0%EF%BC%88serialize%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">3.序列化函数（serialize）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-unserialize"><span class="toc-number">4.</span> <span class="toc-text">4反序列化(unserialize)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%BB%80%E4%B9%88%E6%98%AFPHP%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">5.什么是PHP魔术方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%A7%81%E7%9A%84%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95"><span class="toc-number">6.</span> <span class="toc-text">6.一些常见的魔术方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95%E7%9A%84%E5%88%A9%E7%94%A8"><span class="toc-number">7.</span> <span class="toc-text">7.魔术方法的利用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E7%BB%95%E8%BF%87%E9%83%A8%E5%88%86%E6%AD%A3%E5%88%99"><span class="toc-number">8.</span> <span class="toc-text">8.绕过部分正则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%94%E7%A4%BA"><span class="toc-number">9.</span> <span class="toc-text">php反序列化演示</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E7%B1%BB"><span class="toc-number">9.1.</span> <span class="toc-text">1类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%BB%E7%9A%84%E6%BC%94%E7%A4%BA"><span class="toc-number">9.1.1.</span> <span class="toc-text">类的演示</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%BB%E7%9A%84%E5%AE%9E%E4%BE%8B%E5%8C%96"><span class="toc-number">9.1.2.</span> <span class="toc-text">类的实例化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%BB%E7%9A%84%E4%BF%AE%E9%A5%B0%E7%AC%A6%E4%BB%8B%E7%BB%8D"><span class="toc-number">9.1.3.</span> <span class="toc-text">类的修饰符介绍</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-number">9.2.</span> <span class="toc-text">2序列化基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">9.2.1.</span> <span class="toc-text">1.序列化的作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E6%BC%94%E7%A4%BA"><span class="toc-number">9.2.2.</span> <span class="toc-text">2.序列化的演示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9F%A5%E8%AF%86"><span class="toc-number">9.3.</span> <span class="toc-text">3反序列化知识</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">9.3.1.</span> <span class="toc-text">1.反序列化的作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E6%BC%94%E7%A4%BA"><span class="toc-number">9.3.2.</span> <span class="toc-text">2.反序列化的演示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E4%BE%8B%E9%A2%98"><span class="toc-number">9.4.</span> <span class="toc-text">4反序列化漏洞利用例题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84"><span class="toc-number">9.5.</span> <span class="toc-text">5魔术方法构造和析构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="toc-number">9.5.1.</span> <span class="toc-text">1魔术方法简介</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95"><span class="toc-number">9.5.1.1.</span> <span class="toc-text">什么是魔术方法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">9.5.1.2.</span> <span class="toc-text">魔术方法的作用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#construct-%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.1.3.</span> <span class="toc-text">_construct()函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#destruct%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.1.4.</span> <span class="toc-text">_destruct函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sleep%E5%92%8Cwakeup%E4%BB%8B%E7%BB%8D"><span class="toc-number">9.5.1.5.</span> <span class="toc-text">sleep和wakeup介绍</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#toString%E5%92%8Cinvoke%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.1.6.</span> <span class="toc-text">toString和invoke函数</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#tostring%E5%87%BD%E6%95%B0%EF%BC%9A"><span class="toc-number">9.5.1.6.1.</span> <span class="toc-text">tostring函数：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#invoke%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.1.6.2.</span> <span class="toc-text">invoke函数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E8%B0%83%E7%94%A8%E7%9B%B8%E5%85%B3%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95"><span class="toc-number">9.5.2.</span> <span class="toc-text">错误调用相关魔术方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#call-%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.1.</span> <span class="toc-text">_call()函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#callstatic%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.2.</span> <span class="toc-text">_callstatic函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#get-%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.3.</span> <span class="toc-text">_get()函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#set-%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.4.</span> <span class="toc-text">_set()函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#isset%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.5.</span> <span class="toc-text">_isset函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#unset%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.6.</span> <span class="toc-text">_unset函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#clone%E5%87%BD%E6%95%B0"><span class="toc-number">9.5.2.7.</span> <span class="toc-text">_clone函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">9.5.2.8.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-pop%E9%93%BE%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">9.6.</span> <span class="toc-text">6.pop链前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3%E8%B0%83%E7%94%A8%E9%93%BE"><span class="toc-number">9.6.1.</span> <span class="toc-text">了解调用链</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95%E8%A7%A6%E5%8F%91%E8%A7%84%E5%88%99"><span class="toc-number">9.6.2.</span> <span class="toc-text">魔术方法触发规则</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#pop%E9%93%BE%E6%9E%84%E9%80%A0%E8%A7%A3%E9%87%8A"><span class="toc-number">9.6.3.</span> <span class="toc-text">pop链构造解释</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%80%83%E9%80%B8%E5%9F%BA%E7%A1%80"><span class="toc-number">9.7.</span> <span class="toc-text">7字符串逃逸基础</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%80%83%E9%80%B8%E5%9F%BA%E7%A1%80-%E5%87%8F%E5%B0%91"><span class="toc-number">9.7.1.</span> <span class="toc-text">字符串逃逸基础_减少</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%80%83%E9%80%B8%E5%9F%BA%E7%A1%80-%E5%A2%9E%E5%A4%9A"><span class="toc-number">9.7.2.</span> <span class="toc-text">字符串逃逸基础_增多</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%80%83%E9%80%B8%E5%A2%9E%E5%A4%9A%E4%BE%8B%E9%A2%98"><span class="toc-number">9.7.3.</span> <span class="toc-text">字符串逃逸增多例题</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%80%83%E9%80%B8%E5%87%8F%E5%B0%91%E4%BE%8B%E9%A2%98"><span class="toc-number">9.7.4.</span> <span class="toc-text">字符串逃逸减少例题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8wakeup%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95%E7%BB%95%E8%BF%87"><span class="toc-number">9.8.</span> <span class="toc-text">8wakeup魔术方法绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9%E5%BC%95%E7%94%A8%E7%9A%84%E5%88%A9%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">9.9.</span> <span class="toc-text">9引用的利用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10session%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-number">9.10.</span> <span class="toc-text">10session反序列化漏洞介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11session%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BE%8B%E9%A2%98"><span class="toc-number">9.11.</span> <span class="toc-text">11session反序列化例题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="toc-number">9.12.</span> <span class="toc-text">12phar反序列化漏洞的介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BE%8B%E9%A2%98%E8%AE%B2%E8%A7%A3"><span class="toc-number">9.13.</span> <span class="toc-text">13phar反序列化例题讲解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14%E5%8E%9F%E7%94%9F%E7%B1%BB"><span class="toc-number">9.14.</span> <span class="toc-text">14原生类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFphp%E5%8E%9F%E7%94%9F%E7%B1%BB"><span class="toc-number">9.15.</span> <span class="toc-text">什么是php原生类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E8%AF%BB%E5%8F%96"><span class="toc-number">9.16.</span> <span class="toc-text">文件与目录读取</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-DirectoryIterator"><span class="toc-number">9.16.1.</span> <span class="toc-text">1. DirectoryIterator</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-FilesystemIterator"><span class="toc-number">9.16.2.</span> <span class="toc-text">2.FilesystemIterator</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-glob-%E5%8D%8F%E8%AE%AE%E4%B8%8E%E9%AD%94%E6%9C%AF%E5%8C%B9%E9%85%8D"><span class="toc-number">9.16.3.</span> <span class="toc-text">3.glob:&#x2F;&#x2F;协议与魔术匹配</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4GlobIterator"><span class="toc-number">9.16.4.</span> <span class="toc-text">4GlobIterator</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5%E5%8F%AF%E9%81%8D%E5%8E%86%E7%9B%AE%E5%BD%95%E7%B1%BB%E7%BB%95%E8%BF%87open-basedir"><span class="toc-number">9.16.5.</span> <span class="toc-text">5可遍历目录类绕过open_basedir</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-SplFileobject"><span class="toc-number">9.16.6.</span> <span class="toc-text">6.SplFileobject</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-ZipArchive-open"><span class="toc-number">9.16.7.</span> <span class="toc-text">7.ZipArchive::open()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-Reflection"><span class="toc-number">9.16.8.</span> <span class="toc-text">8.Reflection</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ssrf"><span class="toc-number">9.17.</span> <span class="toc-text">ssrf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#SoapClient-call"><span class="toc-number">9.17.1.</span> <span class="toc-text">SoapClient::_call()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#XXE"><span class="toc-number">9.18.</span> <span class="toc-text">XXE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SimplexMLElement"><span class="toc-number">9.18.1.</span> <span class="toc-text">SimplexMLElement</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#xss"><span class="toc-number">9.19.</span> <span class="toc-text">xss</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Error"><span class="toc-number">9.19.1.</span> <span class="toc-text">Error</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exception"><span class="toc-number">9.19.2.</span> <span class="toc-text">Exception</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C"><span class="toc-number">9.20.</span> <span class="toc-text">命令执行</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/30/dcsync-attack/" title="攻击方式 - 滥用 DCsync">攻击方式 - 滥用 DCsync</a><time datetime="2026-08-30T13:00:00.000Z" title="发表于 2026-08-30 21:00:00">2026-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/30/htb-devhub/" title="HTB DevHub 靶场 Writeup">HTB DevHub 靶场 Writeup</a><time datetime="2026-08-30T12:10:00.000Z" title="发表于 2026-08-30 20:10:00">2026-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/28/ctf-mlops-ssrf-hardlink/" title="mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入">mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</a><time datetime="2026-08-28T15:30:00.000Z" title="发表于 2026-08-28 23:30:00">2026-08-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/28/ctf-go-to-php-http-smuggling/" title="go to php - HTTP 请求走私">go to php - HTTP 请求走私</a><time datetime="2026-08-28T15:15:00.000Z" title="发表于 2026-08-28 23:15:00">2026-08-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/28/ctf-stored-xss-admin-bot/" title="存储型 XSS 注入 + Admin Bot 提权 + XSS 外带">存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</a><time datetime="2026-08-28T15:00:00.000Z" title="发表于 2026-08-28 23:00:00">2026-08-28</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By Echoin</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"></div><script src="/js/cursor.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js?v=1.1.6"></script><script id="canvas_nest" defer="defer" color="167,139,250" opacity="0.6" zIndex="-1" count="99" mobile="false" src="/pluginsSrc/butterfly-extsrc/dist/canvas-nest.min.js?v=1.1.6"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

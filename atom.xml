@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, Echoin</rights>
   <subtitle>Web安全 · 渗透测试 · CTF · 靶场</subtitle>
   <title>Echoin 的博客</title>
-  <updated>2026-08-30T13:50:47.473Z</updated>
+  <updated>2026-08-30T13:55:03.533Z</updated>
   <entry>
     <author>
       <name>Echoin</name>
@@ -24,7 +24,7 @@
     <published>2026-08-30T13:00:00.000Z</published>
     <summary>DCsync 攻击原理与利用手法</summary>
     <title>攻击方式 - 滥用 DCsync</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.533Z</updated>
   </entry>
   <entry>
     <author>
@@ -39,7 +39,7 @@
     <published>2026-08-30T12:10:00.000Z</published>
     <summary>HTB DevHub 靶场 Writeup</summary>
     <title>HTB DevHub 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -49,12 +49,12 @@
     <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
     <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
     <category term="hardlink" scheme="https://echoin.xyz/tags/hardlink/"/>
-    <id>https://echoin.xyz/2026/08/24/ctf-mlops-ssrf-hardlink/</id>
-    <link href="https://echoin.xyz/2026/08/24/ctf-mlops-ssrf-hardlink/"/>
-    <published>2026-08-24T15:30:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/ctf-mlops-ssrf-hardlink/</id>
+    <link href="https://echoin.xyz/2026/08/28/ctf-mlops-ssrf-hardlink/"/>
+    <published>2026-08-28T15:30:00.000Z</published>
     <summary>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</summary>
     <title>mlops - URL解析差异SSRF + hardlink恢复缺陷 + 配置文件注入</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.533Z</updated>
   </entry>
   <entry>
     <author>
@@ -63,12 +63,12 @@
     <category term="CTF wp" scheme="https://echoin.xyz/categories/CTF-wp/"/>
     <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
     <category term="HTTP请求走私" scheme="https://echoin.xyz/tags/HTTP%E8%AF%B7%E6%B1%82%E8%B5%B0%E7%A7%81/"/>
-    <id>https://echoin.xyz/2026/08/24/ctf-go-to-php-http-smuggling/</id>
-    <link href="https://echoin.xyz/2026/08/24/ctf-go-to-php-http-smuggling/"/>
-    <published>2026-08-24T15:15:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/ctf-go-to-php-http-smuggling/</id>
+    <link href="https://echoin.xyz/2026/08/28/ctf-go-to-php-http-smuggling/"/>
+    <published>2026-08-28T15:15:00.000Z</published>
     <summary>go to php - HTTP 请求走私</summary>
     <title>go to php - HTTP 请求走私</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.533Z</updated>
   </entry>
   <entry>
     <author>
@@ -78,12 +78,12 @@
     <category term="CTF" scheme="https://echoin.xyz/tags/CTF/"/>
     <category term="XSS" scheme="https://echoin.xyz/tags/XSS/"/>
     <category term="Admin Bot" scheme="https://echoin.xyz/tags/Admin-Bot/"/>
-    <id>https://echoin.xyz/2026/08/24/ctf-stored-xss-admin-bot/</id>
-    <link href="https://echoin.xyz/2026/08/24/ctf-stored-xss-admin-bot/"/>
-    <published>2026-08-24T15:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/ctf-stored-xss-admin-bot/</id>
+    <link href="https://echoin.xyz/2026/08/28/ctf-stored-xss-admin-bot/"/>
+    <published>2026-08-28T15:00:00.000Z</published>
     <summary>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</summary>
     <title>存储型 XSS 注入 + Admin Bot 提权 + XSS 外带</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.533Z</updated>
   </entry>
   <entry>
     <author>
@@ -93,12 +93,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="NanoCorp" scheme="https://echoin.xyz/tags/NanoCorp/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-nanocorp/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-nanocorp/"/>
-    <published>2026-08-24T14:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-nanocorp/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-nanocorp/"/>
+    <published>2026-08-28T14:00:00.000Z</published>
     <summary>HTB NanoCorp 靶场 Writeup</summary>
     <title>HTB NanoCorp 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -108,12 +108,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="Garfield" scheme="https://echoin.xyz/tags/Garfield/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-garfield/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-garfield/"/>
-    <published>2026-08-24T13:45:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-garfield/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-garfield/"/>
+    <published>2026-08-28T13:45:00.000Z</published>
     <summary>HTB Garfield 靶场 Writeup</summary>
     <title>HTB Garfield 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -123,12 +123,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="WingData" scheme="https://echoin.xyz/tags/WingData/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-wingdata/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-wingdata/"/>
-    <published>2026-08-24T13:30:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-wingdata/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-wingdata/"/>
+    <published>2026-08-28T13:30:00.000Z</published>
     <summary>HTB WingData 靶场 Writeup</summary>
     <title>HTB WingData 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -138,12 +138,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="Three" scheme="https://echoin.xyz/tags/Three/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-three/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-three/"/>
-    <published>2026-08-24T13:15:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-three/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-three/"/>
+    <published>2026-08-28T13:15:00.000Z</published>
     <summary>HTB Three 靶场 Writeup</summary>
     <title>HTB Three 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -153,12 +153,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="Kobold" scheme="https://echoin.xyz/tags/Kobold/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-kobold/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-kobold/"/>
-    <published>2026-08-24T13:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-kobold/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-kobold/"/>
+    <published>2026-08-28T13:00:00.000Z</published>
     <summary>HTB Kobold 靶场 Writeup</summary>
     <title>HTB Kobold 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -168,12 +168,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="Fires" scheme="https://echoin.xyz/tags/Fires/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-fires/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-fires/"/>
-    <published>2026-08-24T12:45:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-fires/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-fires/"/>
+    <published>2026-08-28T12:45:00.000Z</published>
     <summary>HTB Fires 靶场 Writeup</summary>
     <title>HTB Fires 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -183,12 +183,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="Facts" scheme="https://echoin.xyz/tags/Facts/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-facts/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-facts/"/>
-    <published>2026-08-24T12:30:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-facts/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-facts/"/>
+    <published>2026-08-28T12:30:00.000Z</published>
     <summary>HTB Facts 靶场 Writeup</summary>
     <title>HTB Facts 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -196,14 +196,14 @@
     </author>
     <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
-    <category term="DevArea" scheme="https://echoin.xyz/tags/DevArea/"/>
     <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-devarea/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-devarea/"/>
-    <published>2026-08-24T12:15:00.000Z</published>
+    <category term="DevArea" scheme="https://echoin.xyz/tags/DevArea/"/>
+    <id>https://echoin.xyz/2026/08/28/htb-devarea/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-devarea/"/>
+    <published>2026-08-28T12:15:00.000Z</published>
     <summary>HTB DevArea 靶场 Writeup</summary>
     <title>HTB DevArea 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -211,14 +211,14 @@
     </author>
     <category term="靶场" scheme="https://echoin.xyz/categories/%E9%9D%B6%E5%9C%BA/"/>
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
-    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
     <category term="Conversor" scheme="https://echoin.xyz/tags/Conversor/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-conversor/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-conversor/"/>
-    <published>2026-08-24T12:05:00.000Z</published>
+    <category term="靶场" scheme="https://echoin.xyz/tags/%E9%9D%B6%E5%9C%BA/"/>
+    <id>https://echoin.xyz/2026/08/28/htb-conversor/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-conversor/"/>
+    <published>2026-08-28T12:05:00.000Z</published>
     <summary>HTB Conversor 靶场 Writeup</summary>
     <title>HTB Conversor 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.533Z</updated>
   </entry>
   <entry>
     <author>
@@ -228,12 +228,12 @@
     <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
     <category term="NTLM Relay" scheme="https://echoin.xyz/tags/NTLM-Relay/"/>
     <category term="内网渗透" scheme="https://echoin.xyz/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/"/>
-    <id>https://echoin.xyz/2026/08/24/ntlm-relay/</id>
-    <link href="https://echoin.xyz/2026/08/24/ntlm-relay/"/>
-    <published>2026-08-24T11:30:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/ntlm-relay/</id>
+    <link href="https://echoin.xyz/2026/08/28/ntlm-relay/"/>
+    <published>2026-08-28T11:30:00.000Z</published>
     <summary>攻击方式 - NTLM Relay（手法很多）</summary>
     <title>攻击方式 - NTLM Relay（手法很多）</title>
-    <updated>2026-08-30T13:50:47.475Z</updated>
+    <updated>2026-08-30T13:55:03.535Z</updated>
   </entry>
   <entry>
     <author>
@@ -243,12 +243,12 @@
     <category term="SSRF" scheme="https://echoin.xyz/tags/SSRF/"/>
     <category term="服务端请求伪造" scheme="https://echoin.xyz/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/"/>
     <category term="内网" scheme="https://echoin.xyz/tags/%E5%86%85%E7%BD%91/"/>
-    <id>https://echoin.xyz/2026/08/24/ssrf/</id>
-    <link href="https://echoin.xyz/2026/08/24/ssrf/"/>
-    <published>2026-08-24T11:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/ssrf/</id>
+    <link href="https://echoin.xyz/2026/08/28/ssrf/"/>
+    <published>2026-08-28T11:00:00.000Z</published>
     <summary>SSRF（服务端请求伪造）</summary>
     <title>SSRF（服务端请求伪造）</title>
-    <updated>2026-08-30T13:50:47.476Z</updated>
+    <updated>2026-08-30T13:55:03.537Z</updated>
   </entry>
   <entry>
     <author>
@@ -259,12 +259,12 @@
     <category term="HTB" scheme="https://echoin.xyz/tags/HTB/"/>
     <category term="Dante" scheme="https://echoin.xyz/tags/Dante/"/>
     <category term="红队" scheme="https://echoin.xyz/tags/%E7%BA%A2%E9%98%9F/"/>
-    <id>https://echoin.xyz/2026/08/24/htb-dante/</id>
-    <link href="https://echoin.xyz/2026/08/24/htb-dante/"/>
-    <published>2026-08-24T09:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/htb-dante/</id>
+    <link href="https://echoin.xyz/2026/08/28/htb-dante/"/>
+    <published>2026-08-28T09:00:00.000Z</published>
     <summary>HTB Dante 靶场 Writeup</summary>
     <title>HTB Dante 靶场 Writeup</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -274,12 +274,12 @@
     <category term="Kerberos" scheme="https://echoin.xyz/tags/Kerberos/"/>
     <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
     <category term="Bronze Bit" scheme="https://echoin.xyz/tags/Bronze-Bit/"/>
-    <id>https://echoin.xyz/2026/08/24/kerberos-bronze-bit/</id>
-    <link href="https://echoin.xyz/2026/08/24/kerberos-bronze-bit/"/>
-    <published>2026-08-24T08:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/kerberos-bronze-bit/</id>
+    <link href="https://echoin.xyz/2026/08/28/kerberos-bronze-bit/"/>
+    <published>2026-08-28T08:00:00.000Z</published>
     <summary>Kerberos Bronze Bit 委派绕过漏洞原理与利用</summary>
     <title>攻击方式 - Kerberos Bronze Bit</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -289,12 +289,12 @@
     <category term="Kerberos" scheme="https://echoin.xyz/tags/Kerberos/"/>
     <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
     <category term="Kerberoasting" scheme="https://echoin.xyz/tags/Kerberoasting/"/>
-    <id>https://echoin.xyz/2026/08/24/kerberoasting/</id>
-    <link href="https://echoin.xyz/2026/08/24/kerberoasting/"/>
-    <published>2026-08-24T07:30:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/kerberoasting/</id>
+    <link href="https://echoin.xyz/2026/08/28/kerberoasting/"/>
+    <published>2026-08-28T07:30:00.000Z</published>
     <summary>Kerberoasting 获取服务票据并离线爆破密码的方法</summary>
     <title>攻击方式 - Kerberoasting</title>
-    <updated>2026-08-30T13:50:47.474Z</updated>
+    <updated>2026-08-30T13:55:03.534Z</updated>
   </entry>
   <entry>
     <author>
@@ -304,11 +304,11 @@
     <category term="AS-REP Roasting" scheme="https://echoin.xyz/tags/AS-REP-Roasting/"/>
     <category term="Kerberos" scheme="https://echoin.xyz/tags/Kerberos/"/>
     <category term="域渗透" scheme="https://echoin.xyz/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/"/>
-    <id>https://echoin.xyz/2026/08/24/as-rep-roasting/</id>
-    <link href="https://echoin.xyz/2026/08/24/as-rep-roasting/"/>
-    <published>2026-08-24T07:00:00.000Z</published>
+    <id>https://echoin.xyz/2026/08/28/as-rep-roasting/</id>
+    <link href="https://echoin.xyz/2026/08/28/as-rep-roasting/"/>
+    <published>2026-08-28T07:00:00.000Z</published>
     <summary>针对关闭 Kerberos 预认证域用户的离线密码攻击</summary>
     <title>攻击方式 - AS-REP Roasting</title>
-    <updated>2026-08-30T13:50:47.473Z</updated>
+    <updated>2026-08-30T13:55:03.532Z</updated>
   </entry>
 </feed>
